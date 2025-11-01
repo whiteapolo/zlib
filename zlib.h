@@ -37,10 +37,10 @@ void z_str_append_char(Z_String **s, char c);
 char z_str_pop_char(Z_String **s);
 
 void z_str_set(Z_String **s, const char *format, ...);
+void z_str_set_str(Z_String **s, Z_String_View str);
 void z_str_replace(Z_String **s, Z_String_View target, Z_String_View replacement);
 Z_String *z_str_join(char **s, Z_String_View delimiter);
 Z_String **z_str_split(Z_String_View s, Z_String_View delimiter);
-Z_String_View *z_sv_split(Z_String_View s, Z_String_View delimiter);
 
 size_t z_str_length(Z_String *s);
 size_t z_sv_length(Z_String_View s);
@@ -56,6 +56,7 @@ bool z_sv_equal_n(Z_String_View a, Z_String_View b, size_t n);
 bool z_sv_ends_with(Z_String_View s, Z_String_View end);
 bool z_sv_starts_with(Z_String_View s, Z_String_View start);
 bool z_sv_contains(Z_String_View haystack, Z_String_View needle);
+bool z_sv_contain_char(Z_String_View s, char c);
 
 void z_str_trim(Z_String **s);
 void z_str_trim_cset(Z_String **s, Z_String_View cset);
@@ -73,6 +74,7 @@ Z_String_View z_sv_trim_left_cset(Z_String_View s, Z_String_View cset);
 void z_sv_print(Z_String_View s);
 void z_sv_println(Z_String_View s);
 void z_str_free(Z_String **s);
+void z_str_array_free(Z_String ***s);
 void z_str_clear(Z_String **s);
 
 //----------------------------------------------------

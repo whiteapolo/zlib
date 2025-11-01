@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <limits.h>
 
+#define Z__WHITE_SPACE " \f\n\r\t\v"
+
 int z__size_t_to_int(size_t a)
 {
   return a > INT_MAX ? INT_MAX : (int)a;
@@ -115,7 +117,7 @@ Z_String *z_str_new_variadic(const char *format, va_list arguments)
 
 Z_String *z_str_new_from(Z_String_View s)
 {
-  return z_str_new("%.*s", s.length, s.ptr);
+  return z_str_new("%.*s", z__size_t_to_int(s.length), s.ptr);
 }
 
 void z_str_append(Z_String **s, const char *format, ...)
@@ -141,7 +143,7 @@ void z_str_append_variadic(Z_String **s, const char *format, va_list arguments)
 
 void z_str_append_str(Z_String **target, Z_String_View source)
 {
-  z_str_append(target, "%.*s", source.length, source.ptr);
+  z_str_append(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
 }
 
 void z_str_append_char(Z_String **s, char c)
@@ -165,10 +167,52 @@ void z_str_set(Z_String **s, const char *format, ...)
   va_end(arguments);
 }
 
-void z_str_replace(Z_String **s, Z_String_View target, Z_String_View replacement);
-Z_String *z_str_join(char **s, Z_String_View delimiter);
-Z_String **z_str_split(Z_String_View s, Z_String_View delimiter);
-Z_String_View *z_sv_split(Z_String_View s, Z_String_View delimiter);
+void z_str_set_str(Z_String **s, Z_String_View str)
+{
+  z_str_set(s, "%.*s", z__size_t_to_int(str.length), str.ptr);
+}
+
+void z_str_replace(Z_String **s, Z_String_View target, Z_String_View replacement)
+{
+  Z_String *tmp = z_str_new("");
+
+  size_t i = 0;
+
+  while (i < z_str_length(*s)) {
+    if (z_sv_equal(z_sv_offset(z_sv(*s), i), target)) {
+      z_str_append_str(&tmp, replacement);
+      i += replacement.length;
+    } else {
+      z_str_append_char(&tmp, (*s)[i]);
+      i++;
+    }
+  }
+
+  z_str_free(s);
+  *s = tmp;
+}
+
+Z_String *z_str_join(Z_String **s, Z_String_View delimiter)
+{
+  if (z_array_length(s) == 0) {
+    return z_str_new("");
+  }
+
+  Z_String *result = z_str_new("");
+
+  for (size_t i = 0; i < z_array_length(s) - 1; i++) {
+    z_str_append_str(&result, z_sv(s[i]));
+    z_str_append_str(&result, delimiter);
+  }
+
+  z_str_append_str(&result, z_sv(s[z_array_length(s) - 1]));
+  return result;
+}
+
+Z_String **z_str_split(Z_String_View s, Z_String_View delimiter)
+{
+  
+}
 
 size_t z_str_length(Z_String *s)
 {
@@ -261,20 +305,106 @@ bool z_sv_starts_with(Z_String_View s, Z_String_View start)
   return z_sv_equal_n(s, start, start.length);
 }
 
-bool z_sv_contains(Z_String_View haystack, Z_String_View needle);
+bool z_sv_contains(Z_String_View haystack, Z_String_View needle)
+{
+  if (needle.length == 0) {
+    return true;
+  }
 
-void z_str_trim(Z_String **s);
-void z_str_trim_cset(Z_String **s, Z_String_View cset);
-void z_str_trim_right(Z_String **s);
-void z_str_trim_left(Z_String **s);
-void z_str_trim_right_cset(Z_String **s, Z_String_View cset);
-void z_str_trim_left_cset(Z_String **s, Z_String_View cset);
-Z_String_View z_sv_trim(Z_String_View s);
-Z_String_View z_sv_trim_cset(Z_String_View s, Z_String_View cset);
-Z_String_View z_sv_trim_right(Z_String_View s);
-Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset);
-Z_String_View z_sv_trim_left(Z_String_View s);
-Z_String_View z_sv_trim_left_cset(Z_String_View s, Z_String_View cset);
+  if (needle.length > haystack.length) {
+    return false;
+  }
+
+  for (size_t i = 0; i < haystack.length - needle.length + 1; i++) {
+    if (memcmp(haystack.ptr + i, needle.ptr, needle.length) == 0) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool z_sv_contain_char(Z_String_View s, char c)
+{
+  return memchr(s.ptr, c, s.length);
+}
+
+void z_str_trim(Z_String **s)
+{
+  z_str_trim_right(s);
+  z_str_trim_left(s);
+}
+
+void z_str_trim_cset(Z_String **s, Z_String_View cset)
+{
+  z_str_trim_right_cset(s, cset);
+  z_str_trim_left_cset(s, cset);
+}
+
+void z_str_trim_right(Z_String **s)
+{
+  z_str_trim_right_cset(s, z_sv(Z__WHITE_SPACE));
+}
+
+void z_str_trim_left(Z_String **s)
+{
+  z_str_trim_left_cset(s, z_sv(Z__WHITE_SPACE));
+}
+
+void z_str_trim_right_cset(Z_String **s, Z_String_View cset)
+{
+  Z_String_View trimmed = z_sv_trim_right_cset(z_sv(*s), cset);
+  z_str_set_str(s, trimmed);
+}
+
+void z_str_trim_left_cset(Z_String **s, Z_String_View cset)
+{
+  Z_String_View trimmed = z_sv_trim_left_cset(z_sv(*s), cset);
+  z_str_set_str(s, trimmed);
+}
+
+Z_String_View z_sv_trim(Z_String_View s)
+{
+  return z_sv_trim_cset(s, z_sv(Z__WHITE_SPACE));
+}
+
+Z_String_View z_sv_trim_cset(Z_String_View s, Z_String_View cset)
+{
+  Z_String_View trimmed = z_sv_trim_right_cset(s, cset);
+  return z_sv_trim_left_cset(trimmed, cset);
+}
+
+Z_String_View z_sv_trim_right(Z_String_View s)
+{
+  return z_sv_trim_right_cset(s, z_sv(Z__WHITE_SPACE));
+}
+
+Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset)
+{
+  Z_String_View trimmed = s;
+
+  while (trimmed.length > 0 && z_sv_contain_char(cset, z_sv_peek(trimmed))) {
+    trimmed.length--;
+  }
+
+  return trimmed;
+}
+
+Z_String_View z_sv_trim_left(Z_String_View s)
+{
+  return z_sv_trim_left_cset(s, z_sv(Z__WHITE_SPACE));
+}
+
+Z_String_View z_sv_trim_left_cset(Z_String_View s, Z_String_View cset)
+{
+  Z_String_View trimmed = s;
+
+  while (trimmed.length > 0 && z_sv_contain_char(cset, s.ptr[0])) {
+    trimmed = z_sv_offset(trimmed, 1);
+  }
+
+  return trimmed;
+}
 
 void z_sv_print(Z_String_View s)
 {
@@ -288,6 +418,15 @@ void z_sv_println(Z_String_View s)
 
 void z_str_free(Z_String **s)
 {
+  z_array_free(s);
+}
+
+void z_str_array_free(Z_String ***s)
+{
+  for (size_t i = 0; i < z_array_length(*s); i++) {
+    z_str_free(*s + i);
+  }
+
   z_array_free(s);
 }
 
