@@ -95,6 +95,11 @@ bool z_scanf_file(const char *pathname, const char *format, ...);
 Z_Char *z_read_file(const char *pathname);
 Z_Char **z_read_directory(const char *pathname);
 
+Z_Char *z_expand_tilde(Z_String_View pathname);
+Z_Char *z_compress_tilde(Z_String_View pathname);
+
+const char *z_get_env(const char *name, const char *fallback);
+
 //----------------------------------------------------
 //
 // Internal

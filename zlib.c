@@ -590,3 +590,33 @@ Z_Char **z_read_directory(const char *pathname)
 
   return entries;
 }
+
+Z_Char *z_expand_tilde(Z_String_View pathname)
+{
+  if (z_sv_starts_with(pathname, z_sv("~"))) {
+    Z_Char *expanded = z_str_new("%s", z_get_env("HOME", "."));
+    z_str_append_str(&expanded, z_sv_offset(pathname, 1));
+    return expanded;
+  }
+
+  return z_str_new_from(pathname);
+}
+
+Z_Char *z_compress_tilde(Z_String_View pathname)
+{
+  const char *home = z_get_env("HOME", NULL);
+
+  if (home && z_sv_starts_with(pathname, z_sv(home))) {
+    Z_Char *compressed = z_str_new("~");
+    z_str_append_str(&compressed, z_sv_offset(pathname, strlen(home)));
+    return compressed;
+  }
+
+  return z_str_new_from(pathname);
+}
+
+const char *z_get_env(const char *name, const char *fallback)
+{
+  const char *value = getenv(name);
+  return value ? value : fallback;
+}
