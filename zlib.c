@@ -250,25 +250,22 @@ Z_Char *z_str_join(Z_Char **s, Z_String_View delimiter)
 
 Z_Char **z_str_split(Z_String_View s, Z_String_View delimiter)
 {
-  // TODO: implement
-  return NULL;
-
   if (delimiter.length == 0) {
     return NULL;
   }
 
   Z_Char **result = NULL;
 
-  ssize_t start = 0;
-  ssize_t end = 0;
+  ssize_t offset = 0;
+  ssize_t length = 0;
 
-  while ((end = z_sv_find_index(z_sv_offset(s, start), delimiter)) != -1) {
-    Z_String_View slice = z_sv_substring(s, start, end);
+  while ((length = z_sv_find_index(z_sv_offset(s, offset), delimiter)) != -1) {
+    Z_String_View slice = z_sv_substring(s, offset, offset + length);
     z_array_push(&result, z_str_new_from(slice));
-    start = end + delimiter.length;
+    offset += length + delimiter.length;
   }
 
-  z_array_push(&result, z_str_new_from(z_sv_substring(s, start, s.length)));
+  z_array_push(&result, z_str_new_from(z_sv_substring(s, offset, s.length)));
 
   return result;
 }
