@@ -20,6 +20,16 @@ size_t z__max_size_t(size_t a, size_t b)
   return a > b ? a : b; 
 }
 
+int z__max(int a, int b)
+{
+  return a > b ? a : b;
+}
+
+int z__min(int a, int b)
+{
+  return a < b ? a : b;
+}
+
 size_t z__get_file_size(FILE *fp)
 {
   size_t curr = ftell(fp);
@@ -616,4 +626,296 @@ const char *z_get_env(const char *name, const char *fallback)
 {
   const char *value = getenv(name);
   return value ? value : fallback;
+}
+
+int z__avl_get_height(const Z_Avl_Node *node)
+{
+  return node ? node->height : 0;
+}
+
+void z__avl_update_height(Z_Avl_Node *node)
+{
+  node->height = 1 + z__max(z__avl_get_height(node->right), z__avl_get_height(node->left));
+}
+
+int z__avl_get_balance_factor(const Z_Avl_Node *node)
+{
+  if (node == NULL) {
+    return 0;
+  }
+
+  return z__avl_get_height(node->left) - z__avl_get_height(node->right);
+}
+
+void z__avl_left_rotate(Z_Avl_Node **root)
+{
+  Z_Avl_Node *new_root = (*root)->right;
+  Z_Avl_Node *tmp = new_root->left;
+  new_root->left = *root;
+  (*root)->right = tmp;
+  z__avl_update_height(new_root->left);
+  z__avl_update_height(new_root);
+  *root = new_root;
+}
+
+void z__avl_right_rotate(Z_Avl_Node **root)
+{
+  Z_Avl_Node *new_root = (*root)->left;
+  Z_Avl_Node *tmp = new_root->right;
+  new_root->right = *root;
+  (*root)->left = tmp;
+  z__avl_update_height(new_root->right);
+  z__avl_update_height(new_root);
+  *root = new_root;
+}
+
+void z__avl_left_right_rotate(Z_Avl_Node **root)
+{
+  z__avl_left_rotate(&(*root)->left);
+  z__avl_right_rotate(root);
+}
+
+void z__avl_right_left_rotate(Z_Avl_Node **root)
+{
+  z__avl_right_rotate(&(*root)->right);
+  z__avl_left_rotate(root);
+}
+
+Z_Avl_Node *z__avl_new(void *key, void *value)
+{
+  Z_Avl_Node *n = malloc(sizeof(Z_Avl_Node));
+  n->key = key;
+  n->value = value;
+  n->height = 1;
+  n->left = NULL;
+  n->right = NULL;
+  return n;
+}
+
+Z_Avl_Node *z__avl_get_min(Z_Avl_Node *root)
+{
+  Z_Avl_Node *curr = root;
+
+  while (curr->left != NULL) {
+    curr = curr->left;
+  }
+
+  return curr;
+}
+
+Z_Avl_Node *z__avl_get_node(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
+{
+  Z_Avl_Node *curr = root;
+
+  while (curr != NULL) {
+    int cmp_res = compare_keys(key, curr->key);
+    if (cmp_res > 0) {
+      curr = curr->right;
+    } else if (cmp_res < 0) {
+      curr = curr->left;
+    } else {
+      return curr;
+    }
+  }
+
+  return NULL;
+}
+
+bool z__avl_is_exists(Z_Avl_Node *root, void *key, Z_Compare_Fn compare_keys)
+{
+  return z__avl_get_node(root, key, compare_keys) != NULL;
+}
+
+void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
+{
+  Z_Avl_Node *node = z__avl_get_node(root, key, compare_keys);
+  return node ? node->value : NULL;
+}
+
+void z__avl_put(Z_Avl_Node **root, void *key, void *value,
+               Z_Compare_Fn compare_keys, void free_key(void *),
+               void free_value(void *))
+{
+  if (*root == NULL) {
+    *root = z__avl_new(key, value);
+    return;
+  }
+
+  int compare_result = compare_keys(key, (*root)->key);
+
+  if (compare_result > 0) {
+    z__avl_put(&(*root)->right, key, value, compare_keys, free_key, free_value);
+  } else if (compare_result < 0) {
+    z__avl_put(&(*root)->left, key, value, compare_keys, free_key, free_value);
+  } else {
+    if (free_value) free_value((*root)->value);
+    if (free_key) free_key(key);
+    (*root)->value = value;
+  }
+
+  z__avl_update_height(*root);
+  int bf = z__avl_get_balance_factor(*root);
+
+  if (bf > 1 && compare_keys(key, (*root)->left->key) < 0) {
+    z__avl_right_rotate(root);
+  } else if (bf < -1 && compare_keys(key, (*root)->right->key) > 0) {
+    z__avl_left_rotate(root);
+  } else if (bf > 1 && compare_keys(key, (*root)->left->key) > 0) {
+    z__avl_left_right_rotate(root);
+  } else if (bf < -1 && compare_keys(key, (*root)->right->key) < 0) {
+    z__avl_right_left_rotate(root);
+  }
+}
+
+void z__avl_remove(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys,
+                  void free_key(void *), void free_value(void *))
+{
+  if (*root == NULL) {
+    return;
+  }
+
+  int compare_result = compare_keys(key, (*root)->key);
+
+  if (compare_result > 0) {
+    z__avl_remove(&((*root)->right), key, compare_keys, free_key, free_value);
+    return;
+  }
+
+  if (compare_result < 0) {
+    z__avl_remove(&((*root)->left), key, compare_keys, free_key, free_value);
+    return;
+  }
+
+  if (free_key) free_key((*root)->key);
+  if (free_value) free_value((*root)->value);
+
+  if ((*root)->left == NULL) {
+    Z_Avl_Node *tmp = (*root)->right;
+    free(*root);
+    *root = tmp;
+    return;
+  } else if ((*root)->right == NULL) {
+    Z_Avl_Node *tmp = (*root)->left;
+    free(*root);
+    *root = tmp;
+    return;
+  }
+
+  Z_Avl_Node *succesor = z__avl_get_min((*root)->right);
+  (*root)->key = succesor->key;
+  (*root)->value = succesor->value;
+  z__avl_remove(&((*root)->right), succesor->key, compare_keys, NULL, NULL);
+  z__avl_update_height(*root);
+
+  int bf = z__avl_get_balance_factor(*root);
+
+  if (bf > 1 && z__avl_get_balance_factor((*root)->left) >= 0) {
+    z__avl_right_rotate(root);
+  } else if (bf < -1 && z__avl_get_balance_factor((*root)->right) <= 0) {
+    z__avl_left_rotate(root);
+  } else if (bf > 1 && z__avl_get_balance_factor((*root)->left) < 0) {
+    z__avl_left_right_rotate(root);
+  } else if (bf < -1 && z__avl_get_balance_factor((*root)->right) > 0) {
+    z__avl_right_left_rotate(root);
+  }
+}
+void z__avl_order_traverse(Z_Avl_Node *root,
+                          void callback(void *key, void *value, void *context),
+                          void *context)
+{
+  if (root == NULL) {
+    return;
+  }
+
+  z__avl_order_traverse(root->left, callback, context);
+  callback(root->key, root->value, context);
+  z__avl_order_traverse(root->right, callback, context);
+}
+
+void z__avl_print(Z_Avl_Node *root,
+                 void print_entry(void *key, void *value, void *context), void *context,
+                 int padding)
+{
+  if (root == NULL) {
+    return;
+  }
+
+  printf("%*c", padding, ' ');
+  print_entry(root->key, root->value, context);
+  z__avl_print(root->right, print_entry, context, padding + 4);
+  z__avl_print(root->left, print_entry, context, padding + 4);
+}
+
+void z__avl_free(Z_Avl_Node *root, void free_key(void *), void free_value(void *))
+{
+  if (root == NULL) {
+    return;
+  }
+
+  if (free_key) free_key(root->key);
+  if (free_value) free_value(root->value);
+  
+  z__avl_free(root->left, free_key, free_value);
+  z__avl_free(root->right, free_key, free_value);
+  free(root);
+}
+
+Z_Map *z_map_new(Z_Compare_Fn compare_keys)
+{
+  Z_Map *map = malloc(sizeof(Z_Map));
+  map->root = NULL;
+  map->compare_keys = compare_keys;
+
+  return map;
+}
+
+void z_map_put(Z_Map *map, void *key, void *value, void free_key(void *), void free_value(void *))
+{
+  z__avl_put(&map->root, key, value, map->compare_keys, free_key, free_value);
+}
+
+void *z_map_get(const Z_Map *map, const void *key)
+{
+  return z__avl_get(map->root, key, map->compare_keys);
+}
+
+bool z_map_is_exists(const Z_Map *map, void *key)
+{
+  return z__avl_is_exists(map->root, key, map->compare_keys);
+}
+
+void z_map_remove(Z_Map *map, void *key, void free_key(void *), void free_value(void *))
+{
+  z__avl_remove(&map->root, key, map->compare_keys, free_key, free_value);
+}
+
+void z_map_order_traverse(const Z_Map *m, void callback(void *key, void *value, void *context), void *context)
+{
+  z__avl_order_traverse(m->root, callback, context);
+}
+
+void z_map_free(Z_Map *map, void free_key(void *), void free_value(void *))
+{
+  z__avl_free(map->root, free_key, free_value);
+  free(map);
+}
+
+int z_compare_int_pointers(const int *a, const int *b)
+{
+  return (*a > *b) - (*a < *b);
+}
+
+int z_compare_float_pointers(const float *a, const float *b)
+{
+  return (*a > *b) - (*a < *b);
+}
+
+int z_compare_double_pointers(const double *a, const double *b)
+{
+  return (*a > *b) - (*a < *b);
+}
+
+int z_compare_string_pointers(const char **a, const char **b)
+{
+  return strcmp(*a, *b);
 }

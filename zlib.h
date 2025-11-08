@@ -8,11 +8,48 @@
 
 //----------------------------------------------------
 //
-// API
+// Internal
 //
 //----------------------------------------------------
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
+
+typedef struct {
+  size_t capacity;
+  size_t length;
+} Z_Array_Header;
+
+typedef struct Z_Avl_Node {
+  struct Z_Avl_Node *left;
+  struct Z_Avl_Node *right;
+  void *key;
+  void *value;
+  char height;
+} Z_Avl_Node;
+
+typedef struct {
+  Z_Compare_Fn compare_keys;
+  Z_Avl_Node *root;
+} Z_Map;
+
+typedef char Z_Char;
+
+typedef struct {
+  const char *ptr;
+  size_t length;
+} Z_String_View;
+
+Z_Array_Header *z__array_header(void *array);
+size_t z__array_length(void *array);
+void z__array_push(void **array, const void *element, size_t element_size);
+void z__array_null_terminate(void **array, size_t element_size);
+void z__array_free(void **array);
+
+//----------------------------------------------------
+//
+// API
+//
+//----------------------------------------------------
 
 #define Z_DEFAULT_GROWTH_RATE 2
 
@@ -21,16 +58,9 @@ typedef int (*Z_Compare_Fn)(const void *, const void *);
 #define z_array_null_terminate(array_ptr) z__array_null_terminate((void **)(array_ptr), sizeof(**(array_ptr)))
 #define z_array_length(array) z__array_length(array)
 #define z_array_free(array_ptr) z__array_free((void **)array_ptr)
-#define z_array_foreach(array, callback_fn) for (size_t i = 0; i < z_array_length(array); i++) callback_fn((array)[i])
-#define z_array_foreach_ptr(array, callback_fn) for (size_t i = 0; i < z_array_length(array); i++) callback_fn(&(array)[i])
-#define z_array_sort(array_ptr, compare_fn) qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare_fn)
-
-typedef char Z_Char;
-
-typedef struct {
-  const char *ptr;
-  size_t length;
-} Z_String_View;
+#define z_array_foreach(array, callback) for (size_t i = 0; i < z_array_length(array); i++) callback((array)[i])
+#define z_array_foreach_ptr(array, callback) for (size_t i = 0; i < z_array_length(array); i++) callback(&(array)[i])
+#define z_array_sort(array_ptr, compare) qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare)
 
 Z_Char *z_str_new(const char *format, ...);
 Z_Char *z_str_new_args(const char *format, va_list args);
@@ -100,21 +130,17 @@ Z_Char *z_compress_tilde(Z_String_View pathname);
 
 const char *z_get_env(const char *name, const char *fallback);
 
-//----------------------------------------------------
-//
-// Internal
-//
-//----------------------------------------------------
+Z_Map *z_map_new(Z_Compare_Fn compare_keys);
+void z_map_put(Z_Map *map, void *key, void *value, void free_key(void *), void free_value(void *));
+void *z_map_get(const Z_Map *map, const void *key);
+bool z_map_is_exists(const Z_Map *map, void *key);
+void z_map_remove(Z_Map *map, void *key, void free_key(void *), void free_value(void *));
+void z_map_order_traverse(const Z_Map *m, void callback(void *key, void *value, void *context), void *context);
+void z_map_free(Z_Map *map, void free_key(void *), void free_value(void *));
 
-typedef struct {
-  size_t capacity;
-  size_t length;
-} Z_Array_Header;
-
-Z_Array_Header *z__array_header(void *array);
-size_t z__array_length(void *array);
-void z__array_push(void **array, const void *element, size_t element_size);
-void z__array_null_terminate(void **array, size_t element_size);
-void z__array_free(void **array);
+int z_compare_int_pointers(const int *a, const int *b);
+int z_compare_float_pointers(const float *a, const float *b);
+int z_compare_double_pointers(const double *a, const double *b);
+int z_compare_string_pointers(const char **a, const char **b);
 
 #endif
