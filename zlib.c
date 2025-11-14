@@ -41,7 +41,12 @@ size_t z__get_file_size(FILE *fp)
   return size;
 }
 
-
+void *z_memory_duplicate(const void *memory, size_t size)
+{
+  void *new_memory = malloc(size);
+  memcpy(new_memory, memory, size);
+  return new_memory;
+}
 
 Z_Array_Header *z__array_header(void *array)
 {
@@ -721,7 +726,7 @@ Z_Avl_Node *z__avl_get_node(Z_Avl_Node *root, const void *key, Z_Compare_Fn comp
   return NULL;
 }
 
-bool z__avl_is_exists(Z_Avl_Node *root, void *key, Z_Compare_Fn compare_keys)
+bool z__avl_has(Z_Avl_Node *root, void *key, Z_Compare_Fn compare_keys)
 {
   return z__avl_get_node(root, key, compare_keys) != NULL;
 }
@@ -819,7 +824,8 @@ void z__avl_remove(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys,
     z__avl_right_left_rotate(root);
   }
 }
-void z__avl_order_traverse(Z_Avl_Node *root,
+
+void z__avl_foreach(Z_Avl_Node *root,
                           void callback(void *key, void *value, void *context),
                           void *context)
 {
@@ -827,9 +833,9 @@ void z__avl_order_traverse(Z_Avl_Node *root,
     return;
   }
 
-  z__avl_order_traverse(root->left, callback, context);
+  z__avl_foreach(root->left, callback, context);
   callback(root->key, root->value, context);
-  z__avl_order_traverse(root->right, callback, context);
+  z__avl_foreach(root->right, callback, context);
 }
 
 void z__avl_print(Z_Avl_Node *root,
@@ -879,25 +885,60 @@ void *z_map_get(const Z_Map *map, const void *key)
   return z__avl_get(map->root, key, map->compare_keys);
 }
 
-bool z_map_is_exists(const Z_Map *map, void *key)
+bool z_map_has(const Z_Map *map, void *key)
 {
-  return z__avl_is_exists(map->root, key, map->compare_keys);
+  return z__avl_has(map->root, key, map->compare_keys);
 }
 
-void z_map_remove(Z_Map *map, void *key, void free_key(void *), void free_value(void *))
+void z_map_delete(Z_Map *map, void *key, void free_key(void *), void free_value(void *))
 {
   z__avl_remove(&map->root, key, map->compare_keys, free_key, free_value);
 }
 
-void z_map_order_traverse(const Z_Map *m, void callback(void *key, void *value, void *context), void *context)
+void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context)
 {
-  z__avl_order_traverse(m->root, callback, context);
+  z__avl_foreach(map->root, callback, context);
 }
 
 void z_map_free(Z_Map *map, void free_key(void *), void free_value(void *))
 {
   z__avl_free(map->root, free_key, free_value);
   free(map);
+}
+
+Z_Dictionary *z_dictionary_new()
+{
+  return z_map_new((Z_Compare_Fn)strcmp);
+}
+
+void z_dictionary_put(Z_Dictionary *dictionary, const char *key, void *value, void free_value(void *))
+{
+  z_map_put(dictionary, strdup(key), value, free, free_value);
+}
+
+void *z_dictionary_get(const Z_Dictionary *dictionary, const char *key)
+{
+  return z_map_get(dictionary, key);
+}
+
+bool z_dictionary_has(const Z_Map *dictionary, const char *key)
+{
+  z_map_has(dictionary, (void*)key);
+}
+
+void z_dictionary_delete(Z_Dictionary *dictionary, const char *key, void free_value(void *))
+{
+  z_map_delete(dictionary, (void*)key, free, free_value);
+}
+
+void z_dictionary_foreach(const Z_Dictionary *dictionary, void callback(const char *key, void *value, void *context), void *context)
+{
+  z_map_foreach(dictionary, (void (*)(void *, void *, void *))callback, context);
+}
+
+void z_dictionary_free(Z_Dictionary *dictionary, void free_value(void *))
+{
+  z_map_free(dictionary, free, free_value);
 }
 
 int z_compare_int_pointers(const int *a, const int *b)

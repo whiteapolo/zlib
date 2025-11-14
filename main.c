@@ -2,18 +2,16 @@
 #include <assert.h>
 #include "zlib.h"
 
-
 int main(void)
 {
-  Z_Char *content = z_read_file("./zlib.c");
-  assert(content != NULL);
+  Z_Dictionary *dictionary = z_dictionary_new();
+  z_dictionary_put(dictionary, "Itay", Z_HEAP_ALLOC(20, int), free);
 
-  Z_Char **lines = z_str_split(z_sv(content), z_sv(";"));
-
-  for (size_t i = 0; i < z_array_length(lines); i++) {
-    printf("%zu | %s\n", i, lines[i]);
+  int *value = z_dictionary_get(dictionary, "Itay");
+  if (value) {
+    printf("%d\n", *value);
   }
 
-  z_str_array_free(&lines);
-  z_str_free(&content);
+
+  z_dictionary_free(dictionary, free);
 }
