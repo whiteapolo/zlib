@@ -12,12 +12,12 @@ int z__size_t_to_int(size_t a)
 
 size_t z__min_size_t(size_t a, size_t b)
 {
-  return a > b ? b : a; 
+  return a > b ? b : a;
 }
 
 size_t z__max_size_t(size_t a, size_t b)
 {
-  return a > b ? a : b; 
+  return a > b ? a : b;
 }
 
 int z__max(int a, int b)
@@ -860,7 +860,7 @@ void z__avl_free(Z_Avl_Node *root, void free_key(void *), void free_value(void *
 
   if (free_key) free_key(root->key);
   if (free_value) free_value(root->value);
-  
+
   z__avl_free(root->left, free_key, free_value);
   z__avl_free(root->right, free_key, free_value);
   free(root);
@@ -921,7 +921,7 @@ void *z_dictionary_get(const Z_Dictionary *dictionary, const char *key)
   return z_map_get(dictionary, key);
 }
 
-bool z_dictionary_has(const Z_Map *dictionary, const char *key)
+bool z_dictionary_has(const Z_Dictionary *dictionary, const char *key)
 {
   z_map_has(dictionary, (void*)key);
 }
@@ -939,6 +939,31 @@ void z_dictionary_foreach(const Z_Dictionary *dictionary, void callback(const ch
 void z_dictionary_free(Z_Dictionary *dictionary, void free_value(void *))
 {
   z_map_free(dictionary, free, free_value);
+}
+
+Z_Set *z_set_new(Z_Compare_Fn compare)
+{
+  return z_map_new(compare);
+}
+
+void z_set_put(Z_Set *set, void *element, void free_element(void *))
+{
+  z_map_put(set, element, NULL, free_element, NULL);
+}
+
+bool z_set_has(const Z_Set *set, const void *element)
+{
+  z_map_has(set, (void*)element);
+}
+
+void z_set_delete(Z_Set *set, const void *element, void free_element(void *))
+{
+  z_map_delete(set, (void*)element, free_element, NULL);
+}
+
+void z_set_free(Z_Set *set, void free_element(void *))
+{
+  z_map_free(set, free_element, NULL);
 }
 
 int z_compare_int_pointers(const int *a, const int *b)
@@ -960,3 +985,5 @@ int z_compare_string_pointers(const char **a, const char **b)
 {
   return strcmp(*a, *b);
 }
+
+

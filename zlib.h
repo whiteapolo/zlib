@@ -33,6 +33,7 @@ typedef struct {
 } Z_Map;
 
 typedef Z_Map Z_Dictionary;
+typedef Z_Map Z_Set;
 
 typedef char Z_Char;
 
@@ -54,9 +55,7 @@ void z__array_free(void **array);
 //----------------------------------------------------
 
 void *z_memory_duplicate(const void *memory, size_t size);
-
 #define Z_HEAP_ALLOC(value, Type) z_memory_duplicate(&(Type){value}, sizeof(Type))
-
 #define Z_DEFAULT_GROWTH_RATE 2
 
 #define z_array_push(array_ptr, element) z__array_push((void **)(array_ptr), &(typeof(**(array_ptr))){element}, sizeof(**(array_ptr)))
@@ -71,7 +70,6 @@ void *z_memory_duplicate(const void *memory, size_t size);
 Z_Char *z_str_new(const char *format, ...);
 Z_Char *z_str_new_args(const char *format, va_list args);
 Z_Char *z_str_new_from(Z_String_View s);
-
 void z_str_append(Z_Char **s, const char *format, ...);
 void z_str_append_args(Z_Char **s, const char *format, va_list args);
 void z_str_append_str(Z_Char **target, Z_String_View source);
@@ -80,7 +78,6 @@ void z_str_prepend(Z_Char **s, const char *format, ...);
 void z_str_prepend_args(Z_Char **s, const char *format, va_list args);
 void z_str_prepend_str(Z_Char **target, Z_String_View source);
 void z_str_prepend_char(Z_Char **s, char c);
-
 char z_str_pop_char(Z_Char **s);
 
 void z_str_set(Z_Char **s, const char *format, ...);
@@ -88,13 +85,11 @@ void z_str_set_str(Z_Char **s, Z_String_View str);
 void z_str_replace(Z_Char **s, Z_String_View target, Z_String_View replacement);
 Z_Char *z_str_join(char **s, Z_String_View delimiter);
 Z_Char **z_str_split(Z_String_View s, Z_String_View delimiter);
-
 size_t z_str_length(Z_Char *s);
 size_t z_sv_length(Z_String_View s);
 Z_String_View z_sv(const char *s);
 Z_String_View z_sv_offset(Z_String_View s, size_t offset);
 Z_String_View z_sv_substring(Z_String_View s, int start, int end);
-
 char z_sv_peek(Z_String_View s);
 int z_sv_compare(Z_String_View a, Z_String_View b);
 bool z_sv_equal(Z_String_View a, Z_String_View b);
@@ -106,6 +101,7 @@ bool z_sv_contains(Z_String_View haystack, Z_String_View needle);
 bool z_sv_contain_char(Z_String_View s, char c);
 ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle);
 
+// trim hell
 void z_str_trim(Z_Char **s);
 void z_str_trim_cset(Z_Char **s, Z_String_View cset);
 void z_str_trim_right(Z_Char **s);
@@ -130,12 +126,11 @@ bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
 Z_Char *z_read_file(const char *pathname);
 Z_Char **z_read_directory(const char *pathname);
-
 Z_Char *z_expand_tilde(Z_String_View pathname);
 Z_Char *z_compress_tilde(Z_String_View pathname);
-
 const char *z_get_env(const char *name, const char *fallback);
 
+// map - map key to value
 Z_Map *z_map_new(Z_Compare_Fn compare_keys);
 void z_map_put(Z_Map *map, void *key, void *value, void free_key(void *), void free_value(void *));
 void *z_map_get(const Z_Map *map, const void *key);
@@ -144,6 +139,7 @@ void z_map_delete(Z_Map *map, void *key, void free_key(void *), void free_value(
 void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context);
 void z_map_free(Z_Map *map, void free_key(void *), void free_value(void *));
 
+// dictionary - map of strings to void * keys
 Z_Dictionary *z_dictionary_new();
 void z_dictionary_put(Z_Dictionary *dictionary, const char *key, void *value, void free_value(void *));
 void *z_dictionary_get(const Z_Dictionary *dictionary, const char *key);
@@ -151,6 +147,13 @@ bool z_dictionary_has(const Z_Map *dictionary, const char *key);
 void z_dictionary_delete(Z_Dictionary *dictionary, const char *key, void free_value(void *));
 void z_dictionary_foreach(const Z_Dictionary *dictionary, void callback(const char *key, void *value, void *context), void *context);
 void z_dictionary_free(Z_Dictionary *dictionary, void free_value(void *));
+
+// set - set of elements
+Z_Set *z_set_new(Z_Compare_Fn compare);
+void z_set_put(Z_Set *set, void *element, void free_element(void *));
+bool z_set_has(const Z_Set *set, const void *element);
+void z_set_delete(Z_Set *set, const void *element, void free_element(void *));
+void z_set_free(Z_Set *set, void free_element(void *));
 
 int z_compare_int_pointers(const int *a, const int *b);
 int z_compare_float_pointers(const float *a, const float *b);
