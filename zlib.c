@@ -2,6 +2,7 @@
 #include <string.h>
 #include <limits.h>
 #include <dirent.h>
+#include <assert.h>
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 
@@ -12,12 +13,12 @@ int z__size_t_to_int(size_t a)
 
 size_t z__min_size_t(size_t a, size_t b)
 {
-  return a > b ? b : a; 
+  return a > b ? b : a;
 }
 
 size_t z__max_size_t(size_t a, size_t b)
 {
-  return a > b ? a : b; 
+  return a > b ? a : b;
 }
 
 int z__max(int a, int b)
@@ -686,6 +687,22 @@ void z__avl_right_left_rotate(Z_Avl_Node **root)
   z__avl_left_rotate(root);
 }
 
+void z__avl_rebalance_node(Z_Avl_Node **node, Z_Compare_Fn compare_keys)
+{
+  z__avl_update_height(*node);
+  int balance_factor = z__avl_get_balance_factor(*node);
+
+  if (balance_factor > 1 && z__avl_get_balance_factor((*node)->left) >= 0) {
+    z__avl_right_rotate(node);
+  } else if (balance_factor < -1 && z__avl_get_balance_factor((*node)->right) <= 0) {
+    z__avl_left_rotate(node);
+  } else if (balance_factor > 1 && z__avl_get_balance_factor((*node)->left) < 0) {
+    z__avl_left_right_rotate(node);
+  } else if (balance_factor < -1 && z__avl_get_balance_factor((*node)->right) > 0) {
+    z__avl_right_left_rotate(node);
+  }
+}
+
 Z_Avl_Node *z__avl_new(void *key, void *value)
 {
   Z_Avl_Node *n = malloc(sizeof(Z_Avl_Node));
@@ -694,36 +711,32 @@ Z_Avl_Node *z__avl_new(void *key, void *value)
   n->height = 1;
   n->left = NULL;
   n->right = NULL;
+
   return n;
 }
 
 Z_Avl_Node *z__avl_get_min(Z_Avl_Node *root)
 {
-  Z_Avl_Node *curr = root;
-
-  while (curr->left != NULL) {
-    curr = curr->left;
-  }
-
-  return curr;
+  return root->left ? z__avl_get_min(root->left) : root;
 }
 
 Z_Avl_Node *z__avl_get_node(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
 {
-  Z_Avl_Node *curr = root;
-
-  while (curr != NULL) {
-    int cmp_res = compare_keys(key, curr->key);
-    if (cmp_res > 0) {
-      curr = curr->right;
-    } else if (cmp_res < 0) {
-      curr = curr->left;
-    } else {
-      return curr;
-    }
+  if (root == NULL) {
+    return NULL;
   }
 
-  return NULL;
+  int compare_result = compare_keys(key, root->key);
+
+  if (compare_result > 0) {
+    return z__avl_get_node(root->right, key, compare_keys);
+  }
+
+  if (compare_result < 0) {
+    return z__avl_get_node(root->left, key, compare_keys);
+  }
+
+  return root;
 }
 
 bool z__avl_has(Z_Avl_Node *root, void *key, Z_Compare_Fn compare_keys)
@@ -738,8 +751,8 @@ void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
 }
 
 void z__avl_put(Z_Avl_Node **root, void *key, void *value,
-               Z_Compare_Fn compare_keys, void free_key(void *),
-               void free_value(void *))
+                Z_Compare_Fn compare_keys, void free_key(void *),
+                void free_value(void *))
 {
   if (*root == NULL) {
     *root = z__avl_new(key, value);
@@ -756,24 +769,14 @@ void z__avl_put(Z_Avl_Node **root, void *key, void *value,
     if (free_value) free_value((*root)->value);
     if (free_key) free_key(key);
     (*root)->value = value;
+    (*root)->key = key;
   }
 
-  z__avl_update_height(*root);
-  int bf = z__avl_get_balance_factor(*root);
-
-  if (bf > 1 && compare_keys(key, (*root)->left->key) < 0) {
-    z__avl_right_rotate(root);
-  } else if (bf < -1 && compare_keys(key, (*root)->right->key) > 0) {
-    z__avl_left_rotate(root);
-  } else if (bf > 1 && compare_keys(key, (*root)->left->key) > 0) {
-    z__avl_left_right_rotate(root);
-  } else if (bf < -1 && compare_keys(key, (*root)->right->key) < 0) {
-    z__avl_right_left_rotate(root);
-  }
+  z__avl_rebalance_node(root, compare_keys);
 }
 
 void z__avl_remove(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys,
-                  void free_key(void *), void free_value(void *))
+                   void free_key(void *), void free_value(void *))
 {
   if (*root == NULL) {
     return;
@@ -810,24 +813,12 @@ void z__avl_remove(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys,
   (*root)->key = succesor->key;
   (*root)->value = succesor->value;
   z__avl_remove(&((*root)->right), succesor->key, compare_keys, NULL, NULL);
-  z__avl_update_height(*root);
-
-  int bf = z__avl_get_balance_factor(*root);
-
-  if (bf > 1 && z__avl_get_balance_factor((*root)->left) >= 0) {
-    z__avl_right_rotate(root);
-  } else if (bf < -1 && z__avl_get_balance_factor((*root)->right) <= 0) {
-    z__avl_left_rotate(root);
-  } else if (bf > 1 && z__avl_get_balance_factor((*root)->left) < 0) {
-    z__avl_left_right_rotate(root);
-  } else if (bf < -1 && z__avl_get_balance_factor((*root)->right) > 0) {
-    z__avl_right_left_rotate(root);
-  }
+  z__avl_rebalance_node(root, compare_keys);
 }
 
 void z__avl_foreach(Z_Avl_Node *root,
-                          void callback(void *key, void *value, void *context),
-                          void *context)
+                    void callback(void *key, void *value, void *context),
+                    void *context)
 {
   if (root == NULL) {
     return;
@@ -860,7 +851,7 @@ void z__avl_free(Z_Avl_Node *root, void free_key(void *), void free_value(void *
 
   if (free_key) free_key(root->key);
   if (free_value) free_value(root->value);
-  
+
   z__avl_free(root->left, free_key, free_value);
   z__avl_free(root->right, free_key, free_value);
   free(root);
@@ -959,4 +950,94 @@ int z_compare_double_pointers(const double *a, const double *b)
 int z_compare_string_pointers(const char **a, const char **b)
 {
   return strcmp(*a, *b);
+}
+
+size_t z__deque_next_index(Z_Deque *deque, size_t i)
+{
+  return (i + 1) % deque->capacity;
+}
+
+size_t z__deque_previous_index(Z_Deque *deque, size_t i)
+{
+  return (i + deque->capacity - 1) % deque->capacity;
+}
+
+void z__deque_copy_to_array(Z_Deque *deque, void **ptr)
+{
+  for (size_t i = 0; i < z_deque_length(deque); i++) {
+    ptr[i] = *z_deque_at(deque, i);
+  }
+}
+
+void z__deque_ensure_capacity(Z_Deque *deque, size_t capacity)
+{
+  if (deque->capacity >= capacity + 1) {
+    return;
+  }
+
+  size_t length = z_deque_length(deque);
+  size_t new_capacity = z__max_size_t(capacity + 1, deque->capacity * Z_DEFAULT_GROWTH_RATE);
+  void **new_ptr = malloc(sizeof(void *) * new_capacity);
+
+  z__deque_copy_to_array(deque, new_ptr);
+
+  free(deque->ptr);
+  deque->ptr = new_ptr;
+  deque->capacity = new_capacity;
+  deque->front = 0;
+  deque->rear = length;
+}
+
+Z_Deque *z_deque_new()
+{
+  Z_Deque *deque = malloc(sizeof(Z_Deque));
+  deque->ptr = NULL;
+  deque->capacity = 0;
+  deque->front = 0;
+  deque->rear = 0;
+
+  return deque;
+}
+
+void z_deque_push_back(Z_Deque *deque, void *element)
+{
+  z__deque_ensure_capacity(deque, z_deque_length(deque) + 1);
+  deque->ptr[deque->rear] = element;
+  deque->rear = z__deque_next_index(deque, deque->rear);
+}
+
+void z_deque_push_front(Z_Deque *deque, void *element)
+{
+  z__deque_ensure_capacity(deque, z_deque_length(deque) + 1);
+  deque->front = z__deque_previous_index(deque, deque->front);
+  deque->ptr[deque->front] = element;
+}
+
+void *z_deque_pop_back(Z_Deque *deque)
+{
+  assert(z_deque_length(deque) > 0);
+  deque->rear = z__deque_previous_index(deque, deque->rear);
+  return deque->ptr[deque->rear];
+}
+
+void *z_deque_pop_front(Z_Deque *deque)
+{
+  assert(z_deque_length(deque) > 0);
+  deque->front = z__deque_next_index(deque, deque->front);
+  return deque->ptr[z__deque_previous_index(deque, deque->front)];
+}
+
+size_t z_deque_length(const Z_Deque *deque)
+{
+  if (deque->capacity == 0) {
+    return 0;
+  }
+
+  return (deque->rear + deque->capacity - deque->front) % deque->capacity;
+}
+
+void **z_deque_at(const Z_Deque *deque, size_t i)
+{
+  assert(i < z_deque_length(deque));
+  return &deque->ptr[(i + deque->front) % deque->capacity];
 }
