@@ -1,5 +1,5 @@
 exe: main.c zlib.c zlib.h
-	cc main.c zlib.c -o exe -g -Werror -Wextra -O3
+	cc main.c zlib.c -o exe -g -Werror -Wextra
 
 run: exe
 	./exe
