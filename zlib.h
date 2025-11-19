@@ -28,8 +28,8 @@ typedef struct Z_Avl_Node {
 } Z_Avl_Node;
 
 typedef struct {
-  Z_Compare_Fn compare_keys;
   Z_Avl_Node *root;
+  Z_Compare_Fn compare_keys;
 } Z_Map;
 
 typedef Z_Map Z_Dictionary;
@@ -63,7 +63,6 @@ void z__array_free(void **array);
 void *z_memory_duplicate(const void *memory, size_t size);
 
 #define Z_HEAP_ALLOC(value, Type) z_memory_duplicate(&(Type){value}, sizeof(Type))
-
 #define Z_DEFAULT_GROWTH_RATE 2
 
 #define z_array_push(array_ptr, element) z__array_push((void **)(array_ptr), &(typeof(**(array_ptr))){element}, sizeof(**(array_ptr)))

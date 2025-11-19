@@ -1,4 +1,5 @@
 #include "zlib.h"
+#include <stdlib.h>
 #include <string.h>
 #include <limits.h>
 #include <dirent.h>
@@ -750,6 +751,34 @@ void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
   return node ? node->value : NULL;
 }
 
+void z__avl_set_node_key_value(Z_Avl_Node *node, void *key, void *value,
+                     void free_key(void *), void free_value(void *))
+{
+  if (free_value) {
+    free_value((*root)->value);
+  }
+
+  if (free_key) {
+    free_key(key);
+  }
+
+  node->value = value;
+  node->key = key;
+}
+
+void z__avl_free_node(Z_Avl_Node *node, void free_key(void *), void free_value(void *))
+{
+  if (free_value) {
+    free_value((*root)->value);
+  }
+
+  if (free_key) {
+    free_key(key);
+  }
+
+  free(node);
+}
+
 void z__avl_put(Z_Avl_Node **root, void *key, void *value,
                 Z_Compare_Fn compare_keys, void free_key(void *),
                 void free_value(void *))
@@ -761,15 +790,15 @@ void z__avl_put(Z_Avl_Node **root, void *key, void *value,
 
   int compare_result = compare_keys(key, (*root)->key);
 
+  if (compare_result == 0) {
+    z__avl_set_node_key_value(*root, key, value);
+    return;
+  }
+
   if (compare_result > 0) {
     z__avl_put(&(*root)->right, key, value, compare_keys, free_key, free_value);
-  } else if (compare_result < 0) {
-    z__avl_put(&(*root)->left, key, value, compare_keys, free_key, free_value);
   } else {
-    if (free_value) free_value((*root)->value);
-    if (free_key) free_key(key);
-    (*root)->value = value;
-    (*root)->key = key;
+    z__avl_put(&(*root)->left, key, value, compare_keys, free_key, free_value);
   }
 
   z__avl_rebalance_node(root, compare_keys);
@@ -794,24 +823,15 @@ void z__avl_remove(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys,
     return;
   }
 
-  if (free_key) free_key((*root)->key);
-  if (free_value) free_value((*root)->value);
-
-  if ((*root)->left == NULL) {
-    Z_Avl_Node *tmp = (*root)->right;
-    free(*root);
-    *root = tmp;
-    return;
-  } else if ((*root)->right == NULL) {
-    Z_Avl_Node *tmp = (*root)->left;
-    free(*root);
+  if ((*root)->left == NULL || (*root)->right == NULL) {
+    Z_Avl_Node *tmp = (*root)->left ? (*root)->left : (*root)->right;
+    z__avl_free_node(*root, free_key, free_value);
     *root = tmp;
     return;
   }
 
   Z_Avl_Node *succesor = z__avl_get_min((*root)->right);
-  (*root)->key = succesor->key;
-  (*root)->value = succesor->value;
+  z__avl_set_node_key_value(*root, succesor->key, succesor->value, free_key, free_value);
   z__avl_remove(&((*root)->right), succesor->key, compare_keys, NULL, NULL);
   z__avl_rebalance_node(root, compare_keys);
 }
