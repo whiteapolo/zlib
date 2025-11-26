@@ -407,6 +407,11 @@ ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle)
   return -1;
 }
 
+int z_sv_to_number(Z_String_View s, int fallback)
+{
+  return z_sv_is_number(s) ? strtol(s.ptr, s.ptr + s.length, 10) : fallback;
+}
+
 void z_str_trim(Z_Char **s)
 {
   z_str_trim_right(s);
@@ -745,21 +750,26 @@ bool z__avl_has(Z_Avl_Node *root, void *key, Z_Compare_Fn compare_keys)
   return z__avl_get_node(root, key, compare_keys) != NULL;
 }
 
-void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
+void *z__avl_try_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys, const void *fallback)
 {
   Z_Avl_Node *node = z__avl_get_node(root, key, compare_keys);
-  return node ? node->value : NULL;
+  return node ? node->value : fallback;
+}
+
+void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
+{
+  return z__avl_try_get(root, key, compare_keys, NULL);
 }
 
 void z__avl_set_node_key_value(Z_Avl_Node *node, void *key, void *value,
                      void free_key(void *), void free_value(void *))
 {
   if (free_value) {
-    free_value((*root)->value);
+    free_value(node->value);
   }
 
   if (free_key) {
-    free_key(key);
+    free_key(node->key);
   }
 
   node->value = value;
@@ -769,11 +779,11 @@ void z__avl_set_node_key_value(Z_Avl_Node *node, void *key, void *value,
 void z__avl_free_node(Z_Avl_Node *node, void free_key(void *), void free_value(void *))
 {
   if (free_value) {
-    free_value((*root)->value);
+    free_value(node->value);
   }
 
   if (free_key) {
-    free_key(key);
+    free_key(node->key);
   }
 
   free(node);
@@ -791,7 +801,7 @@ void z__avl_put(Z_Avl_Node **root, void *key, void *value,
   int compare_result = compare_keys(key, (*root)->key);
 
   if (compare_result == 0) {
-    z__avl_set_node_key_value(*root, key, value);
+    z__avl_set_node_key_value(*root, key, value, free_key, free_value);
     return;
   }
 
@@ -896,6 +906,11 @@ void *z_map_get(const Z_Map *map, const void *key)
   return z__avl_get(map->root, key, map->compare_keys);
 }
 
+void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback)
+{
+  return z__avl_try_get(map->root, key, map->compare_keys, fallback);
+}
+
 bool z_map_has(const Z_Map *map, void *key)
 {
   return z__avl_has(map->root, key, map->compare_keys);
@@ -930,6 +945,11 @@ void z_dictionary_put(Z_Dictionary *dictionary, const char *key, void *value, vo
 void *z_dictionary_get(const Z_Dictionary *dictionary, const char *key)
 {
   return z_map_get(dictionary, key);
+}
+
+void *z_dictionary_try_get(const Z_Dictionary *dictionary, const char *key, const void *fallback)
+{
+  return z_map_try_get(dictionary, key, fallback);
 }
 
 bool z_dictionary_has(const Z_Dictionary *dictionary, const char *key)

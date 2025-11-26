@@ -115,6 +115,8 @@ bool z_sv_starts_with(Z_String_View s, Z_String_View start);
 bool z_sv_contains(Z_String_View haystack, Z_String_View needle);
 bool z_sv_contain_char(Z_String_View s, char c);
 ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle);
+bool z_sv_is_number(Z_String_View s);
+int z_sv_to_number(Z_String_View s, int fallback);
 
 // trim hell
 void z_str_trim(Z_Char **s);
@@ -149,6 +151,7 @@ const char *z_get_env(const char *name, const char *fallback);
 Z_Map *z_map_new(Z_Compare_Fn compare_keys);
 void z_map_put(Z_Map *map, void *key, void *value, void free_key(void *), void free_value(void *));
 void *z_map_get(const Z_Map *map, const void *key);
+void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback);
 bool z_map_has(const Z_Map *map, void *key);
 void z_map_delete(Z_Map *map, void *key, void free_key(void *), void free_value(void *));
 void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context);
@@ -158,6 +161,7 @@ void z_map_free(Z_Map *map, void free_key(void *), void free_value(void *));
 Z_Dictionary *z_dictionary_new();
 void z_dictionary_put(Z_Dictionary *dictionary, const char *key, void *value, void free_value(void *));
 void *z_dictionary_get(const Z_Dictionary *dictionary, const char *key);
+void *z_dictionary_try_get(const Z_Dictionary *dictionary, const char *key, const void *fallback);
 bool z_dictionary_has(const Z_Map *dictionary, const char *key);
 void z_dictionary_delete(Z_Dictionary *dictionary, const char *key, void free_value(void *));
 void z_dictionary_foreach(const Z_Dictionary *dictionary, void callback(const char *key, void *value, void *context), void *context);
@@ -174,5 +178,8 @@ int z_compare_int_pointers(const int *a, const int *b);
 int z_compare_float_pointers(const float *a, const float *b);
 int z_compare_double_pointers(const double *a, const double *b);
 int z_compare_string_pointers(const char **a, const char **b);
+
+// command line interface - cli
+Z_Dictionary *get_command_line_options(int argc, char **argv);
 
 #endif
