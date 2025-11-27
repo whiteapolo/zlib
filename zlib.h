@@ -13,6 +13,9 @@
 //----------------------------------------------------
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
+typedef void (*Z_Free_Fn)(void *);
+typedef void *(*Z_Clone_Fn)(void *);
+typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct {
   size_t capacity;
@@ -27,13 +30,34 @@ typedef struct Z_Avl_Node {
   char height;
 } Z_Avl_Node;
 
+typedef enum {
+  Z_PUT_RESULT_INSERTED,
+  Z_PUT_RESULT_REPLACED,
+} Z_Put_Result;
+
+typedef struct {
+  Z_Compare_Fn compare_keys;
+  Z_Clone_Fn clone_key;
+  Z_Clone_Fn clone_value;
+  Z_Free_Fn free_key;
+  Z_Free_Fn free_value;
+} Z_Map_Handlers;
+
+typedef struct {
+  Z_Compare_Fn compare_elements;
+  Z_Clone_Fn clone_element;
+  Z_Free_Fn free_element;
+} Z_Set_Handlers;
+
 typedef struct {
   Z_Avl_Node *root;
-  Z_Compare_Fn compare_keys;
+  Z_Map_Handlers handlers;
 } Z_Map;
 
-typedef Z_Map Z_Dictionary;
-typedef Z_Map Z_Set;
+typedef struct {
+  Z_Avl_Node *root;
+  Z_Set_Handlers handlers;
+} Z_Set;
 
 typedef char Z_Char;
 
@@ -145,41 +169,52 @@ Z_Char *z_read_file(const char *pathname);
 Z_Char **z_read_directory(const char *pathname);
 Z_Char *z_expand_tilde(Z_String_View pathname);
 Z_Char *z_compress_tilde(Z_String_View pathname);
-const char *z_get_env(const char *name, const char *fallback);
+const char *z_try_get_env(const char *name, const char *fallback);
+
+Z_Map_Handlers z_map_create_handlers(
+  Z_Compare_Fn compare_keys,
+  Z_Clone_Fn clone_key,        // nullable
+  Z_Clone_Fn clone_value,      // nullable
+  Z_Free_Fn free_key,          // nullable
+  Z_Free_Fn free_value         // nullable
+);
 
 // map - map key to value
-Z_Map *z_map_new(Z_Compare_Fn compare_keys);
-void z_map_put(Z_Map *map, void *key, void *value, void free_key(void *), void free_value(void *));
+Z_Map *z_map_new(Z_Map_Handlers handlers);
+void z_map_put(Z_Map *map, void *key, void *value);
 void *z_map_get(const Z_Map *map, const void *key);
 void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback);
 bool z_map_has(const Z_Map *map, void *key);
-void z_map_delete(Z_Map *map, void *key, void free_key(void *), void free_value(void *));
+void z_map_delete(Z_Map *map, void *key);
 void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context);
-void z_map_free(Z_Map *map, void free_key(void *), void free_value(void *));
+void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value);
+void z_map_free(Z_Map *map);
 
-// dictionary - map of strings to void * keys
-Z_Dictionary *z_dictionary_new();
-void z_dictionary_put(Z_Dictionary *dictionary, const char *key, void *value, void free_value(void *));
-void *z_dictionary_get(const Z_Dictionary *dictionary, const char *key);
-void *z_dictionary_try_get(const Z_Dictionary *dictionary, const char *key, const void *fallback);
-bool z_dictionary_has(const Z_Map *dictionary, const char *key);
-void z_dictionary_delete(Z_Dictionary *dictionary, const char *key, void free_value(void *));
-void z_dictionary_foreach(const Z_Dictionary *dictionary, void callback(const char *key, void *value, void *context), void *context);
-void z_dictionary_free(Z_Dictionary *dictionary, void free_value(void *));
+Z_Set_Handlers z_set_create_handlers(
+  Z_Compare_Fn compare_keys,
+  Z_Clone_Fn clone_element,     // nullable
+  Z_Free_Fn free_element        // nullable
+);
 
 // set - set of elements
-Z_Set *z_set_new(Z_Compare_Fn compare);
-void z_set_put(Z_Set *set, void *element, void free_element(void *));
-bool z_set_has(const Z_Set *set, const void *element);
-void z_set_delete(Z_Set *set, const void *element, void free_element(void *));
-void z_set_free(Z_Set *set, void free_element(void *));
+Z_Set *z_set_new(Z_Set_Handlers handlers);
+void z_set_add(Z_Set *set, void *element);
+bool z_set_has(const Z_Set *set, void *element);
+void z_set_remove(Z_Set *set, void *element);
+void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
+void z_set_free(Z_Set *set);
 
 int z_compare_int_pointers(const int *a, const int *b);
 int z_compare_float_pointers(const float *a, const float *b);
 int z_compare_double_pointers(const double *a, const double *b);
 int z_compare_string_pointers(const char **a, const char **b);
 
-// command line interface - cli
-Z_Dictionary *get_command_line_options(int argc, char **argv);
+void z_print_int_pointer(const int *a);
+void z_print_float_pointer(const float *a);
+void z_print_double_pointer(const double *a);
+void z_print_string(const char *a);
+void z_print_string_with_double_quotes(const char *a);
+void z_print_string_pointer(const char **a);
+
 
 #endif

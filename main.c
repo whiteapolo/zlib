@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 #include "zlib.h"
 
 void test_deque()
@@ -56,5 +57,27 @@ void test_deque()
 
 int main(void)
 {
-  test_deque();
+    Z_Map_Handlers handlers = z_map_create_handlers(
+        (Z_Compare_Fn)strcmp,
+        (Z_Clone_Fn)strdup,
+        (Z_Clone_Fn)strdup,
+        free,
+        free
+    );
+    Z_Map *map = z_map_new(handlers);
+    z_map_put(map, "Hey", "Bye");
+    z_map_put(map, "Foo", "One");
+    z_map_put(map, "Bar", "Two");
+    z_map_put(map, "Baz", "Three");
+    z_map_put(map, "Qux", "Four");
+    z_map_put(map, "Alice", "Five");
+    z_map_put(map, "Bob", "Six");
+    z_map_put(map, "Carol", "Seven");
+    z_map_put(map, "Dave", "Eight");
+    z_map_put(map, "Eve", "Nine");
+
+    z_map_print(map, (Z_Print_Fn)z_print_string_with_double_quotes, (Z_Print_Fn)z_print_string_with_double_quotes);
+    z_map_free(map);
+
+//   test_deque();
 }
