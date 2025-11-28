@@ -8,7 +8,6 @@
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
 typedef void (*Z_Free_Fn)(void *);
-typedef void *(*Z_Clone_Fn)(void *);
 typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct {
@@ -24,17 +23,6 @@ typedef struct Z_Avl_Node {
   char height;
 } Z_Avl_Node;
 
-typedef enum {
-  Z_PUT_RESULT_INSERTED,
-  Z_PUT_RESULT_REPLACED,
-} Z_Put_Result;
-
-typedef struct {
-  Z_Compare_Fn compare_keys;
-  Z_Free_Fn free_key;
-  Z_Free_Fn free_value;
-} Z_Map_Handlers;
-
 typedef struct {
   Z_Compare_Fn compare_elements;
   Z_Free_Fn free_element;
@@ -42,13 +30,16 @@ typedef struct {
 
 typedef struct {
   Z_Avl_Node *root;
-  Z_Map_Handlers handlers;
   size_t size;
+  Z_Compare_Fn compare_keys;
+  Z_Free_Fn free_key;
+  Z_Free_Fn free_value;
 } Z_Map;
 
 typedef struct {
   Z_Avl_Node *root;
-  Z_Set_Handlers handlers;
+  Z_Compare_Fn compare_elements;
+  Z_Free_Fn free_element;
   size_t size;
 } Z_Set;
 
@@ -69,12 +60,7 @@ typedef struct {
   Z_Pointer_Table table;
 } Z_Heap;
 
-typedef struct {
-  void **ptr;
-  size_t front;
-  size_t rear;
-  size_t capacity;
-} Z_Deque;
+#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
 
 Z_Array_Header *z__array_header(void *array);
 size_t z__array_length(void *array);
@@ -168,14 +154,8 @@ Z_Char *z_expand_tilde(Z_String_View pathname);
 Z_Char *z_compress_tilde(Z_String_View pathname);
 const char *z_try_get_env(const char *name, const char *fallback);
 
-Z_Map_Handlers z_map_create_handlers(
-  Z_Compare_Fn compare_keys,
-  Z_Free_Fn free_key,          // nullable
-  Z_Free_Fn free_value         // nullable
-);
-
 // map - map key to value
-Z_Map *z_map_new(Z_Map_Handlers handlers);
+Z_Map *z_map_new(Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value);
 size_t z_map_size(const Z_Map *map);
 void z_map_put(Z_Map *map, void *key, void *value);
 void *z_map_get(const Z_Map *map, const void *key);
@@ -186,21 +166,14 @@ void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void 
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value);
 void z_map_free(Z_Map *map);
 
-Z_Set_Handlers z_set_create_handlers(
-  Z_Compare_Fn compare_keys,
-  Z_Free_Fn free_element        // nullable
-);
-
 // set - set of elements
-Z_Set *z_set_new(Z_Set_Handlers handlers);
+Z_Set *z_set_new(Z_Compare_Fn compare_elements, Z_Free_Fn free_element);
 size_t z_set_size(const Z_Set *set);
 void z_set_add(Z_Set *set, void *element);
 bool z_set_has(const Z_Set *set, void *element);
 void z_set_remove(Z_Set *set, void *element);
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
 void z_set_free(Z_Set *set);
-
-#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
 
 void *z_heap_malloc(Z_Heap *heap, size_t size);
 void *z_heap_calloc(Z_Heap *heap, size_t size);

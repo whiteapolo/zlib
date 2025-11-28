@@ -950,26 +950,13 @@ void z__avl_free(Z_Avl_Node *root, Z_Free_Fn free_key, Z_Free_Fn free_value)
   free(root);
 }
 
-Z_Map_Handlers z_map_create_handlers(
-  Z_Compare_Fn compare_keys,
-  Z_Free_Fn free_key,          // nullable
-  Z_Free_Fn free_value         // nullable
-)
-{
-  Z_Map_Handlers handlers = {
-    .compare_keys = compare_keys,
-    .free_key = free_key,
-    .free_value = free_value,
-  };
-
-  return handlers;
-}
-
-Z_Map *z_map_new(Z_Map_Handlers handlers)
+Z_Map *z_map_new(Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value)
 {
   Z_Map *map = malloc(sizeof(Z_Map));
   map->root = NULL;
-  map->handlers = handlers;
+  map->compare_keys = compare_keys;
+  map->free_key = free_key;
+  map->free_value = free_value;
   map->size = 0;
 
   return map;
@@ -986,9 +973,9 @@ void z_map_put(Z_Map *map, void *key, void *value)
     &map->root,
     key,
     value,
-    map->handlers.compare_keys,
-    map->handlers.free_key,
-    map->handlers.free_value
+    map->compare_keys,
+    map->free_key,
+    map->free_value
   );
 
   if (is_added) {
@@ -998,17 +985,17 @@ void z_map_put(Z_Map *map, void *key, void *value)
 
 void *z_map_get(const Z_Map *map, const void *key)
 {
-  return z__avl_get(map->root, key, map->handlers.compare_keys);
+  return z__avl_get(map->root, key, map->compare_keys);
 }
 
 void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback)
 {
-  return z__avl_try_get(map->root, key, map->handlers.compare_keys, fallback);
+  return z__avl_try_get(map->root, key, map->compare_keys, fallback);
 }
 
 bool z_map_has(const Z_Map *map, void *key)
 {
-  return z__avl_has(map->root, key, map->handlers.compare_keys);
+  return z__avl_has(map->root, key, map->compare_keys);
 }
 
 void z_map_delete(Z_Map *map, void *key)
@@ -1016,9 +1003,9 @@ void z_map_delete(Z_Map *map, void *key)
   bool is_removed = z__avl_remove(
       &map->root,
       key,
-      map->handlers.compare_keys,
-      map->handlers.free_key,
-      map->handlers.free_value
+      map->compare_keys,
+      map->free_key,
+      map->free_value
   );
 
   if (is_removed) {
@@ -1042,7 +1029,7 @@ void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
 
 void z_map_free(Z_Map *map)
 {
-  z__avl_free(map->root, map->handlers.free_key, map->handlers.free_value);
+  z__avl_free(map->root, map->free_key, map->free_value);
   free(map);
 }
 
@@ -1059,11 +1046,12 @@ Z_Set_Handlers z_set_create_handlers(
   return handlers;
 }
 
-Z_Set *z_set_new(Z_Set_Handlers handlers)
+Z_Set *z_set_new(Z_Compare_Fn compare_elements, Z_Free_Fn free_element)
 {
   Z_Set *set = malloc(sizeof(Z_Set));
   set->root = NULL;
-  set->handlers = handlers;
+  set->compare_elements = compare_elements;
+  set->free_element = free_element;
   set->size = 0;
 
   return set;
@@ -1080,8 +1068,8 @@ void z_set_add(Z_Set *set, void *element)
     &set->root,
     element,
     NULL,
-    set->handlers.compare_elements,
-    set->handlers.free_element,
+    set->compare_elements,
+    set->free_element,
     NULL
   );
 
@@ -1092,7 +1080,7 @@ void z_set_add(Z_Set *set, void *element)
 
 bool z_set_has(const Z_Set *set, void *element)
 {
-  return z__avl_has(set->root, element, set->handlers.compare_elements);
+  return z__avl_has(set->root, element, set->compare_elements);
 }
 
 void z_set_remove(Z_Set *set, void *element)
@@ -1100,8 +1088,8 @@ void z_set_remove(Z_Set *set, void *element)
   bool is_removed = z__avl_remove(
       &set->root,
       element,
-      set->handlers.compare_elements,
-      set->handlers.free_element,
+      set->compare_elements,
+      set->free_element,
       NULL
   );
 
@@ -1120,7 +1108,7 @@ void z_set_print(const Z_Set *set, Z_Print_Fn print_element)
 
 void z_set_free(Z_Set *set)
 {
-  z__avl_free(set->root, set->handlers.free_element, NULL);
+  z__avl_free(set->root, set->free_element, NULL);
   free(set);
 }
 
@@ -1172,96 +1160,6 @@ void z_print_string_with_double_quotes(const char *a)
 void z_print_string_pointer(const char **a)
 {
   printf("%s", *a);
-}
-
-size_t z__deque_next_index(Z_Deque *deque, size_t i)
-{
-  return (i + 1) % deque->capacity;
-}
-
-size_t z__deque_previous_index(Z_Deque *deque, size_t i)
-{
-  return (i + deque->capacity - 1) % deque->capacity;
-}
-
-void z__deque_copy_to_array(Z_Deque *deque, void **ptr)
-{
-  for (size_t i = 0; i < z_deque_length(deque); i++) {
-    ptr[i] = *z_deque_at(deque, i);
-  }
-}
-
-void z__deque_ensure_capacity(Z_Deque *deque, size_t capacity)
-{
-  if (deque->capacity >= capacity + 1) {
-    return;
-  }
-
-  size_t length = z_deque_length(deque);
-  size_t new_capacity = z__max_size_t(capacity + 1, deque->capacity * Z_DEFAULT_GROWTH_RATE);
-  void **new_ptr = malloc(sizeof(void *) * new_capacity);
-
-  z__deque_copy_to_array(deque, new_ptr);
-
-  free(deque->ptr);
-  deque->ptr = new_ptr;
-  deque->capacity = new_capacity;
-  deque->front = 0;
-  deque->rear = length;
-}
-
-Z_Deque *z_deque_new()
-{
-  Z_Deque *deque = malloc(sizeof(Z_Deque));
-  deque->ptr = NULL;
-  deque->capacity = 0;
-  deque->front = 0;
-  deque->rear = 0;
-
-  return deque;
-}
-
-void z_deque_push_back(Z_Deque *deque, void *element)
-{
-  z__deque_ensure_capacity(deque, z_deque_length(deque) + 1);
-  deque->ptr[deque->rear] = element;
-  deque->rear = z__deque_next_index(deque, deque->rear);
-}
-
-void z_deque_push_front(Z_Deque *deque, void *element)
-{
-  z__deque_ensure_capacity(deque, z_deque_length(deque) + 1);
-  deque->front = z__deque_previous_index(deque, deque->front);
-  deque->ptr[deque->front] = element;
-}
-
-void *z_deque_pop_back(Z_Deque *deque)
-{
-  assert(z_deque_length(deque) > 0);
-  deque->rear = z__deque_previous_index(deque, deque->rear);
-  return deque->ptr[deque->rear];
-}
-
-void *z_deque_pop_front(Z_Deque *deque)
-{
-  assert(z_deque_length(deque) > 0);
-  deque->front = z__deque_next_index(deque, deque->front);
-  return deque->ptr[z__deque_previous_index(deque, deque->front)];
-}
-
-size_t z_deque_length(const Z_Deque *deque)
-{
-  if (deque->capacity == 0) {
-    return 0;
-  }
-
-  return (deque->rear + deque->capacity - deque->front) % deque->capacity;
-}
-
-void **z_deque_at(const Z_Deque *deque, size_t i)
-{
-  assert(i < z_deque_length(deque));
-  return &deque->ptr[(i + deque->front) % deque->capacity];
 }
 
 #define Z_PTR_TABLE_MIN_CAPACITY 16
