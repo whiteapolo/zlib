@@ -81,14 +81,6 @@ void *z_memory_duplicate(const void *memory, size_t size);
 #define z_array_foreach_ptr(array, callback) for (size_t i = 0; i < z_array_length(array); i++) callback(&(array)[i])
 #define z_array_sort(array_ptr, compare) qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare)
 
-Z_Deque *z_deque_new();
-void z_deque_push_back(Z_Deque *deque, void *element);
-void z_deque_push_front(Z_Deque *deque, void *element);
-void *z_deque_pop_back(Z_Deque *deque);
-void *z_deque_pop_front(Z_Deque *deque);
-size_t z_deque_length(const Z_Deque *deque);
-void **z_deque_at(const Z_Deque *deque, size_t i);
-
 Z_Char *z_str_new(const char *format, ...);
 Z_Char *z_str_new_args(const char *format, va_list args);
 Z_Char *z_str_new_from(Z_String_View s);
