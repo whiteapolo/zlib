@@ -4,13 +4,9 @@
 #include <limits.h>
 #include <dirent.h>
 #include <assert.h>
+#include <stdint.h>
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
-
-typedef struct {
-  Z_Map *options;
-  Z_Char **operands;
-} Z__Command_Line_Arguments;
 
 int z__size_t_to_int(size_t a)
 {
@@ -956,16 +952,12 @@ void z__avl_free(Z_Avl_Node *root, Z_Free_Fn free_key, Z_Free_Fn free_value)
 
 Z_Map_Handlers z_map_create_handlers(
   Z_Compare_Fn compare_keys,
-  Z_Clone_Fn clone_key,        // nullable
-  Z_Clone_Fn clone_value,      // nullable
   Z_Free_Fn free_key,          // nullable
   Z_Free_Fn free_value         // nullable
 )
 {
   Z_Map_Handlers handlers = {
     .compare_keys = compare_keys,
-    .clone_key = clone_key,
-    .clone_value = clone_value,
     .free_key = free_key,
     .free_value = free_value,
   };
@@ -978,20 +970,30 @@ Z_Map *z_map_new(Z_Map_Handlers handlers)
   Z_Map *map = malloc(sizeof(Z_Map));
   map->root = NULL;
   map->handlers = handlers;
+  map->size = 0;
 
   return map;
 }
 
+size_t z_map_size(const Z_Map *map)
+{
+  return map->size;
+}
+
 void z_map_put(Z_Map *map, void *key, void *value)
 {
-  z__avl_put(
+  bool is_added = z__avl_put(
     &map->root,
-    map->handlers.clone_key ? map->handlers.clone_key(key) : key,
-    map->handlers.clone_value ? map->handlers.clone_value(value) : value,
+    key,
+    value,
     map->handlers.compare_keys,
     map->handlers.free_key,
     map->handlers.free_value
   );
+
+  if (is_added) {
+    map->size++;
+  }
 }
 
 void *z_map_get(const Z_Map *map, const void *key)
@@ -1011,13 +1013,17 @@ bool z_map_has(const Z_Map *map, void *key)
 
 void z_map_delete(Z_Map *map, void *key)
 {
-  z__avl_remove(
+  bool is_removed = z__avl_remove(
       &map->root,
       key,
       map->handlers.compare_keys,
       map->handlers.free_key,
       map->handlers.free_value
   );
+
+  if (is_removed) {
+    map->size--;
+  }
 }
 
 void z_map_foreach(
@@ -1042,13 +1048,11 @@ void z_map_free(Z_Map *map)
 
 Z_Set_Handlers z_set_create_handlers(
   Z_Compare_Fn compare_keys,
-  Z_Clone_Fn clone_key,        // nullable
   Z_Free_Fn free_key           // nullable
 )
 {
    Z_Set_Handlers handlers = {
     .compare_elements = compare_keys,
-    .clone_element = clone_key,
     .free_element = free_key,
   };
 
@@ -1060,20 +1064,30 @@ Z_Set *z_set_new(Z_Set_Handlers handlers)
   Z_Set *set = malloc(sizeof(Z_Set));
   set->root = NULL;
   set->handlers = handlers;
+  set->size = 0;
 
   return set;
 }
 
+size_t z_set_size(const Z_Set *set)
+{
+  return set->size;
+}
+
 void z_set_add(Z_Set *set, void *element)
 {
-  z__avl_put(
+  bool is_added = z__avl_put(
     &set->root,
-    set->handlers.clone_element ? set->handlers.clone_element(element) : element,
+    element,
     NULL,
     set->handlers.compare_elements,
     set->handlers.free_element,
     NULL
   );
+
+  if (is_added) {
+    set->size++;
+  }
 }
 
 bool z_set_has(const Z_Set *set, void *element)
@@ -1083,13 +1097,17 @@ bool z_set_has(const Z_Set *set, void *element)
 
 void z_set_remove(Z_Set *set, void *element)
 {
-  z__avl_remove(
+  bool is_removed = z__avl_remove(
       &set->root,
       element,
       set->handlers.compare_elements,
       set->handlers.free_element,
       NULL
   );
+
+  if (is_removed) {
+    set->size--;
+  }
 }
 
 void z__set_print_nothing(const void *)
@@ -1155,58 +1173,6 @@ void z_print_string_pointer(const char **a)
 {
   printf("%s", *a);
 }
-
-// Z__Command_Line_Arguments *z__parse_command_line_arguments(int argc, char **argv)
-// {
-//   return NULL;
-// }
-
-// const char *z_get_command_line_option_string(Z__Command_Line_Arguments* command_line_arguments, const char *fallback, const char *flag)
-// {
-//   Z_Char **flags = z_str_split(z_sv(flag), z_sv('|'));
-
-//   for (size_t i = 0; i < z_array_length(flags); i++) {
-//     const char *value = z_map_get(command_line_arguments->options, flags[i]);
-//     if (value) {
-//       z_str_array_free(flags);
-//       return value;
-//     }
-//   }
-
-//   return fallback;
-// }
-
-// int z_get_command_line_option_int(Z__Command_Line_Arguments* command_line_arguments, int fallback, const char *flag)
-// {
-//   Z_Char **flags = z_str_split(z_sv(flag), z_sv('|'));
-
-//   for (size_t i = 0; i < z_array_length(flags); i++) {
-//     const char *value = z_map_get(command_line_arguments->options, flags[i]);
-//     if (value) {
-//       z_str_array_free(flags);
-//       return value;
-//     }
-//   }
-
-//   return fallback;
-// }
-
-// double z_get_command_line_option_double(Z__Command_Line_Arguments* command_line_arguments, double fallback, ...)
-// {
-
-// }
-
-// bool z_get_command_line_option_bool(Z__Command_Line_Arguments* command_line_arguments, bool fallback, ...)
-// {
-
-// }
-
-// void z__free_command_line_arguments(Z__Command_Line_Arguments *command_line_arguments)
-// {
-//   z_map_free(command_line_arguments->options);
-//   z_str_array_free(&command_line_arguments->operands);
-//   free(command_line_arguments);
-// }
 
 size_t z__deque_next_index(Z_Deque *deque, size_t i)
 {
@@ -1296,4 +1262,150 @@ void **z_deque_at(const Z_Deque *deque, size_t i)
 {
   assert(i < z_deque_length(deque));
   return &deque->ptr[(i + deque->front) % deque->capacity];
+}
+
+#define Z_PTR_TABLE_MIN_CAPACITY 16
+#define Z_PTR_TABLE_GROWTH_RATE 2
+#define Z_PTR_TABLE_MAX_LOAD_FACTOR 0.7
+#define Z_PTR_TABLE_TOMBSTONE ((void*)1)
+
+bool z_pointer_table_can_insert(void *slot)
+{
+  return slot == NULL || slot == Z_PTR_TABLE_TOMBSTONE;
+}
+
+void **z_pointer_table_find_slot_for_insert(const Z_Pointer_Table *table, const void *pointer)
+{
+  if (table->capacity == 0) {
+    return NULL;
+  }
+
+  size_t i = (uintptr_t)pointer % table->capacity;
+  
+  while (!z_pointer_table_can_insert(table->pointers[i]) && table->pointers[i] != pointer) {
+    i = (i + 1) % table->capacity;
+  }
+
+  return &table->pointers[i];
+}
+
+void **z_pointer_table_find_slot(const Z_Pointer_Table *table, const void *pointer)
+{
+  if (table->capacity == 0) {
+    return NULL;
+  }
+
+  size_t i = (uintptr_t)pointer % table->capacity;
+  
+  while (table->pointers[i] && table->pointers[i] != pointer) {
+    i = (i + 1) % table->capacity;
+  }
+
+  return &table->pointers[i];
+}
+
+float z_ptr_table_load_factor(const Z_Pointer_Table *table)
+{
+  return (float)table->occupied / (float)table->capacity;
+}
+
+void z_pointer_table_resize(Z_Pointer_Table *table, size_t new_capacity)
+{
+  Z_Pointer_Table new_table = {
+    .pointers = calloc(new_capacity, sizeof(void *)),
+    .capacity = new_capacity,
+  };
+
+  for (size_t i = 0; i < table->capacity; i++) {
+    if (table->pointers[i] && table->pointers[i] != Z_PTR_TABLE_TOMBSTONE) {
+      void **slot = z_pointer_table_find_slot_for_insert(&new_table, table->pointers[i]);
+      *slot = table->pointers[i];
+      new_table.occupied++;
+    }
+  }
+
+  free(table->pointers);
+  *table = new_table;
+}
+
+void z_pointer_table_insert(Z_Pointer_Table *table, void *pointer)
+{
+  if (table->capacity == 0 || z_ptr_table_load_factor(table) >= Z_PTR_TABLE_MAX_LOAD_FACTOR) {
+    size_t new_capacity = z__max_size_t(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_PTR_TABLE_GROWTH_RATE);
+    z_pointer_table_resize(table, new_capacity);
+  }
+
+  void **slot =  z_pointer_table_find_slot_for_insert(table, pointer);
+
+  if (*slot == NULL) {
+    table->occupied++;
+  }
+
+  *slot = pointer;
+}
+
+void z_pointer_table_delete(Z_Pointer_Table *table, const void *pointer)
+{
+  void **slot = z_pointer_table_find_slot(table, pointer);
+  *slot = Z_PTR_TABLE_TOMBSTONE;
+}
+
+void z_pointer_table_foreach(const Z_Pointer_Table *table, void callback(void *))
+{
+  for (size_t i = 0; i < table->capacity; i++) {
+    if (table->pointers[i] && table->pointers[i] != Z_PTR_TABLE_TOMBSTONE) {
+      callback(table->pointers[i]);
+    }
+  }
+}
+
+void z_pointer_table_free(Z_Pointer_Table *table)
+{
+  free(table->pointers);
+}
+
+void *z_heap_malloc(Z_Heap *heap, size_t size)
+{
+  void *pointer = malloc(size);
+  z_pointer_table_insert(&heap->table, pointer);
+  return pointer;
+}
+
+void *z_heap_calloc(Z_Heap *heap, size_t size)
+{
+  void *pointer = calloc(size, sizeof(char));
+  z_pointer_table_insert(&heap->table, pointer);
+  return pointer;
+}
+
+void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size)
+{
+  if (pointer == NULL) {
+    return z_heap_malloc(heap, new_size);
+  }
+
+  void *new_pointer = realloc(pointer, new_size);
+
+  if (new_pointer != pointer) {
+    z_pointer_table_delete(&heap->table, pointer);
+    z_pointer_table_insert(&heap->table, new_pointer); 
+  }
+
+  return new_pointer;
+}
+
+void z_heap_free_pointer(Z_Heap *heap, void *pointer)
+{
+  if (pointer == NULL) {
+    return;
+  }
+
+  free(pointer);
+  z_pointer_table_delete(&heap->table, pointer);
+}
+
+void z_heap_free(Z_Heap *heap)
+{
+  z_pointer_table_foreach(&heap->table, free);
+  z_pointer_table_free(&heap->table);
 }

@@ -1,83 +1,52 @@
 #include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
 #include <string.h>
-#include "zlib.h"
+#include <time.h>
+#include "zlib.h" // your Z_Heap header
 
-void test_deque()
-{
-    Z_Deque *dq = z_deque_new();
+#define N 100000
 
-    // Test push_back
-    printf("Testing push_back...\n");
-    for (int i = 0; i < 5; i++) {
-        z_deque_push_back(dq, (void *)(size_t)i);
-    }
-
-    assert(z_deque_length(dq) == 5);
-
-    // Test push_front
-    printf("Testing push_front...\n");
-    for (int i = 5; i < 10; i++) {
-        z_deque_push_front(dq, (void *)(size_t)i);
-    }
-
-    assert(z_deque_length(dq) == 10);
-
-    // Print deque elements
-    printf("Deque elements:\n");
-    for (size_t i = 0; i < z_deque_length(dq); i++) {
-        printf("%zu ", (size_t)*z_deque_at(dq, i));
-    }
-    printf("\n");
-
-    // Test pop_back
-    printf("Testing pop_back...\n");
-    for (int i = 0; i < 3; i++) {
-        size_t val = (size_t)z_deque_pop_back(dq);
-        printf("pop_back: %zu\n", val);
-    }
-
-    // Test pop_front
-    printf("Testing pop_front...\n");
-    for (int i = 0; i < 3; i++) {
-        size_t val = (size_t)z_deque_pop_front(dq);
-        printf("pop_front: %zu\n", val);
-    }
-
-    printf("Remaining elements:\n");
-    for (size_t i = 0; i < z_deque_length(dq); i++) {
-        printf("%zu ", (size_t)*z_deque_at(dq, i));
-    }
-    printf("\n");
-
-    free(dq->ptr);
-    free(dq);
-    printf("All tests passed!\n");
+double now() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec + ts.tv_nsec * 1e-9;
 }
 
-int main(void)
-{
-    Z_Map_Handlers handlers = z_map_create_handlers(
-        (Z_Compare_Fn)strcmp,
-        (Z_Clone_Fn)strdup,
-        (Z_Clone_Fn)strdup,
-        free,
-        free
-    );
-    Z_Map *map = z_map_new(handlers);
-    z_map_put(map, "Hey", "Bye");
-    z_map_put(map, "Foo", "One");
-    z_map_put(map, "Bar", "Two");
-    z_map_put(map, "Baz", "Three");
-    z_map_put(map, "Qux", "Four");
-    z_map_put(map, "Alice", "Five");
-    z_map_put(map, "Bob", "Six");
-    z_map_put(map, "Carol", "Seven");
-    z_map_put(map, "Dave", "Eight");
-    z_map_put(map, "Eve", "Nine");
+int main() {
+    printf("Benchmark: %d malloc/realloc operations\n", N);
 
-    z_map_print(map, (Z_Print_Fn)z_print_string_with_double_quotes, (Z_Print_Fn)z_print_string_with_double_quotes);
-    z_map_free(map);
+    void *raw_ptrs[N];
+    Z_Heap_Auto heap = {0};
+    void *heap_ptrs[N];
 
-//   test_deque();
+    // --------------------------
+    // 1. Raw malloc/realloc
+    // --------------------------
+    double t0 = now();
+    for (int i = 0; i < N; i++) {
+        raw_ptrs[i] = malloc(64);
+    }
+    for (int i = 0; i < N; i++) {
+        raw_ptrs[i] = realloc(raw_ptrs[i], 128);
+    }
+    for (int i = 0; i < N; i++) {
+        free(raw_ptrs[i]);
+    }
+    double t1 = now();
+    printf("Raw malloc/realloc/free: %.6f sec\n", t1 - t0);
+
+    // --------------------------
+    // 2. Heap malloc/realloc
+    // --------------------------
+    double t2 = now();
+    for (int i = 0; i < N; i++) {
+        heap_ptrs[i] = z_heap_malloc(&heap, 64);
+    }
+    for (int i = 0; i < N; i++) {
+        heap_ptrs[i] = z_heap_realloc(&heap, heap_ptrs[i], 128);
+    }
+    double t3 = now();
+    printf("Z_Heap malloc/realloc/free: %.6f sec\n", t3 - t2);
+
+    return 0;
 }
