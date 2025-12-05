@@ -11,8 +11,19 @@ typedef void (*Z_Free_Fn)(void *);
 typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct {
+  void **pointers;
+  size_t occupied;
+  size_t capacity;
+} Z_Pointer_Table;
+
+typedef struct {
+  Z_Pointer_Table table;
+} Z_Heap;
+
+typedef struct {
   size_t capacity;
   size_t length;
+  Z_Heap *heap;
 } Z_Array_Header;
 
 typedef struct Z_Avl_Node {
@@ -50,28 +61,20 @@ typedef struct {
   size_t length;
 } Z_String_View;
 
-typedef struct {
-  void **pointers;
-  size_t occupied;
-  size_t capacity;
-} Z_Pointer_Table;
-
-typedef struct {
-  Z_Pointer_Table table;
-} Z_Heap;
-
 #define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
 
+void *z_memory_duplicate(const void *memory, size_t size);
+#define Z_HEAP_ALLOC(value, Type) z_memory_duplicate(&(Type){value}, sizeof(Type))
+#define Z_DEFAULT_GROWTH_RATE 2
+
+void *z__array_new(Z_Heap *heap);
 Z_Array_Header *z__array_header(void *array);
 size_t z__array_length(void *array);
 void z__array_push(void **array, const void *element, size_t element_size);
 void z__array_null_terminate(void **array, size_t element_size);
 void z__array_free(void **array);
 
-void *z_memory_duplicate(const void *memory, size_t size);
-#define Z_HEAP_ALLOC(value, Type) z_memory_duplicate(&(Type){value}, sizeof(Type))
-#define Z_DEFAULT_GROWTH_RATE 2
-
+#define z_array_new(heap) z__array_new(heap)
 #define z_array_push(array_ptr, element) z__array_push((void **)(array_ptr), &(typeof(**(array_ptr))){element}, sizeof(**(array_ptr)))
 #define z_array_pop(array_ptr) ((*(array_ptr))[--z__array_header(*(array_ptr))->length])
 #define z_array_null_terminate(array_ptr) z__array_null_terminate((void **)(array_ptr), sizeof(**(array_ptr)))
@@ -81,9 +84,9 @@ void *z_memory_duplicate(const void *memory, size_t size);
 #define z_array_foreach_ptr(array, callback) for (size_t i = 0; i < z_array_length(array); i++) callback(&(array)[i])
 #define z_array_sort(array_ptr, compare) qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare)
 
-Z_Char *z_str_new(const char *format, ...);
-Z_Char *z_str_new_args(const char *format, va_list args);
-Z_Char *z_str_new_from(Z_String_View s);
+Z_Char *z_str_new(Z_Heap *heap, const char *format, ...);
+Z_Char *z_str_new_args(Z_Heap *heap, const char *format, va_list args);
+Z_Char *z_str_new_from(Z_Heap *heap, Z_String_View s);
 void z_str_append(Z_Char **s, const char *format, ...);
 void z_str_append_args(Z_Char **s, const char *format, va_list args);
 void z_str_append_str(Z_Char **target, Z_String_View source);
@@ -95,10 +98,11 @@ void z_str_prepend_char(Z_Char **s, char c);
 char z_str_pop_char(Z_Char **s);
 
 void z_str_set(Z_Char **s, const char *format, ...);
+void z_str_set_args(Z_Char **s, const char *format, va_list args);
 void z_str_set_str(Z_Char **s, Z_String_View str);
 void z_str_replace(Z_Char **s, Z_String_View target, Z_String_View replacement);
-Z_Char *z_str_join(char **s, Z_String_View delimiter);
-Z_Char **z_str_split(Z_String_View s, Z_String_View delimiter);
+Z_Char *z_str_join(Z_Heap *heap, char **s, Z_String_View delimiter);
+Z_Char **z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter);
 size_t z_str_length(Z_Char *s);
 size_t z_sv_length(Z_String_View s);
 Z_String_View z_sv(const char *s);
@@ -141,9 +145,9 @@ bool z_write_file(const char *pathname, const char *format, ...);
 bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
 Z_Char *z_read_file(const char *pathname);
-Z_Char **z_read_directory(const char *pathname);
-Z_Char *z_expand_tilde(Z_String_View pathname);
-Z_Char *z_compress_tilde(Z_String_View pathname);
+Z_Char **z_read_directory(Z_Heap *heap, const char *pathname);
+Z_Char *z_expand_tilde(Z_Heap *heap, Z_String_View pathname);
+Z_Char *z_compress_tilde(Z_Heap *heap, Z_String_View pathname);
 const char *z_try_get_env(const char *name, const char *fallback);
 
 // map - map key to value
