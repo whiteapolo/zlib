@@ -414,6 +414,9 @@ ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle)
 
 int z_sv_to_number(Z_String_View s, int fallback)
 {
+  (void)s;
+  (void)fallback;
+  return 0;
   // return z_sv_is_number(s) ? strtol(s.ptr, s.ptr + s.length, 10) : fallback;
 }
 
@@ -576,7 +579,7 @@ bool z_scanf_file(const char *pathname, const char *format, ...)
   return true;
 }
 
-Z_Char *z_read_file(const char *pathname)
+Z_Char *z_read_file(Z_Heap *heap, const char *pathname)
 {
   FILE *fp = fopen(pathname, "r");
 
@@ -584,7 +587,7 @@ Z_Char *z_read_file(const char *pathname)
     return NULL;
   }
 
-  Z_Char *content = NULL;
+  Z_Char *content = z_array_new(heap);
   int file_size = z__get_file_size(fp);
 
   z__array_ensure_capacity((void **)&content, file_size, sizeof(char));
@@ -603,7 +606,7 @@ Z_Char **z_read_directory(Z_Heap *heap, const char *pathname)
     return NULL;
   }
 
-  Z_Char **entries = NULL;
+  Z_Char **entries = z_array_new(heap);
   struct dirent *directory_entry;
 
   while ((directory_entry = readdir(directory))) {
@@ -698,7 +701,7 @@ void z__avl_right_left_rotate(Z_Avl_Node **root)
   z__avl_left_rotate(root);
 }
 
-void z__avl_rebalance_node(Z_Avl_Node **node, Z_Compare_Fn compare_keys)
+void z__avl_rebalance_node(Z_Avl_Node **node)
 {
   z__avl_update_height(*node);
   int balance_factor = z__avl_get_balance_factor(*node);
@@ -819,7 +822,7 @@ bool z__avl_put(
     result = z__avl_put(heap, &(*root)->left, key, value, compare_keys, free_key, free_value);
   }
 
-  z__avl_rebalance_node(root, compare_keys);
+  z__avl_rebalance_node(root);
   return result;
 }
 
@@ -856,7 +859,7 @@ bool z__avl_remove(
   Z_Avl_Node *succesor = z__avl_get_min((*root)->right);
   z__avl_set_node_key_value(heap, *root, succesor->key, succesor->value, free_key, free_value);
   z__avl_remove(heap, &((*root)->right), succesor->key, compare_keys, NULL, NULL);
-  z__avl_rebalance_node(root, compare_keys);
+  z__avl_rebalance_node(root);
   return true;
 }
 

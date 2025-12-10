@@ -7,7 +7,10 @@
 
 int main(void) {
     Z_Heap_Auto heap = {0};
-    Z_Map *map = z_map_new(&heap, (Z_Compare_Fn)strcmp, NULL, NULL);
-    z_map_put(map, "hey", "bye");
-    printf("%s\n", (char*)z_map_get(map, "hey"));
+    Z_Char **files = z_read_directory(&heap, "../../");
+    z_array_sort(&files, (Z_Compare_Fn)z_compare_string_pointers);
+
+    for (size_t i = 0; i < z_array_length(files); i++) {
+      printf("%s\n", files[i]);
+    }
 }

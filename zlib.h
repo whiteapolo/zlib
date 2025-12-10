@@ -135,7 +135,7 @@ void z_str_clear(Z_Char **s);
 bool z_write_file(const char *pathname, const char *format, ...);
 bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
-Z_Char *z_read_file(const char *pathname);
+Z_Char *z_read_file(Z_Heap *heap, const char *pathname);
 Z_Char **z_read_directory(Z_Heap *heap, const char *pathname);
 Z_Char *z_expand_tilde(Z_Heap *heap, Z_String_View pathname);
 Z_Char *z_compress_tilde(Z_Heap *heap, Z_String_View pathname);
