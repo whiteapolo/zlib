@@ -6,10 +6,6 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-typedef int (*Z_Compare_Fn)(const void *, const void *);
-typedef void (*Z_Free_Fn)(void *);
-typedef void (*Z_Print_Fn)(const void *);
-
 typedef struct {
   void **pointers;
   size_t occupied;
@@ -19,6 +15,10 @@ typedef struct {
 typedef struct {
   Z_Pointer_Table table;
 } Z_Heap;
+
+typedef int (*Z_Compare_Fn)(const void *, const void *);
+typedef void (*Z_Free_Fn)(Z_Heap *, void *);
+typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct {
   size_t capacity;
@@ -35,11 +35,7 @@ typedef struct Z_Avl_Node {
 } Z_Avl_Node;
 
 typedef struct {
-  Z_Compare_Fn compare_elements;
-  Z_Free_Fn free_element;
-} Z_Set_Handlers;
-
-typedef struct {
+  Z_Heap *heap;
   Z_Avl_Node *root;
   size_t size;
   Z_Compare_Fn compare_keys;
@@ -47,12 +43,7 @@ typedef struct {
   Z_Free_Fn free_value;
 } Z_Map;
 
-typedef struct {
-  Z_Avl_Node *root;
-  Z_Compare_Fn compare_elements;
-  Z_Free_Fn free_element;
-  size_t size;
-} Z_Set;
+typedef Z_Map Z_Set;
 
 typedef char Z_Char;
 
@@ -151,7 +142,7 @@ Z_Char *z_compress_tilde(Z_Heap *heap, Z_String_View pathname);
 const char *z_try_get_env(const char *name, const char *fallback);
 
 // map - map key to value
-Z_Map *z_map_new(Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value);
+Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value);
 size_t z_map_size(const Z_Map *map);
 void z_map_put(Z_Map *map, void *key, void *value);
 void *z_map_get(const Z_Map *map, const void *key);
@@ -163,7 +154,7 @@ void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
 void z_map_free(Z_Map *map);
 
 // set - set of elements
-Z_Set *z_set_new(Z_Compare_Fn compare_elements, Z_Free_Fn free_element);
+Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements, Z_Free_Fn free_element);
 size_t z_set_size(const Z_Set *set);
 void z_set_add(Z_Set *set, void *element);
 bool z_set_has(const Z_Set *set, void *element);
