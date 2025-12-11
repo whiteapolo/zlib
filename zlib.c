@@ -878,6 +878,46 @@ void z__avl_foreach(
   z__avl_foreach(root->right, callback, context);
 }
 
+void z__avl_to_array_implementation(
+  Z_Heap *heap, 
+  const Z_Avl_Node *root,
+  Z_Clone_Fn clone_key,
+  Z_Clone_Fn clone_value,
+  Z_KeyValue **output_array
+)
+{
+  if (root == NULL) {
+    return;
+  }
+
+  z__avl_to_array_implementation(heap, root->left, clone_key, clone_value, output_array);
+
+  Z_KeyValue pair = {
+    .key = clone_key ? clone_key(heap, root->key) : root->key,
+    .value = clone_value ? clone_value(heap, root->value) : root->value,
+  };
+
+  (Z_KeyValue){pair};
+    (int){5};
+
+  z__array_push((void**)output_array, (void*)&((Z_KeyValue){pair}), sizeof(**output_array));
+  // z_array_push(output_array, pair);
+
+  z__avl_to_array_implementation(heap, root->right, clone_key, clone_value, output_array);
+}
+
+Z_KeyValue *z__avl_to_array(
+  Z_Heap *heap, 
+  const Z_Avl_Node *root,
+  Z_Clone_Fn clone_key,
+  Z_Clone_Fn clone_value
+)
+{
+  Z_KeyValue *array = z_array_new(heap);
+  z__avl_to_array_implementation(heap, root, clone_key, clone_value, &array);
+  return array;
+}
+
 void z__avl_print_hierarchy_implementation(
     Z_Avl_Node *root,
     Z_Print_Fn print_key,

@@ -18,6 +18,7 @@ typedef struct {
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
 typedef void (*Z_Free_Fn)(Z_Heap *, void *);
+typedef void *(*Z_Clone_Fn)(Z_Heap *, void *);
 typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct {
@@ -33,6 +34,11 @@ typedef struct Z_Avl_Node {
   void *value;
   char height;
 } Z_Avl_Node;
+
+typedef struct {
+  void *key;
+  void *value;
+} Z_KeyValue;
 
 typedef struct {
   Z_Heap *heap;
