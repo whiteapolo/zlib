@@ -44,66 +44,6 @@ size_t z__get_file_size(FILE *fp)
   return size;
 }
 
-Z_Array_Header *z__array_header(void *array)
-{
-  return array ? ((Z_Array_Header *)array) - 1 : NULL;
-}
-
-void *z__array_from_header(Z_Array_Header *header)
-{
-  return header + 1;
-}
-
-size_t z__array_length(void *array)
-{
-  return array ? z__array_header(array)->length : 0;
-}
-
-size_t z__array_capacity(void *array)
-{
-  return array ? z__array_header(array)->capacity : 0;
-}
-
-void *z__array_new(Z_Heap *heap)
-{
-  Z_Array_Header *header = z_heap_malloc(heap, sizeof(Z_Array_Header));
-  header->heap = heap;
-  header->capacity = 0;
-  header->length = 0;
-
-  return z__array_from_header(header);
-}
-
-void z__array_ensure_capacity(void **array, size_t needed, size_t element_size)
-{
-  Z_Array_Header *header = z__array_header(*array);
-
-  if (header->capacity < needed) {
-    size_t new_capacity = z__max_size_t(needed, header->capacity * Z_DEFAULT_GROWTH_RATE);
-    header = z_heap_realloc(header->heap, header, sizeof(Z_Array_Header) + new_capacity * element_size);
-    header->capacity = new_capacity;
-    *array = z__array_from_header(header);
-  }
-}
-
-void *z__array_end(void *array, size_t element_size)
-{
-  return ((char *)array) + z__array_length(array) * element_size;
-}
-
-void z__array_null_terminate(void **array, size_t element_size)
-{
-  z__array_ensure_capacity(array, z__array_length(*array) + 1, element_size);
-  memset(z__array_end(*array, element_size), 0, element_size);
-}
-
-void z__array_push(void **array, const void *element, size_t element_size)
-{
-   z__array_ensure_capacity(array, z__array_length(*array) + 1, element_size);
-   memcpy(z__array_end(*array, element_size), element, element_size);
-   z__array_header(*array)->length++;
-}
-
 size_t z__get_format_length(const char *format, va_list args)
 {
   va_list args_copy;
@@ -115,28 +55,28 @@ size_t z__get_format_length(const char *format, va_list args)
   return size;
 }
 
-Z_Char *z_str_new(Z_Heap *heap, const char *format, ...)
+Z_String z_str_new(Z_Heap *heap, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
-  Z_Char *s = z_str_new_args(heap, format, args);
+  Z_String s = z_str_new_args(heap, format, args);
   va_end(args);
   return s;
 }
 
-Z_Char *z_str_new_args(Z_Heap *heap, const char *format, va_list args)
+Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args)
 {
-  Z_Char *s = z_array_new(heap);
+  Z_String s = z_array_new(heap, Z_String);
   z_str_append_args(&s, format, args);
   return s;
 }
 
-Z_Char *z_str_new_from(Z_Heap *heap, Z_String_View s)
+Z_String z_str_new_from(Z_Heap *heap, Z_String_View s)
 {
   return z_str_new(heap, "%.*s", z__size_t_to_int(s.length), s.ptr);
 }
 
-void z_str_append(Z_Char **s, const char *format, ...)
+void z_str_append(Z_String *s, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
@@ -144,30 +84,30 @@ void z_str_append(Z_Char **s, const char *format, ...)
   va_end(args);
 }
 
-void z_str_append_args(Z_Char **s, const char *format, va_list args)
+void z_str_append_args(Z_String *s, const char *format, va_list args)
 {
   size_t format_length = z__get_format_length(format, args);
-  z__array_ensure_capacity((void **)s, z_array_length(*s) + format_length + 1, sizeof(char));
+  z_array_ensure_capacity(s, s->length + format_length + 1);
 
   va_list args_copy;
   va_copy(args_copy, args);
-  vsnprintf(*s + z_array_length(*s), format_length + 1, format, args_copy);
+  vsnprintf(s->ptr + s->length, format_length + 1, format, args_copy);
   va_end(args_copy);
 
-  z__array_header(*s)->length = z_array_length(*s) + format_length;
+  s->length += format_length;
 }
 
-void z_str_append_str(Z_Char **target, Z_String_View source)
+void z_str_append_str(Z_String *target, Z_String_View source)
 {
   z_str_append(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
 }
 
-void z_str_append_char(Z_Char **s, char c)
+void z_str_append_char(Z_String *s, char c)
 {
   z_str_append(s, "%c", c);
 }
 
-void z_str_prepend(Z_Char **s, const char *format, ...)
+void z_str_prepend(Z_String *s, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
@@ -175,94 +115,77 @@ void z_str_prepend(Z_Char **s, const char *format, ...)
   va_end(args);
 }
 
-void z_str_prepend_args(Z_Char **s, const char *format, va_list args)
+void z_str_prepend_args(Z_String *s, const char *format, va_list args)
 {
   Z_Heap_Auto heap = {0};
-  Z_Char *tmp = z_str_new(&heap, "%s", *s);
-  z_str_set_args(s, format, args);
-  z_str_append(s, "%s", tmp);
+  Z_String tmp = z_str_new_args(&heap, format, args);
+  z_str_append(&tmp, "%s", s->ptr);
+  z_str_clear(s);
+  z_str_append(s, "%s", tmp.ptr);
 }
 
-void z_str_prepend_str(Z_Char **target, Z_String_View source)
+void z_str_prepend_str(Z_String *target, Z_String_View source)
 {
   z_str_prepend(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
 }
 
-void z_str_prepend_char(Z_Char **s, char c)
+void z_str_prepend_char(Z_String *s, char c)
 {
   z_str_prepend(s, "%c", c);
 }
 
-char z_str_pop_char(Z_Char **s)
+char z_str_pop_char(Z_String *s)
 {
   char c = z_array_pop(s);
-  z_array_null_terminate(s);
+  z_array_zero_terminate(s);
   return c;
 }
 
-void z_str_set(Z_Char **s, const char *format, ...)
-{
-  va_list args;
-  va_start(args, format);
-  z_str_set_args(s, format, args);
-  va_end(args);
-}
-
-void z_str_set_args(Z_Char **s, const char *format, va_list args)
-{
-  z_str_clear(s);
-  z_str_append_args(s, format, args);
-}
-
-void z_str_set_str(Z_Char **s, Z_String_View str)
-{
-  z_str_set(s, "%.*s", z__size_t_to_int(str.length), str.ptr);
-}
-
-void z_str_replace(Z_Char **s, Z_String_View target, Z_String_View replacement)
+void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 {
   Z_Heap_Auto heap = {0};
-  Z_Char *tmp = z_str_new(&heap, "");
+  Z_String tmp = z_str_new(&heap, "");
 
   size_t i = 0;
 
-  while (i < z_str_length(*s)) {
-    if (z_sv_equal(z_sv_offset(z_sv(*s), i), target)) {
+  while (i < s->length) {
+    if (z_sv_equal(z_sv_offset(z_sv_from_str(s), i), target)) {
       z_str_append_str(&tmp, replacement);
       i += replacement.length;
     } else {
-      z_str_append_char(&tmp, (*s)[i]);
+      z_str_append_char(&tmp, s->ptr[i]);
       i++;
     }
   }
 
-  z_str_set(s, "%s", tmp);
+  z_str_clear(s);
+  z_str_append(s, "%s", tmp.ptr);
 }
 
-Z_Char *z_str_join(Z_Heap *heap, Z_Char **s, Z_String_View delimiter)
+Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter)
 {
-  if (z_array_length(s) == 0) {
+  if (array->length == 0) {
     return z_str_new(heap, "");
   }
 
-  Z_Char *result = z_str_new(heap, "");
+  Z_String result = z_str_new(heap, "");
 
-  for (size_t i = 0; i < z_array_length(s) - 1; i++) {
-    z_str_append_str(&result, z_sv(s[i]));
+  for (size_t i = 0; i < array->length - 1; i++) {
+    z_str_append_str(&result, z_sv_from_str(array->ptr + i));
     z_str_append_str(&result, delimiter);
   }
 
-  z_str_append_str(&result, z_sv(s[z_array_length(s) - 1]));
+  z_str_append_str(&result, z_sv_from_str(&z_array_peek(array)));
   return result;
 }
 
-Z_Char **z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
+Z_String_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
 {
   if (delimiter.length == 0) {
-    return z_array_new(heap);
+    return z_array_new(heap, Z_String_Array);
   }
 
-  Z_Char **result = z_array_new(heap);
+  Z_String_Array result = z_array_new(heap, Z_String_Array);
 
   ssize_t offset = 0;
   ssize_t length = 0;
@@ -278,17 +201,17 @@ Z_Char **z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
   return result;
 }
 
-size_t z_str_length(Z_Char *s)
+Z_String_View z_sv_from_str(const Z_String *s)
 {
-  return z_array_length(s);
+  Z_String_View view = {
+    .ptr = s->ptr,
+    .length = s->length
+  };
+
+  return view;
 }
 
-size_t z_sv_length(Z_String_View s)
-{
-  return s.length;
-}
-
-Z_String_View z_sv(const char *s)
+Z_String_View z_sv_from_cstr(const char *s)
 {
   Z_String_View view = {
     .ptr = s,
@@ -398,51 +321,47 @@ ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle)
   return -1;
 }
 
-int z_sv_to_number(Z_String_View s, int fallback)
-{
-  (void)s;
-  (void)fallback;
-  return 0;
-  // return z_sv_is_number(s) ? strtol(s.ptr, s.ptr + s.length, 10) : fallback;
-}
-
-void z_str_trim(Z_Char **s)
+void z_str_trim(Z_String *s)
 {
   z_str_trim_right(s);
   z_str_trim_left(s);
 }
 
-void z_str_trim_cset(Z_Char **s, Z_String_View cset)
+void z_str_trim_cset(Z_String *s, Z_String_View cset)
 {
   z_str_trim_right_cset(s, cset);
   z_str_trim_left_cset(s, cset);
 }
 
-void z_str_trim_right(Z_Char **s)
+void z_str_trim_right(Z_String *s)
 {
-  z_str_trim_right_cset(s, z_sv(Z__WHITE_SPACE));
+  z_str_trim_right_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
 }
 
-void z_str_trim_left(Z_Char **s)
+void z_str_trim_left(Z_String *s)
 {
-  z_str_trim_left_cset(s, z_sv(Z__WHITE_SPACE));
+  z_str_trim_left_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
 }
 
-void z_str_trim_right_cset(Z_Char **s, Z_String_View cset)
+void z_str_trim_right_cset(Z_String *s, Z_String_View cset)
 {
-  Z_String_View trimmed = z_sv_trim_right_cset(z_sv(*s), cset);
-  z_str_set_str(s, trimmed);
+  Z_String_View trimmed = z_sv_trim_right_cset(z_sv_from_str(s), cset);
+  memmove(s->ptr, trimmed.ptr, trimmed.length);
+  s->length = trimmed.length;
+  z_array_zero_terminate(s);
 }
 
-void z_str_trim_left_cset(Z_Char **s, Z_String_View cset)
+void z_str_trim_left_cset(Z_String *s, Z_String_View cset)
 {
-  Z_String_View trimmed = z_sv_trim_left_cset(z_sv(*s), cset);
-  z_str_set_str(s, trimmed);
+  Z_String_View trimmed = z_sv_trim_left_cset(z_sv_from_str(s), cset);
+  memmove(s->ptr, trimmed.ptr, trimmed.length);
+  s->length = trimmed.length;
+  z_array_zero_terminate(s);
 }
 
 Z_String_View z_sv_trim(Z_String_View s)
 {
-  return z_sv_trim_cset(s, z_sv(Z__WHITE_SPACE));
+  return z_sv_trim_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
 }
 
 Z_String_View z_sv_trim_cset(Z_String_View s, Z_String_View cset)
@@ -453,7 +372,7 @@ Z_String_View z_sv_trim_cset(Z_String_View s, Z_String_View cset)
 
 Z_String_View z_sv_trim_right(Z_String_View s)
 {
-  return z_sv_trim_right_cset(s, z_sv(Z__WHITE_SPACE));
+  return z_sv_trim_right_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
 }
 
 Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset)
@@ -469,7 +388,7 @@ Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset)
 
 Z_String_View z_sv_trim_left(Z_String_View s)
 {
-  return z_sv_trim_left_cset(s, z_sv(Z__WHITE_SPACE));
+  return z_sv_trim_left_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
 }
 
 Z_String_View z_sv_trim_left_cset(Z_String_View s, Z_String_View cset)
@@ -493,10 +412,10 @@ void z_sv_println(Z_String_View s)
   printf("%.*s\n", z__size_t_to_int(s.length), s.ptr);
 }
 
-void z_str_clear(Z_Char **s)
+void z_str_clear(Z_String *s)
 {
-  z__array_header(*s)->length = 0;
-  z_array_null_terminate(s);
+  s->length = 0;
+  z_array_zero_terminate(s);
 }
 
 bool z_write_file(const char *pathname, const char *format, ...)
@@ -554,34 +473,34 @@ bool z_scanf_file(const char *pathname, const char *format, ...)
   return true;
 }
 
-Z_Char *z_read_file(Z_Heap *heap, const char *pathname)
+Z_String z_read_file(Z_Heap *heap, const char *pathname)
 {
   FILE *fp = fopen(pathname, "r");
 
   if (fp == NULL) {
-    return NULL;
+    return z_str_new(heap, "");
   }
 
-  Z_Char *content = z_array_new(heap);
-  int file_size = z__get_file_size(fp);
+  Z_String content = z_str_new(heap, "");
+  size_t file_size = z__get_file_size(fp);
 
-  z__array_ensure_capacity((void **)&content, file_size, sizeof(char));
-  z__array_header(content)->length = fread(content, sizeof(char), file_size, fp);
-  z_array_null_terminate(&content);
+  z_array_ensure_capacity(&content, file_size);
+  content.length = fread(content.ptr, sizeof(char), file_size, fp);
+  z_array_zero_terminate(&content);
   fclose(fp);
 
   return content;
 }
 
-Z_Char **z_read_directory(Z_Heap *heap, const char *pathname)
+Z_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
 {
   DIR *directory = opendir(pathname);
 
   if (directory == NULL) {
-    return NULL;
+    return z_array_new(heap, Z_String_Array);
   }
 
-  Z_Char **entries = z_array_new(heap);
+  Z_String_Array entries = z_array_new(heap, Z_String_Array);
   struct dirent *directory_entry;
 
   while ((directory_entry = readdir(directory))) {
@@ -593,10 +512,10 @@ Z_Char **z_read_directory(Z_Heap *heap, const char *pathname)
   return entries;
 }
 
-Z_Char *z_expand_tilde(Z_Heap *heap, Z_String_View pathname)
+Z_String z_expand_tilde(Z_Heap *heap, Z_String_View pathname)
 {
-  if (z_sv_starts_with(pathname, z_sv("~"))) {
-    Z_Char *expanded = z_str_new(heap, "%s", z_try_get_env("HOME", "."));
+  if (z_sv_starts_with(pathname, z_sv_from_cstr("~"))) {
+    Z_String expanded = z_str_new(heap, "%s", z_try_get_env("HOME", "."));
     z_str_append_str(&expanded, z_sv_offset(pathname, 1));
     return expanded;
   }
@@ -604,12 +523,12 @@ Z_Char *z_expand_tilde(Z_Heap *heap, Z_String_View pathname)
   return z_str_new_from(heap, pathname);
 }
 
-Z_Char *z_compress_tilde(Z_Heap *heap, Z_String_View pathname)
+Z_String z_compress_tilde(Z_Heap *heap, Z_String_View pathname)
 {
   const char *home = z_try_get_env("HOME", NULL);
 
-  if (home && z_sv_starts_with(pathname, z_sv(home))) {
-    Z_Char *compressed = z_str_new(heap, "~");
+  if (home && z_sv_starts_with(pathname, z_sv_from_cstr(home))) {
+    Z_String compressed = z_str_new(heap, "~");
     z_str_append_str(&compressed, z_sv_offset(pathname, strlen(home)));
     return compressed;
   }
@@ -744,22 +663,6 @@ void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
   return z__avl_try_get(root, key, compare_keys, NULL);
 }
 
-// void z__avl_set_node_key_value(
-//     Z_Heap *heap,
-//     Z_Avl_Node *node,
-//     void *key,
-//     void *value,
-//     Z_Free_Fn free_key,
-//     Z_Free_Fn free_value
-// )
-// {
-//   if (free_value) free_value(heap, node->value);
-//   if (free_key) free_key(heap, node->key);
-
-//   node->value = value;
-//   node->key = key;
-// }
-
 Z_Key_Value z__avl_replace_key_value(Z_Avl_Node *node, void *new_key, void *new_value)
 {
   Z_Key_Value old_key_value = {
@@ -772,13 +675,6 @@ Z_Key_Value z__avl_replace_key_value(Z_Avl_Node *node, void *new_key, void *new_
 
   return old_key_value;
 }
-
-// void z__avl_free_node(Z_Heap *heap, Z_Avl_Node *node, Z_Free_Fn free_key, Z_Free_Fn free_value)
-// {
-//   if (free_value) free_value(heap, node->value);
-//   if (free_key) free_key(heap, node->key);
-//   z_heap_free_pointer(heap, node);
-// }
 
 Z_Key_Value z__avl_put(
     Z_Heap *heap,
@@ -840,7 +736,7 @@ Z_Key_Value z__avl_remove(
 void z__avl_to_array_implementation(
   Z_Heap *heap, 
   const Z_Avl_Node *root,
-  Z_Key_Value **output_array
+  Z_Key_Value_Array *output_array
 )
 {
   if (root == NULL) {
@@ -859,12 +755,12 @@ void z__avl_to_array_implementation(
   z__avl_to_array_implementation(heap, root->right, output_array);
 }
 
-Z_Key_Value *z__avl_to_array(
+Z_Key_Value_Array z__avl_to_array(
   Z_Heap *heap, 
   const Z_Avl_Node *root
 )
 {
-  Z_Key_Value *array = z_array_new(heap);
+  Z_Key_Value_Array array = z_array_new(heap, Z_Key_Value_Array);
   z__avl_to_array_implementation(heap, root, &array);
   return array;
 }
@@ -908,14 +804,14 @@ void z__avl_print(
 )
 {
   Z_Heap_Auto heap = {0};
-  Z_Key_Value *pairs = z__avl_to_array(&heap, root);
+  Z_Key_Value_Array pairs = z__avl_to_array(&heap, root);
 
   printf("{\n");
 
-  for (size_t i = 0; i < z_array_length(pairs); i++) {
-    print_key(pairs[i].key);
+  for (size_t i = 0; i < pairs.length; i++) {
+    print_key(pairs.ptr[i].key);
     printf(": ");
-    print_value(pairs[i].value);
+    print_value(pairs.ptr[i].value);
     printf(",\n");
   }
 
@@ -990,7 +886,7 @@ Z_Key_Value z_map_delete(Z_Map *map, void *key)
   return old_key_value;
 }
 
-Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map)
+Z_Key_Value_Array z_map_to_array(Z_Heap *heap, Z_Map *map)
 {
   return z__avl_to_array(heap, map->root);
 }
