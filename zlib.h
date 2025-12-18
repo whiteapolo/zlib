@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
+#include <time.h>
 
 typedef struct {
   void **pointers;
@@ -15,6 +16,8 @@ typedef struct {
 typedef struct {
   Z_Pointer_Table table;
 } Z_Heap;
+
+#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
 typedef void (*Z_Free_Fn)(Z_Heap *, void *);
@@ -58,28 +61,40 @@ typedef struct {
   size_t length;
 } Z_String_View;
 
-#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
-
-void *z_memory_duplicate(const void *memory, size_t size);
-#define Z_HEAP_ALLOC(value, Type) z_memory_duplicate(&(Type){value}, sizeof(Type))
 #define Z_DEFAULT_GROWTH_RATE 2
 
-void *z__array_new(Z_Heap *heap);
-Z_Array_Header *z__array_header(void *array);
-size_t z__array_length(void *array);
-void z__array_push(void **array, const void *element, size_t element_size);
-void z__array_null_terminate(void **array, size_t element_size);
-void z__array_free(void **array);
+// ============================================================
+//                      ARRAY INTERNAL
+// ============================================================
 
-#define z_array_new(heap) z__array_new(heap)
-#define z_array_push(array_ptr, element) z__array_push((void **)(array_ptr), &(typeof(**(array_ptr))){element}, sizeof(**(array_ptr)))
-#define z_array_pop(array_ptr) ((*(array_ptr))[--z__array_header(*(array_ptr))->length])
-#define z_array_null_terminate(array_ptr) z__array_null_terminate((void **)(array_ptr), sizeof(**(array_ptr)))
-#define z_array_length(array) z__array_length(array)
-#define z_array_free(array_ptr) z__array_free((void **)array_ptr)
-#define z_array_foreach(array, callback) for (size_t i = 0; i < z_array_length(array); i++) callback((array)[i])
-#define z_array_foreach_ptr(array, callback) for (size_t i = 0; i < z_array_length(array); i++) callback(&(array)[i])
-#define z_array_sort(array_ptr, compare) qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare)
+void *z__array_new(Z_Heap *heap);
+void z__array_free(void **array);
+size_t z__array_length(void *array);
+Z_Array_Header *z__array_header(void *array);
+void z__array_null_terminate(void **array, size_t element_size);
+void z__array_ensure_capacity(void **array, size_t needed, size_t element_size);
+
+
+// ============================================================
+//                        ARRAY API
+// ============================================================
+
+#define z_array_new(heap)                       z__array_new(heap)
+#define z_array_element_size(array_ptr)         sizeof(**(array_ptr))
+#define z_array_length(array)                   z__array_length(array)
+#define z_array_free(array_ptr)                 z__array_free((void **)(array_ptr))
+#define z_array_pop(array_ptr)                  ((*(array_ptr))[ --z__array_header(*(array_ptr))->length ])
+#define z_array_null_terminate(array_ptr)       z__array_null_terminate((void **)(array_ptr), sizeof(**(array_ptr)))
+#define z_array_sort(array_ptr, compare)        qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare)
+#define z_array_foreach(array, callback)        for (size_t i = 0, _n = z__array_length(array); i < _n; i++) callback((array)[i]);
+#define z_array_foreach_ptr(array, callback)    for (size_t i = 0, _n = z__array_length(array); i < _n; i++) callback(&(array)[i]);
+#define z_array_push(array_ptr, element)        (z_array_add_capacity(array_ptr, 1), (*(array_ptr))[ z__array_header(*(array_ptr))->length++ ] = (element))
+#define z_array_add_capacity(array_ptr, extra)  z__array_ensure_capacity((void **)(array_ptr), z__array_length(*(array_ptr)) + (extra), sizeof(**(array_ptr)))
+
+
+// ============================================================
+//                        STRING API
+// ============================================================
 
 Z_Char *z_str_new(Z_Heap *heap, const char *format, ...);
 Z_Char *z_str_new_args(Z_Heap *heap, const char *format, va_list args);
@@ -147,7 +162,11 @@ Z_Char *z_expand_tilde(Z_Heap *heap, Z_String_View pathname);
 Z_Char *z_compress_tilde(Z_Heap *heap, Z_String_View pathname);
 const char *z_try_get_env(const char *name, const char *fallback);
 
-// map - map key to value
+
+// ============================================================
+//                        MAP API
+// ============================================================
+
 Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value);
 size_t z_map_size(const Z_Map *map);
 void z_map_put(Z_Map *map, void *key, void *value);
@@ -155,11 +174,16 @@ void *z_map_get(const Z_Map *map, const void *key);
 void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback);
 bool z_map_has(const Z_Map *map, void *key);
 void z_map_delete(Z_Map *map, void *key);
+Z_KeyValue *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value);
 void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context);
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value);
 void z_map_free(Z_Map *map);
 
-// set - set of elements
+
+// ============================================================
+//                        SET API
+// ============================================================
+
 Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements, Z_Free_Fn free_element);
 size_t z_set_size(const Z_Set *set);
 void z_set_add(Z_Set *set, void *element);
@@ -168,12 +192,28 @@ void z_set_remove(Z_Set *set, void *element);
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
 void z_set_free(Z_Set *set);
 
+
+// ============================================================
+//                        HEAP API
+// ============================================================
+
 void *z_heap_malloc(Z_Heap *heap, size_t size);
 void *z_heap_calloc(Z_Heap *heap, size_t size);
 void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size);
 void z_heap_free_pointer(Z_Heap *heap, void *pointer);
 void z_heap_free(Z_Heap *heap);
 
+
+// ============================================================
+//                       MESSURE TIME
+// ============================================================
+
+clock_t get_clock();
+void print_elapsed_seconds(clock_t start);
+
+// ============================================================
+//                         HELPERS
+// ============================================================
 
 int z_compare_int_pointers(const int *a, const int *b);
 int z_compare_float_pointers(const float *a, const float *b);

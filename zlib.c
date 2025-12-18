@@ -44,13 +44,6 @@ size_t z__get_file_size(FILE *fp)
   return size;
 }
 
-void *z_memory_duplicate(const void *memory, size_t size)
-{
-  void *new_memory = malloc(size);
-  memcpy(new_memory, memory, size);
-  return new_memory;
-}
-
 Z_Array_Header *z__array_header(void *array)
 {
   return array ? ((Z_Array_Header *)array) - 1 : NULL;
@@ -81,12 +74,12 @@ void *z__array_new(Z_Heap *heap)
   return z__array_from_header(header);
 }
 
-void z__array_ensure_capacity(void **array, size_t capacity, size_t element_size)
+void z__array_ensure_capacity(void **array, size_t needed, size_t element_size)
 {
   Z_Array_Header *header = z__array_header(*array);
 
-  if (header->capacity < capacity) {
-    size_t new_capacity = z__max_size_t(capacity, header->capacity * Z_DEFAULT_GROWTH_RATE);
+  if (header->capacity < needed) {
+    size_t new_capacity = z__max_size_t(needed, header->capacity * Z_DEFAULT_GROWTH_RATE);
     header = z_heap_realloc(header->heap, header, sizeof(Z_Array_Header) + new_capacity * element_size);
     header->capacity = new_capacity;
     *array = z__array_from_header(header);
@@ -897,11 +890,7 @@ void z__avl_to_array_implementation(
     .value = clone_value ? clone_value(heap, root->value) : root->value,
   };
 
-  (Z_KeyValue){pair};
-    (int){5};
-
-  z__array_push((void**)output_array, (void*)&((Z_KeyValue){pair}), sizeof(**output_array));
-  // z_array_push(output_array, pair);
+  z_array_push(output_array, pair);
 
   z__avl_to_array_implementation(heap, root->right, clone_key, clone_value, output_array);
 }
@@ -950,40 +939,22 @@ void z__avl_print_hierarchy(
   z__avl_print_hierarchy_implementation(root, print_key, print_value, seperator, 0);
 }
 
-void z__avl_print_implementation(
-    Z_Avl_Node *root,
-    Z_Print_Fn print_key,
-    Z_Print_Fn print_value,
-    const char *seperator
-)
-{
-  if (root == NULL) {
-    return;
-  }
-
-  printf("  ");
-  print_key(root->key);
-  printf("%s", seperator);
-  print_value(root->value);
-  printf(",\n");
-
-  z__avl_print_implementation(root->left, print_key, print_value, seperator);
-  z__avl_print_implementation(root->right, print_key, print_value, seperator);
-}
-
 void z__avl_print(
     Z_Avl_Node *root,
     Z_Print_Fn print_key,
-    Z_Print_Fn print_value,
-    const char *seperator
+    Z_Print_Fn print_value
 )
 {
-  if (root == NULL) {
-    return;
-  }
+  Z_Heap_Auto heap = {0};
+  Z_KeyValue *pairs = z__avl_to_array(&heap, root, NULL, NULL);
 
   printf("{\n");
-  z__avl_print_implementation(root, print_key, print_value, seperator);
+  for (size_t i = 0; i < z_array_length(pairs); i++) {
+    print_key(pairs[i].key);
+    printf(": ");
+    print_value(pairs[i].value);
+    printf(",\n");
+  }
   printf("}\n");
 }
 
@@ -1064,6 +1035,11 @@ void z_map_delete(Z_Map *map, void *key)
   }
 }
 
+Z_KeyValue *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value)
+{
+  return z__avl_to_array(heap, map->root, clone_key, clone_value);
+}
+
 void z_map_foreach(
     const Z_Map *map,
     void callback(void *key, void *value, void *context),
@@ -1075,7 +1051,7 @@ void z_map_foreach(
 
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
 {
-  z__avl_print(map->root, print_key, print_value, ": ");
+  z__avl_print(map->root, print_key, print_value);
 }
 
 void z_map_free(Z_Map *map)
@@ -1316,4 +1292,15 @@ void z_heap_free(Z_Heap *heap)
 {
   z__pointer_table_foreach(&heap->table, free);
   z__pointer_table_free(&heap->table);
+}
+
+clock_t get_clock()
+{
+  return clock();
+}
+
+void print_elapsed_seconds(clock_t start)
+{
+  double elapsed_seconds = ((double)(get_clock() - start)) / CLOCKS_PER_SEC;
+  printf("%lfs\n", elapsed_seconds);
 }
