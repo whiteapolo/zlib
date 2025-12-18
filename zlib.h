@@ -48,8 +48,6 @@ typedef struct {
   Z_Avl_Node *root;
   size_t size;
   Z_Compare_Fn compare_keys;
-  Z_Free_Fn free_key;
-  Z_Free_Fn free_value;
 } Z_Map;
 
 typedef Z_Map Z_Set;
@@ -168,30 +166,29 @@ const char *z_try_get_env(const char *name, const char *fallback);
 //                        MAP API
 // ============================================================
 
-Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value);
+Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys);
 size_t z_map_size(const Z_Map *map);
-void z_map_put(Z_Map *map, void *key, void *value);
+Z_Key_Value z_map_put(Z_Map *map, void *key, void *value);
 void *z_map_get(const Z_Map *map, const void *key);
 void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback);
 bool z_map_has(const Z_Map *map, void *key);
-void z_map_delete(Z_Map *map, void *key);
-Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value);
-void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context);
+Z_Key_Value z_map_delete(Z_Map *map, void *key);
+Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map);
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value);
-void z_map_free(Z_Map *map);
+void z_map_free(Z_Map *map, Z_Free_Fn free_key, Z_Free_Fn free_value);
 
 
 // ============================================================
 //                        SET API
 // ============================================================
 
-Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements, Z_Free_Fn free_element);
+Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements);
 size_t z_set_size(const Z_Set *set);
-void z_set_add(Z_Set *set, void *element);
+void *z_set_add(Z_Set *set, void *element);
 bool z_set_has(const Z_Set *set, void *element);
-void z_set_remove(Z_Set *set, void *element);
+void *z_set_remove(Z_Set *set, void *element);
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
-void z_set_free(Z_Set *set);
+void z_set_free(Z_Set *set, Z_Free_Fn free_element);
 
 
 // ============================================================

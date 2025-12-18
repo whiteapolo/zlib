@@ -762,120 +762,102 @@ void *z__avl_get(Z_Avl_Node *root, const void *key, Z_Compare_Fn compare_keys)
   return z__avl_try_get(root, key, compare_keys, NULL);
 }
 
-void z__avl_set_node_key_value(
-    Z_Heap *heap,
-    Z_Avl_Node *node,
-    void *key,
-    void *value,
-    Z_Free_Fn free_key,
-    Z_Free_Fn free_value
-)
-{
-  if (free_value) free_value(heap, node->value);
-  if (free_key) free_key(heap, node->key);
+// void z__avl_set_node_key_value(
+//     Z_Heap *heap,
+//     Z_Avl_Node *node,
+//     void *key,
+//     void *value,
+//     Z_Free_Fn free_key,
+//     Z_Free_Fn free_value
+// )
+// {
+//   if (free_value) free_value(heap, node->value);
+//   if (free_key) free_key(heap, node->key);
 
-  node->value = value;
-  node->key = key;
+//   node->value = value;
+//   node->key = key;
+// }
+
+Z_Key_Value z__avl_replace_key_value(Z_Avl_Node *node, void *new_key, void *new_value)
+{
+  Z_Key_Value old_key_value = {
+    .key = node->key,
+    .value = node->value,
+  };
+
+  node->key = new_key;
+  node->value = new_value;
+
+  return old_key_value;
 }
 
-void z__avl_free_node(Z_Heap *heap, Z_Avl_Node *node, Z_Free_Fn free_key, Z_Free_Fn free_value)
-{
-  if (free_value) free_value(heap, node->value);
-  if (free_key) free_key(heap, node->key);
-  z_heap_free_pointer(heap, node);
-}
+// void z__avl_free_node(Z_Heap *heap, Z_Avl_Node *node, Z_Free_Fn free_key, Z_Free_Fn free_value)
+// {
+//   if (free_value) free_value(heap, node->value);
+//   if (free_key) free_key(heap, node->key);
+//   z_heap_free_pointer(heap, node);
+// }
 
-bool z__avl_put(
+Z_Key_Value z__avl_put(
     Z_Heap *heap,
     Z_Avl_Node **root,
     void *key,
     void *value,
-    Z_Compare_Fn compare_keys,
-    Z_Free_Fn free_key,
-    Z_Free_Fn free_value
+    Z_Compare_Fn compare_keys
 )
 {
   if (*root == NULL) {
     *root = z__avl_new(heap, key, value);
-    return true;
+    return (Z_Key_Value){ .key = NULL, .value = NULL };
   }
 
   int compare_result = compare_keys(key, (*root)->key);
 
   if (compare_result == 0) {
-    z__avl_set_node_key_value(heap, *root, key, value, free_key, free_value);
-    return false;
+    return z__avl_replace_key_value(*root, key, value);
   }
 
-  bool result;
-
-  if (compare_result > 0) {
-    result = z__avl_put(heap, &(*root)->right, key, value, compare_keys, free_key, free_value);
-  } else {
-    result = z__avl_put(heap, &(*root)->left, key, value, compare_keys, free_key, free_value);
-  }
-
+  Z_Avl_Node **next_node = compare_result > 0 ? &(*root)->right : &(*root)->left;
+  Z_Key_Value old_key_value = z__avl_put(heap, next_node, key, value, compare_keys);
   z__avl_rebalance_node(root);
-  return result;
+
+  return old_key_value;
 }
 
-bool z__avl_remove(
+Z_Key_Value z__avl_remove(
     Z_Heap *heap,
     Z_Avl_Node **root,
     void *key,
-    Z_Compare_Fn compare_keys,
-    Z_Free_Fn free_key,
-    Z_Free_Fn free_value
+    Z_Compare_Fn compare_keys
 )
 {
   if (*root == NULL) {
-    return false;
+    return (Z_Key_Value){ .key = NULL, .value = NULL };
+  } else if (compare_keys(key, (*root)->key) > 0) {
+     return z__avl_remove(heap, &(*root)->right, key, compare_keys);
+  } else if (compare_keys(key, (*root)->key) < 0) {
+    return z__avl_remove(heap, &(*root)->left, key, compare_keys);
   }
 
-  int compare_result = compare_keys(key, (*root)->key);
-
-  if (compare_result > 0) {
-    return z__avl_remove(heap, &((*root)->right), key, compare_keys, free_key, free_value);
-  }
-
-  if (compare_result < 0) {
-    return z__avl_remove(heap, &((*root)->left), key, compare_keys, free_key, free_value);
-  }
+  Z_Key_Value old_key_value = { .key = (*root)->key, .value = (*root)->value };
 
   if ((*root)->left == NULL || (*root)->right == NULL) {
     Z_Avl_Node *tmp = (*root)->left ? (*root)->left : (*root)->right;
-    z__avl_free_node(heap, *root, free_key, free_value);
+    z_heap_free_pointer(heap, *root);
     *root = tmp;
-    return true;
+    return old_key_value;
   }
 
   Z_Avl_Node *succesor = z__avl_get_min((*root)->right);
-  z__avl_set_node_key_value(heap, *root, succesor->key, succesor->value, free_key, free_value);
-  z__avl_remove(heap, &((*root)->right), succesor->key, compare_keys, NULL, NULL);
+  z__avl_replace_key_value(*root, succesor->key, succesor->value);
+  z__avl_remove(heap, &(*root)->right, succesor->key, compare_keys);
   z__avl_rebalance_node(root);
-  return true;
-}
-
-void z__avl_foreach(
-    Z_Avl_Node *root,
-    void callback(void *key, void *value, void *context),
-    void *context
-)
-{
-  if (root == NULL) {
-    return;
-  }
-
-  z__avl_foreach(root->left, callback, context);
-  callback(root->key, root->value, context);
-  z__avl_foreach(root->right, callback, context);
+  return old_key_value;
 }
 
 void z__avl_to_array_implementation(
   Z_Heap *heap, 
   const Z_Avl_Node *root,
-  Z_Clone_Fn clone_key,
-  Z_Clone_Fn clone_value,
   Z_Key_Value **output_array
 )
 {
@@ -883,27 +865,25 @@ void z__avl_to_array_implementation(
     return;
   }
 
-  z__avl_to_array_implementation(heap, root->left, clone_key, clone_value, output_array);
+  z__avl_to_array_implementation(heap, root->left, output_array);
 
   Z_Key_Value pair = {
-    .key = clone_key ? clone_key(heap, root->key) : root->key,
-    .value = clone_value ? clone_value(heap, root->value) : root->value,
+    .key = root->key,
+    .value = root->value,
   };
 
   z_array_push(output_array, pair);
 
-  z__avl_to_array_implementation(heap, root->right, clone_key, clone_value, output_array);
+  z__avl_to_array_implementation(heap, root->right, output_array);
 }
 
 Z_Key_Value *z__avl_to_array(
   Z_Heap *heap, 
-  const Z_Avl_Node *root,
-  Z_Clone_Fn clone_key,
-  Z_Clone_Fn clone_value
+  const Z_Avl_Node *root
 )
 {
   Z_Key_Value *array = z_array_new(heap);
-  z__avl_to_array_implementation(heap, root, clone_key, clone_value, &array);
+  z__avl_to_array_implementation(heap, root, &array);
   return array;
 }
 
@@ -946,15 +926,17 @@ void z__avl_print(
 )
 {
   Z_Heap_Auto heap = {0};
-  Z_Key_Value *pairs = z__avl_to_array(&heap, root, NULL, NULL);
+  Z_Key_Value *pairs = z__avl_to_array(&heap, root);
 
   printf("{\n");
+
   for (size_t i = 0; i < z_array_length(pairs); i++) {
     print_key(pairs[i].key);
     printf(": ");
     print_value(pairs[i].value);
     printf(",\n");
   }
+
   printf("}\n");
 }
 
@@ -964,19 +946,20 @@ void z__avl_free(Z_Heap *heap, Z_Avl_Node *root, Z_Free_Fn free_key, Z_Free_Fn f
     return;
   }
 
+  if (free_key) free_key(heap, root->key);
+  if (free_value) free_value(heap, root->value);
+
   z__avl_free(heap, root->left, free_key, free_value);
   z__avl_free(heap, root->right, free_key, free_value);
-  z__avl_free_node(heap, root, free_key, free_value);
+  z_heap_free_pointer(heap, root);
 }
 
-Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys, Z_Free_Fn free_key, Z_Free_Fn free_value)
+Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
 {
   Z_Map *map = z_heap_malloc(heap, sizeof(Z_Map));
   map->heap = heap;
   map->root = NULL;
   map->compare_keys = compare_keys;
-  map->free_key = free_key;
-  map->free_value = free_value;
   map->size = 0;
 
   return map;
@@ -987,21 +970,15 @@ size_t z_map_size(const Z_Map *map)
   return map->size;
 }
 
-void z_map_put(Z_Map *map, void *key, void *value)
+Z_Key_Value z_map_put(Z_Map *map, void *key, void *value)
 {
-  bool is_added = z__avl_put(
-    map->heap,
-    &map->root,
-    key,
-    value,
-    map->compare_keys,
-    map->free_key,
-    map->free_value
-  );
+  Z_Key_Value old_key_value = z__avl_put(map->heap, &map->root, key, value, map->compare_keys);
 
-  if (is_added) {
+  if (old_key_value.key) {
     map->size++;
   }
+
+  return old_key_value;
 }
 
 void *z_map_get(const Z_Map *map, const void *key)
@@ -1019,34 +996,20 @@ bool z_map_has(const Z_Map *map, void *key)
   return z__avl_has(map->root, key, map->compare_keys);
 }
 
-void z_map_delete(Z_Map *map, void *key)
+Z_Key_Value z_map_delete(Z_Map *map, void *key)
 {
-  bool is_removed = z__avl_remove(
-    map->heap,
-    &map->root,
-    key,
-    map->compare_keys,
-    map->free_key,
-    map->free_value
-  );
+  Z_Key_Value old_key_value = z__avl_remove(map->heap, &map->root, key, map->compare_keys);
 
-  if (is_removed) {
+  if (old_key_value.key) {
     map->size--;
   }
+
+  return old_key_value;
 }
 
-Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value)
+Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map)
 {
-  return z__avl_to_array(heap, map->root, clone_key, clone_value);
-}
-
-void z_map_foreach(
-    const Z_Map *map,
-    void callback(void *key, void *value, void *context),
-    void *context
-)
-{
-  z__avl_foreach(map->root, callback, context);
+  return z__avl_to_array(heap, map->root);
 }
 
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
@@ -1054,15 +1017,15 @@ void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
   z__avl_print(map->root, print_key, print_value);
 }
 
-void z_map_free(Z_Map *map)
+void z_map_free(Z_Map *map, Z_Free_Fn free_key, Z_Free_Fn free_value)
 {
-  z__avl_free(map->heap, map->root, map->free_key, map->free_value);
+  z__avl_free(map->heap, map->root, free_key, free_value);
   z_heap_free_pointer(map->heap, map);
 }
 
-Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements, Z_Free_Fn free_element)
+Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements)
 {
-  return z_map_new(heap, compare_elements, free_element, NULL);
+  return z_map_new(heap, compare_elements);
 }
 
 size_t z_set_size(const Z_Set *set)
@@ -1070,9 +1033,10 @@ size_t z_set_size(const Z_Set *set)
   return z_map_size(set);
 }
 
-void z_set_add(Z_Set *set, void *element)
+void *z_set_add(Z_Set *set, void *element)
 {
-  z_map_put(set, element, NULL);
+  Z_Key_Value old_key_value = z_map_put(set, element, NULL);
+  return old_key_value.key;
 }
 
 bool z_set_has(const Z_Set *set, void *element)
@@ -1080,9 +1044,10 @@ bool z_set_has(const Z_Set *set, void *element)
   return z_map_has(set, element);
 }
 
-void z_set_remove(Z_Set *set, void *element)
+void *z_set_remove(Z_Set *set, void *element)
 {
-  z_map_delete(set, element);
+  Z_Key_Value deleted = z_map_delete(set, element);
+  return deleted.key;
 }
 
 void z__set_print_nothing(const void *)
@@ -1093,9 +1058,9 @@ void z_set_print(const Z_Set *set, Z_Print_Fn print_element)
   z_map_print(set, print_element, z__set_print_nothing);
 }
 
-void z_set_free(Z_Set *set)
+void z_set_free(Z_Set *set, Z_Free_Fn free_element)
 {
-  z_map_free(set);
+  z_map_free(set, free_element, NULL);
 }
 
 int z_compare_int_pointers(const int *a, const int *b)
