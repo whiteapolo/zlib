@@ -86,13 +86,6 @@ void z__array_ensure_capacity(void **array, size_t needed, size_t element_size)
   }
 }
 
-void z__array_free(void **array)
-{
-  Z_Array_Header *header = z__array_header(*array);
-  z_heap_free_pointer(header->heap, header);
-  *array = NULL;
-}
-
 void *z__array_end(void *array, size_t element_size)
 {
   return ((char *)array) + z__array_length(array) * element_size;
@@ -498,17 +491,6 @@ void z_sv_print(Z_String_View s)
 void z_sv_println(Z_String_View s)
 {
   printf("%.*s\n", z__size_t_to_int(s.length), s.ptr);
-}
-
-void z_str_free(Z_Char **s)
-{
-  z_array_free(s);
-}
-
-void z_str_array_free(Z_Char ***s)
-{
-  z_array_foreach_ptr(*s, z_str_free);
-  z_array_free(s);
 }
 
 void z_str_clear(Z_Char **s)
@@ -954,13 +936,14 @@ void z__avl_free(Z_Heap *heap, Z_Avl_Node *root, Z_Free_Fn free_key, Z_Free_Fn f
   z_heap_free_pointer(heap, root);
 }
 
-Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
+Z_Map z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
 {
-  Z_Map *map = z_heap_malloc(heap, sizeof(Z_Map));
-  map->heap = heap;
-  map->root = NULL;
-  map->compare_keys = compare_keys;
-  map->size = 0;
+  Z_Map map = {
+    .heap = heap,
+    .root = NULL,
+    .compare_keys = compare_keys,
+    .size = 0,
+  };
 
   return map;
 }
@@ -1017,13 +1000,7 @@ void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
   z__avl_print(map->root, print_key, print_value);
 }
 
-void z_map_free(Z_Map *map, Z_Free_Fn free_key, Z_Free_Fn free_value)
-{
-  z__avl_free(map->heap, map->root, free_key, free_value);
-  z_heap_free_pointer(map->heap, map);
-}
-
-Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements)
+Z_Set z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements)
 {
   return z_map_new(heap, compare_elements);
 }
@@ -1056,11 +1033,6 @@ void z__set_print_nothing(const void *)
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element)
 {
   z_map_print(set, print_element, z__set_print_nothing);
-}
-
-void z_set_free(Z_Set *set, Z_Free_Fn free_element)
-{
-  z_map_free(set, free_element, NULL);
 }
 
 int z_compare_int_pointers(const int *a, const int *b)

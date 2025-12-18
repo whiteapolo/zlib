@@ -6,16 +6,14 @@
 #include "zlib.h"
 
 int main(void) {
-    Z_Clock start = z_get_clock();
     Z_Heap_Auto heap = {0};
     Z_Char **files = z_read_directory(&heap, "../../");
-    
-    z_array_sort(&files, (Z_Compare_Fn)z_compare_string_pointers);
 
-     z_print_elapsed_seconds(start);
+    Z_Set set = z_set_new(&heap, (Z_Compare_Fn)strcmp);
+
     for (size_t i = 0; i < z_array_length(files); i++) {
-      printf("%s,", files[i]);
+      z_set_add(&set, files[i]);
     }
 
-   
+    printf("result: %d\n", z_set_has(&set, "songs"));
 }

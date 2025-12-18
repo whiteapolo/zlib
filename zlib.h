@@ -68,7 +68,6 @@ typedef clock_t Z_Clock;
 // ============================================================
 
 void *z__array_new(Z_Heap *heap);
-void z__array_free(void **array);
 size_t z__array_length(void *array);
 Z_Array_Header *z__array_header(void *array);
 void z__array_null_terminate(void **array, size_t element_size);
@@ -82,7 +81,6 @@ void z__array_ensure_capacity(void **array, size_t needed, size_t element_size);
 #define z_array_new(heap)                       z__array_new(heap)
 #define z_array_element_size(array_ptr)         sizeof(**(array_ptr))
 #define z_array_length(array)                   z__array_length(array)
-#define z_array_free(array_ptr)                 z__array_free((void **)(array_ptr))
 #define z_array_pop(array_ptr)                  ((*(array_ptr))[ --z__array_header(*(array_ptr))->length ])
 #define z_array_null_terminate(array_ptr)       z__array_null_terminate((void **)(array_ptr), sizeof(**(array_ptr)))
 #define z_array_sort(array_ptr, compare)        qsort(*(array_ptr), z_array_length(*(array_ptr)), sizeof(**(array_ptr)), compare)
@@ -148,8 +146,6 @@ Z_String_View z_sv_trim_left_cset(Z_String_View s, Z_String_View cset);
 
 void z_sv_print(Z_String_View s);
 void z_sv_println(Z_String_View s);
-void z_str_free(Z_Char **s);
-void z_str_array_free(Z_Char ***s);
 void z_str_clear(Z_Char **s);
 
 bool z_write_file(const char *pathname, const char *format, ...);
@@ -166,7 +162,7 @@ const char *z_try_get_env(const char *name, const char *fallback);
 //                        MAP API
 // ============================================================
 
-Z_Map *z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys);
+Z_Map z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys);
 size_t z_map_size(const Z_Map *map);
 Z_Key_Value z_map_put(Z_Map *map, void *key, void *value);
 void *z_map_get(const Z_Map *map, const void *key);
@@ -175,20 +171,18 @@ bool z_map_has(const Z_Map *map, void *key);
 Z_Key_Value z_map_delete(Z_Map *map, void *key);
 Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map);
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value);
-void z_map_free(Z_Map *map, Z_Free_Fn free_key, Z_Free_Fn free_value);
 
 
 // ============================================================
 //                        SET API
 // ============================================================
 
-Z_Set *z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements);
+Z_Set z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements);
 size_t z_set_size(const Z_Set *set);
 void *z_set_add(Z_Set *set, void *element);
 bool z_set_has(const Z_Set *set, void *element);
 void *z_set_remove(Z_Set *set, void *element);
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
-void z_set_free(Z_Set *set, Z_Free_Fn free_element);
 
 
 // ============================================================
