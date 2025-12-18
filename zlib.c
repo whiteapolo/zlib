@@ -876,7 +876,7 @@ void z__avl_to_array_implementation(
   const Z_Avl_Node *root,
   Z_Clone_Fn clone_key,
   Z_Clone_Fn clone_value,
-  Z_KeyValue **output_array
+  Z_Key_Value **output_array
 )
 {
   if (root == NULL) {
@@ -885,7 +885,7 @@ void z__avl_to_array_implementation(
 
   z__avl_to_array_implementation(heap, root->left, clone_key, clone_value, output_array);
 
-  Z_KeyValue pair = {
+  Z_Key_Value pair = {
     .key = clone_key ? clone_key(heap, root->key) : root->key,
     .value = clone_value ? clone_value(heap, root->value) : root->value,
   };
@@ -895,14 +895,14 @@ void z__avl_to_array_implementation(
   z__avl_to_array_implementation(heap, root->right, clone_key, clone_value, output_array);
 }
 
-Z_KeyValue *z__avl_to_array(
+Z_Key_Value *z__avl_to_array(
   Z_Heap *heap, 
   const Z_Avl_Node *root,
   Z_Clone_Fn clone_key,
   Z_Clone_Fn clone_value
 )
 {
-  Z_KeyValue *array = z_array_new(heap);
+  Z_Key_Value *array = z_array_new(heap);
   z__avl_to_array_implementation(heap, root, clone_key, clone_value, &array);
   return array;
 }
@@ -946,7 +946,7 @@ void z__avl_print(
 )
 {
   Z_Heap_Auto heap = {0};
-  Z_KeyValue *pairs = z__avl_to_array(&heap, root, NULL, NULL);
+  Z_Key_Value *pairs = z__avl_to_array(&heap, root, NULL, NULL);
 
   printf("{\n");
   for (size_t i = 0; i < z_array_length(pairs); i++) {
@@ -1035,7 +1035,7 @@ void z_map_delete(Z_Map *map, void *key)
   }
 }
 
-Z_KeyValue *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value)
+Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value)
 {
   return z__avl_to_array(heap, map->root, clone_key, clone_value);
 }

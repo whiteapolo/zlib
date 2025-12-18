@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
+
 typedef struct {
   void **pointers;
   size_t occupied;
@@ -17,17 +19,15 @@ typedef struct {
   Z_Pointer_Table table;
 } Z_Heap;
 
-#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
-
 typedef int (*Z_Compare_Fn)(const void *, const void *);
 typedef void (*Z_Free_Fn)(Z_Heap *, void *);
 typedef void *(*Z_Clone_Fn)(Z_Heap *, void *);
 typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct {
+  Z_Heap *heap;
   size_t capacity;
   size_t length;
-  Z_Heap *heap;
 } Z_Array_Header;
 
 typedef struct Z_Avl_Node {
@@ -41,7 +41,7 @@ typedef struct Z_Avl_Node {
 typedef struct {
   void *key;
   void *value;
-} Z_KeyValue;
+} Z_Key_Value;
 
 typedef struct {
   Z_Heap *heap;
@@ -92,7 +92,6 @@ void z__array_ensure_capacity(void **array, size_t needed, size_t element_size);
 #define z_array_foreach_ptr(array, callback)    for (size_t i = 0, _n = z__array_length(array); i < _n; i++) callback(&(array)[i]);
 #define z_array_push(array_ptr, element)        (z_array_add_capacity(array_ptr, 1), (*(array_ptr))[ z__array_header(*(array_ptr))->length++ ] = (element))
 #define z_array_add_capacity(array_ptr, extra)  z__array_ensure_capacity((void **)(array_ptr), z__array_length(*(array_ptr)) + (extra), sizeof(**(array_ptr)))
-
 
 // ============================================================
 //                        STRING API
@@ -176,7 +175,7 @@ void *z_map_get(const Z_Map *map, const void *key);
 void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback);
 bool z_map_has(const Z_Map *map, void *key);
 void z_map_delete(Z_Map *map, void *key);
-Z_KeyValue *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value);
+Z_Key_Value *z_map_to_array(Z_Heap *heap, Z_Map *map, Z_Clone_Fn clone_key, Z_Clone_Fn clone_value);
 void z_map_foreach(const Z_Map *map, void callback(void *key, void *value, void *context), void *context);
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value);
 void z_map_free(Z_Map *map);
