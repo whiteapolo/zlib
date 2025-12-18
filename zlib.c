@@ -1294,13 +1294,13 @@ void z_heap_free(Z_Heap *heap)
   z__pointer_table_free(&heap->table);
 }
 
-clock_t get_clock()
+Z_Clock z_get_clock()
 {
   return clock();
 }
 
-void print_elapsed_seconds(clock_t start)
+void z_print_elapsed_seconds(Z_Clock start)
 {
-  double elapsed_seconds = ((double)(get_clock() - start)) / CLOCKS_PER_SEC;
+  double elapsed_seconds = ((double)(z_get_clock() - start)) / CLOCKS_PER_SEC;
   printf("%lfs\n", elapsed_seconds);
 }

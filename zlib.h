@@ -61,6 +61,8 @@ typedef struct {
   size_t length;
 } Z_String_View;
 
+typedef clock_t Z_Clock;
+
 #define Z_DEFAULT_GROWTH_RATE 2
 
 // ============================================================
@@ -208,8 +210,8 @@ void z_heap_free(Z_Heap *heap);
 //                       MESSURE TIME
 // ============================================================
 
-clock_t get_clock();
-void print_elapsed_seconds(clock_t start);
+clock_t z_get_clock();
+void z_print_elapsed_seconds(clock_t start);
 
 // ============================================================
 //                         HELPERS
