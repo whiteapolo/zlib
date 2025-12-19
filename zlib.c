@@ -1137,3 +1137,119 @@ void z_print_elapsed_seconds(Z_Clock start)
   double elapsed_seconds = ((double)(z_get_clock() - start)) / CLOCKS_PER_SEC;
   printf("%lfs\n", elapsed_seconds);
 }
+
+Z_Deque z_deque_new()
+{
+  Z_Deque deque = {
+    .capacity = 0,
+    .length = 0,
+    .front = 0,
+    .rear = 0,
+    .ptr = NULL,
+  };
+
+  return deque;
+}
+
+size_t z_deque_next_index(const Z_Deque *deque, size_t i)
+{
+  return (i + 1) % deque->capacity;
+}
+
+size_t z_deque_previous_index(const Z_Deque *deque, size_t i)
+{
+  return i == 0 ? deque->capacity - 1 : i - 1;
+}
+
+int z_deque_at(const Z_Deque *deque, size_t i)
+{
+  assert(i < deque->length);
+  size_t wrapped_index = (deque->front + i) % deque->capacity;
+  return deque->ptr[wrapped_index];
+}
+
+bool z_deque_is_index_inside(const Z_Deque *deque, size_t i)
+{
+  if (deque->front < deque->rear) {
+    return deque->front <= i && deque->rear <= i;
+  }
+
+  return deque->front <= i || i <= deque->rear;
+}
+
+void z_deque_debug_print(const Z_Deque *deque)
+{
+  if (deque->capacity == 0) {
+    printf("[]\n");
+    return;
+  }
+
+  printf("[ ");
+  for (size_t i = 0; i < deque->capacity - 1; i++) {
+    if (z_deque_is_index_inside(deque, i)) {
+      printf("%d, ", deque->ptr[i]);
+    } else {
+      printf("-, ");
+    }
+  }
+
+  if (z_deque_is_index_inside(deque, deque->capacity - 1)) {
+      printf("%d ", deque->ptr[deque->capacity - 1]);
+  } else {
+      printf("- ");
+  }
+  printf("]\n");
+}
+
+void z_deque_ensure_capacity(Z_Deque *deque, size_t needed)
+{
+  if (deque->capacity < needed) {
+    size_t new_capacity = z__max_size_t(needed, deque->capacity * Z_GROWTH_RATE);
+    deque->ptr = realloc(deque->ptr, sizeof(int) * new_capacity);
+    if (deque->front > deque->rear) {
+
+      int *buf = malloc(sizeof(int) * deque->length);
+      memcpy(buf, deque->ptr + deque->front, sizeof(int) * (deque->capacity - deque->front));
+      memcpy(buf + deque->capacity - deque->front, deque->ptr, sizeof(int) * (deque->rear + 1));
+      memcpy(deque->ptr, buf, sizeof(int) * deque->length);
+      free(buf);
+
+      deque->front = 0;
+      deque->rear = deque->length - 1;
+    }
+
+    deque->capacity = new_capacity;
+  }
+}
+
+void z_deque_push_back(Z_Deque *deque, int element)
+{
+  z_deque_ensure_capacity(deque, deque->length + 1);
+  deque->rear = z_deque_next_index(deque, deque->rear);
+  deque->ptr[deque->rear] = element;
+  deque->length++;
+}
+
+void z_deque_push_front(Z_Deque *deque, int element)
+{
+  z_deque_ensure_capacity(deque, deque->length + 1);
+  deque->front = z_deque_previous_index(deque, deque->front);
+  deque->ptr[deque->front] = element;
+  deque->length++;
+}
+
+int z_deque_pop_back(Z_Deque *deque)
+{
+  int element = deque->ptr[deque->rear];
+  deque->rear = z_deque_previous_index(deque, deque->rear);
+  deque->length--;
+  return element;
+}
+
+int z_deque_pop_front(Z_Deque *deque)
+{
+  int element = deque->ptr[deque->front];
+  deque->front = z_deque_next_index(deque, deque->front);
+  deque->length--;
+  return element;
+}

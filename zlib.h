@@ -17,6 +17,15 @@ typedef struct {                                 \
   size_t capacity;                               \
 } identifier
 
+#define Z_DEFINE_DEQUE(identifier, element_type) \
+typedef struct {                                 \
+  element_type *ptr;                             \
+  size_t length;                                 \
+  size_t capacity;                               \
+  size_t front;                                  \
+  size_t rear;                                   \
+} identifier
+
 #define Z_DEFINE_MAYBE(identifier, value_type) \
 typedef struct {                               \
   value_type value;                            \
@@ -64,14 +73,16 @@ typedef struct {
   size_t length;
 } Z_String_View;
 
+typedef clock_t Z_Clock;
+
 Z_DEFINE_ARRAY(Z_Key_Value_Array, Z_Key_Value);
 Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
 
+Z_DEFINE_DEQUE(Z_Deque, int);
+
 Z_DEFINE_MAYBE(Z_Maybe_String, Z_String);
 Z_DEFINE_MAYBE(Z_Maybe_String_Array, Z_String_Array);
-
-
 
 #define Z_GROWTH_RATE 2
 
@@ -208,6 +219,17 @@ bool z_set_has(const Z_Set *set, void *element);
 void *z_set_remove(Z_Set *set, void *element);
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
 
+// ============================================================
+//                          DEQUE
+// ============================================================
+
+Z_Deque z_deque_new();
+int z_deque_at(const Z_Deque *deque, size_t i);
+void z_deque_push_back(Z_Deque *deque, int element);
+void z_deque_push_front(Z_Deque *deque, int element);
+int z_deque_pop_back(Z_Deque *deque);
+int z_deque_pop_front(Z_Deque *deque);
+void z_deque_debug_print(const Z_Deque *deque);
 
 // ============================================================
 //                        HEAP API
