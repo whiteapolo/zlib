@@ -9,6 +9,20 @@
 
 #define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
 
+#define Z_DEFINE_ARRAY(identifier, element_type) \
+typedef struct {                                 \
+  Z_Heap *heap;                                  \
+  element_type *ptr;                             \
+  size_t length;                                 \
+  size_t capacity;                               \
+} identifier
+
+#define Z_DEFINE_MAYBE(identifier, value_type) \
+typedef struct {                               \
+  value_type value;                            \
+  bool ok;                                     \
+} identifier
+
 typedef struct {
   void **pointers;
   size_t occupied;
@@ -21,7 +35,6 @@ typedef struct {
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
 typedef void (*Z_Free_Fn)(Z_Heap *, void *);
-typedef void *(*Z_Clone_Fn)(Z_Heap *, void *);
 typedef void (*Z_Print_Fn)(const void *);
 
 typedef struct Z_Avl_Node {
@@ -39,13 +52,6 @@ typedef struct {
 
 typedef struct {
   Z_Heap *heap;
-  Z_Key_Value *ptr;
-  size_t length;
-  size_t capacity;
-} Z_Key_Value_Array;
-
-typedef struct {
-  Z_Heap *heap;
   Z_Avl_Node *root;
   size_t size;
   Z_Compare_Fn compare_keys;
@@ -54,27 +60,20 @@ typedef struct {
 typedef Z_Map Z_Set;
 
 typedef struct {
-  Z_Heap *heap;
-  char *ptr;
-  size_t length;
-  size_t capacity;
-} Z_String;
-
-typedef struct {
-  Z_Heap *heap;
-  Z_String *ptr;
-  size_t length;
-  size_t capacity;
-} Z_String_Array;
-
-typedef struct {
   const char *ptr;
   size_t length;
 } Z_String_View;
 
-typedef clock_t Z_Clock;
+Z_DEFINE_ARRAY(Z_Key_Value_Array, Z_Key_Value);
+Z_DEFINE_ARRAY(Z_String, char);
+Z_DEFINE_ARRAY(Z_String_Array, Z_String);
 
-#define Z_DEFAULT_GROWTH_RATE 2
+Z_DEFINE_MAYBE(Z_Maybe_String, Z_String);
+Z_DEFINE_MAYBE(Z_Maybe_String_Array, Z_String_Array);
+
+
+
+#define Z_GROWTH_RATE 2
 
 // ============================================================
 //                      ARRAY API
@@ -85,7 +84,7 @@ typedef clock_t Z_Clock;
 #define z_array_ensure_capacity(array_ptr, needed)                                                                        \
   do {                                                                                                                    \
     if ((array_ptr)->capacity < (needed)) {                                                                               \
-      size_t new_capacity = z__max_size_t((needed), (array_ptr)->capacity * Z_DEFAULT_GROWTH_RATE);                       \
+      size_t new_capacity = z__max_size_t((needed), (array_ptr)->capacity * Z_GROWTH_RATE);                               \
       (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity);   \
       (array_ptr)->capacity = new_capacity;                                                                               \
     }                                                                                                                     \
@@ -107,8 +106,8 @@ typedef clock_t Z_Clock;
 #define z_array_peek(array_ptr)   ((array_ptr)->ptr[(array_ptr)->length - 1])
 #define z_array_pop(array_ptr)    ((array_ptr)->ptr[--(array_ptr)->length])
 
-#define z_array_zero_terminate(array_ptr)                                        \
-  do {                                                                           \
+#define z_array_zero_terminate(array_ptr)                                           \
+  do {                                                                              \
     z_array_ensure_capacity(array_ptr, (array_ptr)->length + 1);                    \
     memset(&(array_ptr)->ptr[(array_ptr)->length], 0, sizeof(*(array_ptr)->ptr));   \
   } while (0)
@@ -175,8 +174,8 @@ bool z_write_file(const char *pathname, const char *format, ...);
 bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
 
-Z_String z_read_file(Z_Heap *heap, const char *pathname);
-Z_String_Array z_read_directory(Z_Heap *heap, const char *pathname);
+Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname);
+Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname);
 
 Z_String z_expand_tilde(Z_Heap *heap, Z_String_View pathname);
 Z_String z_compress_tilde(Z_Heap *heap, Z_String_View pathname);
@@ -227,6 +226,51 @@ void z_heap_free(Z_Heap *heap);
 
 clock_t z_get_clock();
 void z_print_elapsed_seconds(clock_t start);
+
+// ============================================================
+//                          CLI
+// ============================================================
+
+typedef enum {
+  Z_GET_OPT_BOOL,
+  Z_GET_OPT_INT,
+  Z_GET_OPT_DOUBLE,
+  Z_GET_OPT_STRING,
+} Z_CLI_Option_Type;
+
+typedef enum {
+  Z_GET_OPT_REQUIRED,
+  Z_GET_OPT_OPTIONAL,
+} Z_CLI_Option_Status;
+
+typedef struct {
+  Z_Set flags;
+  const char *description;
+  void *value;
+  Z_CLI_Option_Type type;
+  Z_CLI_Option_Status status;
+} Z_CLI_Option;
+
+typedef struct {
+  Z_Heap *heap;
+  Z_CLI_Option *ptr;
+  size_t length;
+  size_t capacity;
+} Z_CLI_Option_Array;
+
+// // void get_opt("-h|--help", "this is help information", &is_help, Z_GET_OPT_BOOL);
+// void get_opt(int argc, char **argv, const char *flags, const char *description, void *value, Z_CLI_Option_Type type, Z_CLI_Option_Status status, ...)
+// {
+//   Z_Heap_Auto heap = {0};
+//   Z_CLI_Option_Array options = z_array_new(&heap, Z_CLI_Option_Array);
+//   // TODO: parsing to array
+//   get_opt_array(&options, argc, argv);
+// }
+
+// void get_opt_array(int argc, char **argv, const Z_CLI_Option_Array *options)
+// {
+
+// }
 
 // ============================================================
 //                         HELPERS

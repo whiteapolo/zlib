@@ -473,12 +473,12 @@ bool z_scanf_file(const char *pathname, const char *format, ...)
   return true;
 }
 
-Z_String z_read_file(Z_Heap *heap, const char *pathname)
+Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname)
 {
   FILE *fp = fopen(pathname, "r");
 
   if (fp == NULL) {
-    return z_str_new(heap, "");
+    return (Z_Maybe_String){ .ok = false };
   }
 
   Z_String content = z_str_new(heap, "");
@@ -489,15 +489,15 @@ Z_String z_read_file(Z_Heap *heap, const char *pathname)
   z_array_zero_terminate(&content);
   fclose(fp);
 
-  return content;
+  return (Z_Maybe_String){ .ok = true, .value = content };
 }
 
-Z_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
+Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
 {
   DIR *directory = opendir(pathname);
 
   if (directory == NULL) {
-    return z_array_new(heap, Z_String_Array);
+    return (Z_Maybe_String_Array){ .ok = false };
   }
 
   Z_String_Array entries = z_array_new(heap, Z_String_Array);
@@ -509,7 +509,7 @@ Z_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
 
   closedir(directory);
 
-  return entries;
+  return (Z_Maybe_String_Array){ .ok = true, .value = entries };
 }
 
 Z_String z_expand_tilde(Z_Heap *heap, Z_String_View pathname)
