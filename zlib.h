@@ -131,13 +131,14 @@ Z_String z_str_new(Z_Heap *heap, const char *format, ...);
 Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args);
 Z_String z_str_new_from(Z_Heap *heap, Z_String_View s);
 
-void z_str_append(Z_String *s, const char *format, ...);
-void z_str_append_args(Z_String *s, const char *format, va_list args);
+void z_str_append_cstr(Z_String *s, const char *cstr);
+void z_str_append_format(Z_String *s, const char *format, ...);
+void z_str_append_format_va(Z_String *s, const char *format, va_list args);
 void z_str_append_str(Z_String *target, Z_String_View source);
 void z_str_append_char(Z_String *s, char c);
 
-void z_str_prepend(Z_String *s, const char *format, ...);
-void z_str_prepend_args(Z_String *s, const char *format, va_list args);
+void z_str_prepend_format(Z_String *s, const char *format, ...);
+void z_str_prepend_va(Z_String *s, const char *format, va_list args);
 void z_str_prepend_str(Z_String *target, Z_String_View source);
 void z_str_prepend_char(Z_String *s, char c);
 

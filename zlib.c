@@ -67,7 +67,7 @@ Z_String z_str_new(Z_Heap *heap, const char *format, ...)
 Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args)
 {
   Z_String s = z_array_new(heap, Z_String);
-  z_str_append_args(&s, format, args);
+  z_str_append_format_va(&s, format, args);
   return s;
 }
 
@@ -76,15 +76,20 @@ Z_String z_str_new_from(Z_Heap *heap, Z_String_View s)
   return z_str_new(heap, "%.*s", z__size_t_to_int(s.length), s.ptr);
 }
 
-void z_str_append(Z_String *s, const char *format, ...)
+void z_str_append_cstr(Z_String *s, const char *cstr)
+{
+  z_str_append_str(s, z_sv_from_cstr(cstr));
+}
+
+void z_str_append_format(Z_String *s, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
-  z_str_append_args(s, format, args);
+  z_str_append_format_va(s, format, args);
   va_end(args);
 }
 
-void z_str_append_args(Z_String *s, const char *format, va_list args)
+void z_str_append_format_va(Z_String *s, const char *format, va_list args)
 {
   size_t format_length = z__get_format_length(format, args);
   z_array_ensure_capacity(s, s->length + format_length + 1);
@@ -99,39 +104,44 @@ void z_str_append_args(Z_String *s, const char *format, va_list args)
 
 void z_str_append_str(Z_String *target, Z_String_View source)
 {
-  z_str_append(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
+  z_array_ensure_capacity(target, target->length + source.length + 1);
+  memcpy(target->ptr + target->length, source.ptr, sizeof(char) * source.length);
+  target->length += source.length;
+  z_array_zero_terminate(target);
 }
 
 void z_str_append_char(Z_String *s, char c)
 {
-  z_str_append(s, "%c", c);
+  z_array_ensure_capacity(s, s->length + 2);
+  s->ptr[s->length++] = c;
+  z_array_zero_terminate(s);
 }
 
-void z_str_prepend(Z_String *s, const char *format, ...)
+void z_str_prepend_format(Z_String *s, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
-  z_str_prepend_args(s, format, args);
+  z_str_prepend_va(s, format, args);
   va_end(args);
 }
 
-void z_str_prepend_args(Z_String *s, const char *format, va_list args)
+void z_str_prepend_va(Z_String *s, const char *format, va_list args)
 {
   Z_Heap_Auto heap = {0};
   Z_String tmp = z_str_new_args(&heap, format, args);
-  z_str_append(&tmp, "%s", s->ptr);
+  z_str_append_format(&tmp, "%s", s->ptr);
   z_str_clear(s);
-  z_str_append(s, "%s", tmp.ptr);
+  z_str_append_format(s, "%s", tmp.ptr);
 }
 
 void z_str_prepend_str(Z_String *target, Z_String_View source)
 {
-  z_str_prepend(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
+  z_str_prepend_format(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
 }
 
 void z_str_prepend_char(Z_String *s, char c)
 {
-  z_str_prepend(s, "%c", c);
+  z_str_prepend_format(s, "%c", c);
 }
 
 char z_str_pop_char(Z_String *s)
@@ -159,7 +169,7 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
   }
 
   z_str_clear(s);
-  z_str_append(s, "%s", tmp.ptr);
+  z_str_append_format(s, "%s", tmp.ptr);
 }
 
 Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter)
@@ -1135,7 +1145,7 @@ Z_Clock z_get_clock()
 void z_print_elapsed_seconds(Z_Clock start)
 {
   double elapsed_seconds = ((double)(z_get_clock() - start)) / CLOCKS_PER_SEC;
-  printf("%lfs\n", elapsed_seconds);
+  printf("%lfms\n", elapsed_seconds);
 }
 
 Z_Deque z_deque_new()
