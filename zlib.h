@@ -17,15 +17,6 @@ typedef struct {                                 \
   size_t capacity;                               \
 } identifier
 
-#define Z_DEFINE_DEQUE(identifier, element_type) \
-typedef struct {                                 \
-  element_type *ptr;                             \
-  size_t length;                                 \
-  size_t capacity;                               \
-  size_t front;                                  \
-  size_t rear;                                   \
-} identifier
-
 #define Z_DEFINE_MAYBE(identifier, value_type) \
 typedef struct {                               \
   value_type value;                            \
@@ -73,14 +64,20 @@ typedef struct {
   size_t length;
 } Z_String_View;
 
+typedef struct {
+  Z_Heap *heap;
+  void **ptr;
+  size_t size;
+  size_t capacity;
+  size_t front;
+  size_t rear;
+} Z_Deque;
+
 typedef clock_t Z_Clock;
 
 Z_DEFINE_ARRAY(Z_Key_Value_Array, Z_Key_Value);
 Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
-
-Z_DEFINE_DEQUE(Z_Deque_Void, void*);
-Z_DEFINE_DEQUE(Z_Deque, int);
 
 Z_DEFINE_MAYBE(Z_Maybe_String, Z_String);
 Z_DEFINE_MAYBE(Z_Maybe_String_Array, Z_String_Array);
@@ -225,20 +222,20 @@ void z_set_print(const Z_Set *set, Z_Print_Fn print_element);
 //                          DEQUE
 // ============================================================
 
-Z_Deque z_deque_new();
-int z_deque_at(const Z_Deque *deque, size_t i);
-void z_deque_push_back(Z_Deque *deque, int element);
-void z_deque_push_front(Z_Deque *deque, int element);
-int z_deque_pop_back(Z_Deque *deque);
-int z_deque_pop_front(Z_Deque *deque);
-void z_deque_debug_print(const Z_Deque *deque);
+Z_Deque z_deque_new(Z_Heap *heap);
+size_t z_deque_size(const Z_Deque *deque);
+void *z_deque_at(const Z_Deque *deque, size_t i);
+void z_deque_push_back(Z_Deque *deque, void *element);
+void z_deque_push_front(Z_Deque *deque, void *element);
+void *z_deque_pop_back(Z_Deque *deque);
+void *z_deque_pop_front(Z_Deque *deque);
 
 // ============================================================
 //                        HEAP API
 // ============================================================
 
-void *z_heap_malloc(Z_Heap *heap, size_t size);
-void *z_heap_calloc(Z_Heap *heap, size_t size);
+void *z_heap_malloc(Z_Heap *heap, size_t bytes);
+void *z_heap_calloc(Z_Heap *heap, size_t bytes);
 void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size);
 void z_heap_free_pointer(Z_Heap *heap, void *pointer);
 void z_heap_free(Z_Heap *heap);
