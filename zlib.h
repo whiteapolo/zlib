@@ -79,6 +79,7 @@ Z_DEFINE_ARRAY(Z_Key_Value_Array, Z_Key_Value);
 Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
 
+Z_DEFINE_DEQUE(Z_Deque_Void, void*);
 Z_DEFINE_DEQUE(Z_Deque, int);
 
 Z_DEFINE_MAYBE(Z_Maybe_String, Z_String);

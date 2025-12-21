@@ -14,4 +14,7 @@ int main(void)
     z_print_elapsed_seconds(clock);
 
     return 0;
+
+    Z_Deque_Int deque = z_deque_new(&heap);
+    z_deque_push_back(Z_Deque_Int, &deque, 10);
 }

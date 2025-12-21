@@ -1211,6 +1211,27 @@ void z_deque_debug_print(const Z_Deque *deque)
   printf("]\n");
 }
 
+void z__deque_ensure_capacity(Z_Deque_Void *deque, size_t needed, size_t element_size)
+{
+   if (deque->capacity < needed) {
+    size_t new_capacity = z__max_size_t(needed, deque->capacity * Z_GROWTH_RATE);
+    deque->ptr = realloc(deque->ptr, element_size * new_capacity);
+    if (deque->front > deque->rear) {
+
+      int *buf = malloc(element_size * deque->length);
+      memcpy(buf, deque->ptr + deque->front, element_size * (deque->capacity - deque->front));
+      memcpy(buf + deque->capacity - deque->front, deque->ptr, element_size * (deque->rear + 1));
+      memcpy(deque->ptr, buf, element_size * deque->length);
+      free(buf);
+
+      deque->front = 0;
+      deque->rear = deque->length - 1;
+    }
+
+    deque->capacity = new_capacity;
+  }
+}
+
 void z_deque_ensure_capacity(Z_Deque *deque, size_t needed)
 {
   if (deque->capacity < needed) {
