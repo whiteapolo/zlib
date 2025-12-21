@@ -1,0 +1,150 @@
+#define Z_PTR_TABLE_MIN_CAPACITY 16
+#define Z_PTR_TABLE_GROWTH_RATE 2
+#define Z_PTR_TABLE_MAX_LOAD_FACTOR 0.7
+#define Z_PTR_TABLE_TOMBSTONE ((void*)1)
+
+size_t z__max(size_t a, size_t b)
+{
+  return a > b ? a : b;
+}
+
+bool z__pointer_table_can_insert(void *slot)
+{
+  return slot == NULL || slot == Z_PTR_TABLE_TOMBSTONE;
+}
+
+void **z__pointer_table_find_slot_for_insert(const Z_Pointer_Table *table, const void *pointer)
+{
+  if (table->capacity == 0) {
+    return NULL;
+  }
+
+  size_t i = (uintptr_t)pointer % table->capacity;
+  
+  while (!z__pointer_table_can_insert(table->pointers[i]) && table->pointers[i] != pointer) {
+    i = (i + 1) % table->capacity;
+  }
+
+  return &table->pointers[i];
+}
+
+void **z__pointer_table_find_slot(const Z_Pointer_Table *table, const void *pointer)
+{
+  if (table->capacity == 0) {
+    return NULL;
+  }
+
+  size_t i = (uintptr_t)pointer % table->capacity;
+  
+  while (table->pointers[i] && table->pointers[i] != pointer) {
+    i = (i + 1) % table->capacity;
+  }
+
+  return &table->pointers[i];
+}
+
+float z_ptr_table_load_factor(const Z_Pointer_Table *table)
+{
+  return (float)table->occupied / (float)table->capacity;
+}
+
+void z__pointer_table_resize(Z_Pointer_Table *table, size_t new_capacity)
+{
+  Z_Pointer_Table new_table = {
+    .pointers = calloc(new_capacity, sizeof(void *)),
+    .capacity = new_capacity,
+  };
+
+  for (size_t i = 0; i < table->capacity; i++) {
+    if (table->pointers[i] && table->pointers[i] != Z_PTR_TABLE_TOMBSTONE) {
+      void **slot = z__pointer_table_find_slot_for_insert(&new_table, table->pointers[i]);
+      *slot = table->pointers[i];
+      new_table.occupied++;
+    }
+  }
+
+  free(table->pointers);
+  *table = new_table;
+}
+
+void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
+{
+  if (table->capacity == 0 || z_ptr_table_load_factor(table) >= Z_PTR_TABLE_MAX_LOAD_FACTOR) {
+    size_t new_capacity = z__max(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_PTR_TABLE_GROWTH_RATE);
+    z__pointer_table_resize(table, new_capacity);
+  }
+
+  void **slot =  z__pointer_table_find_slot_for_insert(table, pointer);
+
+  if (*slot == NULL) {
+    table->occupied++;
+  }
+
+  *slot = pointer;
+}
+
+void z__pointer_table_delete(Z_Pointer_Table *table, const void *pointer)
+{
+  void **slot = z__pointer_table_find_slot(table, pointer);
+  *slot = Z_PTR_TABLE_TOMBSTONE;
+}
+
+void z__pointer_table_foreach(const Z_Pointer_Table *table, void callback(void *))
+{
+  for (size_t i = 0; i < table->capacity; i++) {
+    if (table->pointers[i] && table->pointers[i] != Z_PTR_TABLE_TOMBSTONE) {
+      callback(table->pointers[i]);
+    }
+  }
+}
+
+void z__pointer_table_free(Z_Pointer_Table *table)
+{
+  free(table->pointers);
+}
+
+void *z_heap_malloc(Z_Heap *heap, size_t bytes)
+{
+  void *pointer = malloc(bytes);
+  z__pointer_table_insert(&heap->table, pointer);
+  return pointer;
+}
+
+void *z_heap_calloc(Z_Heap *heap, size_t bytes)
+{
+  void *pointer = calloc(bytes, 1);
+  z__pointer_table_insert(&heap->table, pointer);
+  return pointer;
+}
+
+void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size)
+{
+  if (pointer == NULL) {
+    return z_heap_malloc(heap, new_size);
+  }
+
+  void *new_pointer = realloc(pointer, new_size);
+
+  if (new_pointer != pointer) {
+    z__pointer_table_delete(&heap->table, pointer);
+    z__pointer_table_insert(&heap->table, new_pointer); 
+  }
+
+  return new_pointer;
+}
+
+void z_heap_free_pointer(Z_Heap *heap, void *pointer)
+{
+  if (pointer == NULL) {
+    return;
+  }
+
+  free(pointer);
+  z__pointer_table_delete(&heap->table, pointer);
+}
+
+void z_heap_free(Z_Heap *heap)
+{
+  z__pointer_table_foreach(&heap->table, free);
+  z__pointer_table_free(&heap->table);
+}
