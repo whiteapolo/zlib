@@ -1,16 +1,11 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include "heap.h"
-
-typedef Z_Avl_Node Z_Avl_Node;
-
-typedef struct {
-  void *key;
-  void *value;
-} Z_Key_Value;
-
-Z_DEFINE_ARRAY(Z_Key_Value_Array, Z_Key_Value);
+#include <zatar/heap.h>
+#include <zatar/comparator.h>
+#include <zatar/array.h>
+#include <internal/avl.h>
+#include <stdbool.h>
 
 typedef struct {
   Z_Heap *heap;

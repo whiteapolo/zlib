@@ -1,7 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include "heap.h"
+#include <zatar/heap.h>
 #include "array.h"
 #include <stdarg.h>
 #include <stdbool.h>

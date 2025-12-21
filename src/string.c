@@ -1,8 +1,18 @@
+#include <zatar/string.h>
+#include <zatar/array.h>
+#include <limits.h>
+#include <stdio.h>
+
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 
 int z__size_t_to_int(size_t a)
 {
   return a > INT_MAX ? INT_MAX : (int)a;
+}
+
+size_t z__min(size_t a, size_t b)
+{
+  return a > b ? b : a;
 }
 
 size_t z__get_format_length(const char *format, va_list args)
@@ -219,7 +229,7 @@ char z_sv_peek(Z_String_View s)
 
 int z_sv_compare(Z_String_View a, Z_String_View b)
 {
-  int result = memcmp(a.ptr, b.ptr, z__min_size_t(a.length, b.length));
+  int result = memcmp(a.ptr, b.ptr, z__min(a.length, b.length));
   return result == 0 ? result : z__size_t_to_int(a.length - b.length);
 }
 

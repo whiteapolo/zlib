@@ -1,8 +1,8 @@
 #ifndef SET_H
 #define SET_H
 
-#include "heap.h"
-#include "map.h"
+#include <zatar/heap.h>
+#include <zatar/map.h>
 
 typedef Z_Map Z_Set;
 

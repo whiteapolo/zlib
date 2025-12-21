@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include "heap.h"
+#include <zatar/heap.h>
 #include "string.h"
 
 typedef struct {

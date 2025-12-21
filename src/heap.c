@@ -1,5 +1,9 @@
+#include <zatar/heap.h>
+#include <internal/config.h>
+#include <stdbool.h>
+#include <stdint.h>
+
 #define Z_PTR_TABLE_MIN_CAPACITY 16
-#define Z_PTR_TABLE_GROWTH_RATE 2
 #define Z_PTR_TABLE_MAX_LOAD_FACTOR 0.7
 #define Z_PTR_TABLE_TOMBSTONE ((void*)1)
 
@@ -70,7 +74,7 @@ void z__pointer_table_resize(Z_Pointer_Table *table, size_t new_capacity)
 void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
 {
   if (table->capacity == 0 || z_ptr_table_load_factor(table) >= Z_PTR_TABLE_MAX_LOAD_FACTOR) {
-    size_t new_capacity = z__max(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_PTR_TABLE_GROWTH_RATE);
+    size_t new_capacity = z__max(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_BUFFER_GROWTH_FACTOR);
     z__pointer_table_resize(table, new_capacity);
   }
 

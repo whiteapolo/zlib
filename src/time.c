@@ -1,3 +1,5 @@
+#include <zatar/time.h>
+#include <stdio.h>
 
 Z_Clock z_get_clock()
 {

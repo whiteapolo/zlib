@@ -1,64 +1,36 @@
+#include <zatar/set.h>
 
-Z_Map z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
+Z_Set z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements)
 {
-  Z_Map map = {
-    .heap = heap,
-    .root = NULL,
-    .compare_keys = compare_keys,
-    .size = 0,
-  };
-
-  return map;
+  return z_map_new(heap, compare_elements);
 }
 
-size_t z_map_size(const Z_Map *map)
+size_t z_set_size(const Z_Set *set)
 {
-  return map->size;
+  return z_map_size(set);
 }
 
-Z_Key_Value z_map_put(Z_Map *map, void *key, void *value)
+void *z_set_add(Z_Set *set, void *element)
 {
-  Z_Key_Value old_key_value = z__avl_put(map->heap, &map->root, key, value, map->compare_keys);
-
-  if (old_key_value.key) {
-    map->size++;
-  }
-
-  return old_key_value;
+  Z_Key_Value old_key_value = z_map_put(set, element, NULL);
+  return old_key_value.key;
 }
 
-void *z_map_get(const Z_Map *map, const void *key)
+bool z_set_has(const Z_Set *set, void *element)
 {
-  return z__avl_get(map->root, key, map->compare_keys);
+  return z_map_has(set, element);
 }
 
-void *z_map_try_get(const Z_Map *map, const void *key, const void *fallback)
+void *z_set_remove(Z_Set *set, void *element)
 {
-  return z__avl_try_get(map->root, key, map->compare_keys, fallback);
+  Z_Key_Value deleted = z_map_delete(set, element);
+  return deleted.key;
 }
 
-bool z_map_has(const Z_Map *map, void *key)
+void z__set_print_nothing(const void *)
+{ }
+
+void z_set_print(const Z_Set *set, Z_Print_Fn print_element)
 {
-  return z__avl_has(map->root, key, map->compare_keys);
-}
-
-Z_Key_Value z_map_delete(Z_Map *map, void *key)
-{
-  Z_Key_Value old_key_value = z__avl_remove(map->heap, &map->root, key, map->compare_keys);
-
-  if (old_key_value.key) {
-    map->size--;
-  }
-
-  return old_key_value;
-}
-
-Z_Key_Value_Array z_map_to_array(Z_Heap *heap, Z_Map *map)
-{
-  return z__avl_to_array(heap, map->root);
-}
-
-void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)
-{
-  z__avl_print(map->root, print_key, print_value);
+  z_map_print(set, print_element, z__set_print_nothing);
 }

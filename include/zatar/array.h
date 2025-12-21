@@ -1,7 +1,8 @@
 #ifndef ARRAY_H
 #define ARRAY_H
 
-#define Z_GROWTH_RATE 2
+#include <string.h>
+#include <internal/config.h>
 
 #define Z_DEFINE_ARRAY(identifier, element_type) \
 typedef struct {                                 \
@@ -13,13 +14,13 @@ typedef struct {                                 \
 
 #define z_array_new(heap_ptr, type) ((type){ .heap = heap_ptr, .ptr = NULL, .length = 0, .capacity = 0 })
 
-#define z_array_ensure_capacity(array_ptr, needed)                                                                        \
-  do {                                                                                                                    \
-    if ((array_ptr)->capacity < (needed)) {                                                                               \
-      size_t new_capacity = z__max_size_t((needed), (array_ptr)->capacity * Z_GROWTH_RATE);                               \
-      (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity);   \
-      (array_ptr)->capacity = new_capacity;                                                                               \
-    }                                                                                                                     \
+#define z_array_ensure_capacity(array_ptr, needed)                                                                               \
+  do {                                                                                                                           \
+    if ((array_ptr)->capacity < (needed)) {                                                                                      \
+      size_t new_capacity = z__calculate_new_capacity(array_ptr, needed);                                                                \
+      (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity);          \
+      (array_ptr)->capacity = new_capacity;                                                                                      \
+    }                                                                                                                            \
   } while (0)
 
 #define z_array_push(array_ptr, element)                           \
@@ -43,5 +44,13 @@ typedef struct {                                 \
     z_array_ensure_capacity(array_ptr, (array_ptr)->length + 1);                    \
     memset(&(array_ptr)->ptr[(array_ptr)->length], 0, sizeof(*(array_ptr)->ptr));   \
   } while (0)
+
+
+#define z__calculate_new_capacity(array_ptr, needed)           \
+(                                                              \
+  (needed) > ((array_ptr)->capacity * Z_BUFFER_GROWTH_FACTOR)  \
+    ? (needed)                                                 \
+    : ((array_ptr)->capacity * Z_BUFFER_GROWTH_FACTOR)         \
+)
 
 #endif

@@ -1,3 +1,5 @@
+#include <string.h>
+
 int z_compare_int_pointers(const int *a, const int *b)
 {
   return (*a > *b) - (*a < *b);

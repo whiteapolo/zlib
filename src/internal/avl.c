@@ -1,3 +1,10 @@
+#include <internal/avl.h>
+#include <stdio.h>
+
+int z__max(int a, int b)
+{
+  return a > b ? a : b;
+}
 
 int z__avl_get_height(const Z_Avl_Node *node)
 {

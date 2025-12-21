@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <zatar/file.h>
+#include <string.h>
+#include <dirent.h>
+
 size_t z__get_file_size(FILE *fp)
 {
   size_t curr = ftell(fp);
