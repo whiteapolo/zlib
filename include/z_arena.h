@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#define Z_Arena_Auto __attribute__((cleanup(z_arena_free))) Z_Heap
+
 typedef struct {
   char *ptr;
   size_t offset;
