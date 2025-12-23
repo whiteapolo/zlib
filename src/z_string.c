@@ -42,9 +42,22 @@ Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args)
   return s;
 }
 
-Z_String z_str_new_from(Z_Heap *heap, Z_String_View s)
+Z_String z_str_new_from_sv(Z_Heap *heap, Z_String_View s)
 {
   return z_str_new(heap, "%.*s", z__size_t_to_int(s.length), s.ptr);
+}
+
+char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s)
+{
+  char *ret = z_heap_malloc(heap, sizeof(char) * (s.length + 1));
+  memcpy(ret, s.ptr, sizeof(char) * s.length);
+  ret[s.length] = 0;
+  return ret;
+}
+
+char *z_str_to_cstr(Z_String s)
+{
+  return s.ptr;
 }
 
 void z_str_append_cstr(Z_String *s, const char *cstr)
@@ -173,11 +186,11 @@ Z_String_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimite
 
   while ((length = z_sv_find_index(z_sv_offset(s, offset), delimiter)) != -1) {
     Z_String_View slice = z_sv_substring(s, offset, offset + length);
-    z_array_push(&result, z_str_new_from(heap, slice));
+    z_array_push(&result, z_str_new_from_sv(heap, slice));
     offset += length + delimiter.length;
   }
 
-  z_array_push(&result, z_str_new_from(heap, z_sv_substring(s, offset, s.length)));
+  z_array_push(&result, z_str_new_from_sv(heap, z_sv_substring(s, offset, s.length)));
 
   return result;
 }

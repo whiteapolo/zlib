@@ -9,7 +9,7 @@ Z_String z_expand_tilde(Z_Heap *heap, Z_String_View pathname)
     return expanded;
   }
 
-  return z_str_new_from(heap, pathname);
+  return z_str_new_from_sv(heap, pathname);
 }
 
 Z_String z_compress_tilde(Z_Heap *heap, Z_String_View pathname)
@@ -22,5 +22,5 @@ Z_String z_compress_tilde(Z_Heap *heap, Z_String_View pathname)
     return compressed;
   }
 
-  return z_str_new_from(heap, pathname);
+  return z_str_new_from_sv(heap, pathname);
 }
