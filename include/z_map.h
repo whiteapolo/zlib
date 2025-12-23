@@ -1,10 +1,10 @@
 #ifndef MAP_H
 #define MAP_H
 
-#include <zatar/heap.h>
-#include <zatar/comparator.h>
-#include <zatar/array.h>
-#include <internal/avl.h>
+#include <z_heap.h>
+#include <z_comparator.h>
+#include <z_array.h>
+#include <internal/z_avl.h>
 #include <stdbool.h>
 
 typedef struct {

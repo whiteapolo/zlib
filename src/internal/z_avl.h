@@ -1,9 +1,9 @@
 #ifndef AVL_H
 #define AVL_H
 
-#include <zatar/array.h>
-#include <zatar/comparator.h>
-#include <zatar/heap.h>
+#include <z_array.h>
+#include <z_comparator.h>
+#include <z_heap.h>
 #include <stdbool.h>
 
 typedef struct {

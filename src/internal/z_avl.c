@@ -1,4 +1,4 @@
-#include <internal/avl.h>
+#include <internal/z_avl.h>
 #include <stdio.h>
 
 int z__max(int a, int b)

@@ -2,7 +2,7 @@
 #define DEQUE_H
 
 #include <stdlib.h>
-#include <zatar/heap.h>
+#include <z_heap.h>
 
 typedef struct {
   Z_Heap *heap;

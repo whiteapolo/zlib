@@ -1,5 +1,5 @@
-#include <zatar/map.h>
-#include <internal/avl.h>
+#include <z_map.h>
+#include <internal/z_avl.h>
 
 Z_Map z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
 {

@@ -1,8 +1,8 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include <zatar/heap.h>
-#include "array.h"
+#include <z_heap.h>
+#include <z_array.h>
 #include <stdarg.h>
 #include <stdbool.h>
 

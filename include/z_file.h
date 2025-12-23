@@ -1,8 +1,8 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <zatar/heap.h>
-#include "string.h"
+#include <z_heap.h>
+#include <z_string.h>
 
 typedef struct {
   Z_String value;

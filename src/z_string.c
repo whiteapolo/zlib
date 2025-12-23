@@ -1,5 +1,5 @@
-#include <zatar/string.h>
-#include <zatar/array.h>
+#include <z_string.h>
+#include <z_array.h>
 #include <limits.h>
 #include <stdio.h>
 

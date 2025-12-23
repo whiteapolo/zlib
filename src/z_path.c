@@ -1,5 +1,5 @@
-#include <zatar/path.h>
-#include <zatar/env.h>
+#include <z_path.h>
+#include <z_env.h>
 
 Z_String z_expand_tilde(Z_Heap *heap, Z_String_View pathname)
 {

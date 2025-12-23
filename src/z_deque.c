@@ -1,6 +1,6 @@
-#include <zatar/deque.h>
-#include <zatar/comparator.h>
-#include <internal/config.h>
+#include <z_deque.h>
+#include <z_comparator.h>
+#include <internal/z_config.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>

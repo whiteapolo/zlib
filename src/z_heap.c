@@ -1,5 +1,5 @@
-#include <zatar/heap.h>
-#include <internal/config.h>
+#include <z_heap.h>
+#include <internal/z_config.h>
 #include <stdbool.h>
 #include <stdint.h>
 
