@@ -2,7 +2,7 @@
 #define ARRAY_H
 
 #include <string.h>
-#include <internal/z_config.h>
+#include <z_config.h>
 
 #define Z_DEFINE_ARRAY(identifier, element_type) \
 typedef struct {                                 \

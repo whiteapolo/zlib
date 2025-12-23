@@ -1,12 +1,12 @@
 #include <z_deque.h>
 #include <z_comparator.h>
-#include <internal/z_config.h>
+#include <z_config.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
 
-size_t z__max(size_t a, size_t b)
+static size_t z__max(size_t a, size_t b)
 {
   return a > b ? a : b;
 }

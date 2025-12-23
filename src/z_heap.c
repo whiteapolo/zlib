@@ -1,5 +1,5 @@
 #include <z_heap.h>
-#include <internal/z_config.h>
+#include <z_config.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -7,7 +7,7 @@
 #define Z_PTR_TABLE_MAX_LOAD_FACTOR 0.7
 #define Z_PTR_TABLE_TOMBSTONE ((void*)1)
 
-size_t z__max(size_t a, size_t b)
+static size_t z__max(size_t a, size_t b)
 {
   return a > b ? a : b;
 }

@@ -1,7 +1,7 @@
 #include <internal/z_avl.h>
 #include <stdio.h>
 
-int z__max(int a, int b)
+static int z__max(int a, int b)
 {
   return a > b ? a : b;
 }
