@@ -243,7 +243,12 @@ char z_sv_peek(Z_String_View s)
 int z_sv_compare(Z_String_View a, Z_String_View b)
 {
   int result = memcmp(a.ptr, b.ptr, z__min(a.length, b.length));
-  return result == 0 ? result : z__size_t_to_int(a.length - b.length);
+
+  if (result == 0) {
+    return z__size_t_to_int(a.length) - z__size_t_to_int(b.length)
+  }
+
+  return result;
 }
 
 bool z_sv_equal(Z_String_View a, Z_String_View b)

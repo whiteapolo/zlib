@@ -24,7 +24,7 @@ void **z__pointer_table_find_slot_for_insert(const Z_Pointer_Table *table, const
   }
 
   size_t i = (uintptr_t)pointer % table->capacity;
-  
+
   while (!z__pointer_table_can_insert(table->pointers[i]) && table->pointers[i] != pointer) {
     i = (i + 1) % table->capacity;
   }
@@ -39,7 +39,7 @@ void **z__pointer_table_find_slot(const Z_Pointer_Table *table, const void *poin
   }
 
   size_t i = (uintptr_t)pointer % table->capacity;
-  
+
   while (table->pointers[i] && table->pointers[i] != pointer) {
     i = (i + 1) % table->capacity;
   }
@@ -90,6 +90,7 @@ void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
 void z__pointer_table_delete(Z_Pointer_Table *table, const void *pointer)
 {
   void **slot = z__pointer_table_find_slot(table, pointer);
+  table->occupied--;
   *slot = Z_PTR_TABLE_TOMBSTONE;
 }
 
@@ -131,7 +132,7 @@ void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size)
 
   if (new_pointer != pointer) {
     z__pointer_table_delete(&heap->table, pointer);
-    z__pointer_table_insert(&heap->table, new_pointer); 
+    z__pointer_table_insert(&heap->table, new_pointer);
   }
 
   return new_pointer;

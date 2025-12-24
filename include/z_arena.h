@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#define Z_Arena_Auto __attribute__((cleanup(z_arena_free))) Z_Heap
+#define Z_Arena_Auto __attribute__((cleanup(z_arena_free))) Z_Arena
 
 typedef struct {
   char *ptr;
