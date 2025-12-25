@@ -94,30 +94,20 @@ static inline void z__pointer_table_delete(Z_Pointer_Table *table, const void *p
   *slot = Z_PTR_TABLE_TOMBSTONE;
 }
 
-static inline void z__pointer_table_foreach(const Z_Pointer_Table *table, void callback(void *))
+static inline void z__pointer_table_free(Z_Pointer_Table *table)
 {
   for (size_t i = 0; i < table->capacity; i++) {
     if (table->pointers[i] && table->pointers[i] != Z_PTR_TABLE_TOMBSTONE) {
-      callback(table->pointers[i]);
+      free(table->pointers[i]);
     }
   }
-}
 
-static inline void z__pointer_table_free(Z_Pointer_Table *table)
-{
   free(table->pointers);
 }
 
 void *z_heap_malloc(Z_Heap *heap, size_t bytes)
 {
   void *pointer = malloc(bytes);
-  z__pointer_table_insert(&heap->table, pointer);
-  return pointer;
-}
-
-void *z_heap_calloc(Z_Heap *heap, size_t bytes)
-{
-  void *pointer = calloc(bytes, 1);
   z__pointer_table_insert(&heap->table, pointer);
   return pointer;
 }
@@ -150,6 +140,5 @@ void z_heap_free_pointer(Z_Heap *heap, void *pointer)
 
 void z_heap_free(Z_Heap *heap)
 {
-  z__pointer_table_foreach(&heap->table, free);
   z__pointer_table_free(&heap->table);
 }
