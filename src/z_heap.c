@@ -7,17 +7,17 @@
 #define Z_PTR_TABLE_MAX_LOAD_FACTOR 0.7
 #define Z_PTR_TABLE_TOMBSTONE ((void*)1)
 
-static size_t z__max(size_t a, size_t b)
+static inline size_t z__max(size_t a, size_t b)
 {
   return a > b ? a : b;
 }
 
-bool z__pointer_table_can_insert(void *slot)
+static inline bool z__pointer_table_can_insert(void *slot)
 {
   return slot == NULL || slot == Z_PTR_TABLE_TOMBSTONE;
 }
 
-void **z__pointer_table_find_slot_for_insert(const Z_Pointer_Table *table, const void *pointer)
+static inline void **z__pointer_table_find_slot_for_insert(const Z_Pointer_Table *table, const void *pointer)
 {
   if (table->capacity == 0) {
     return NULL;
@@ -32,7 +32,7 @@ void **z__pointer_table_find_slot_for_insert(const Z_Pointer_Table *table, const
   return &table->pointers[i];
 }
 
-void **z__pointer_table_find_slot(const Z_Pointer_Table *table, const void *pointer)
+static inline void **z__pointer_table_find_slot(const Z_Pointer_Table *table, const void *pointer)
 {
   if (table->capacity == 0) {
     return NULL;
@@ -47,12 +47,12 @@ void **z__pointer_table_find_slot(const Z_Pointer_Table *table, const void *poin
   return &table->pointers[i];
 }
 
-float z_ptr_table_load_factor(const Z_Pointer_Table *table)
+static inline float z_ptr_table_load_factor(const Z_Pointer_Table *table)
 {
   return (float)table->occupied / (float)table->capacity;
 }
 
-void z__pointer_table_resize(Z_Pointer_Table *table, size_t new_capacity)
+static inline void z__pointer_table_resize(Z_Pointer_Table *table, size_t new_capacity)
 {
   Z_Pointer_Table new_table = {
     .pointers = calloc(new_capacity, sizeof(void *)),
@@ -71,7 +71,7 @@ void z__pointer_table_resize(Z_Pointer_Table *table, size_t new_capacity)
   *table = new_table;
 }
 
-void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
+static inline void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
 {
   if (table->capacity == 0 || z_ptr_table_load_factor(table) >= Z_PTR_TABLE_MAX_LOAD_FACTOR) {
     size_t new_capacity = z__max(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_BUFFER_GROWTH_FACTOR);
@@ -87,14 +87,14 @@ void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
   *slot = pointer;
 }
 
-void z__pointer_table_delete(Z_Pointer_Table *table, const void *pointer)
+static inline void z__pointer_table_delete(Z_Pointer_Table *table, const void *pointer)
 {
   void **slot = z__pointer_table_find_slot(table, pointer);
   table->occupied--;
   *slot = Z_PTR_TABLE_TOMBSTONE;
 }
 
-void z__pointer_table_foreach(const Z_Pointer_Table *table, void callback(void *))
+static inline void z__pointer_table_foreach(const Z_Pointer_Table *table, void callback(void *))
 {
   for (size_t i = 0; i < table->capacity; i++) {
     if (table->pointers[i] && table->pointers[i] != Z_PTR_TABLE_TOMBSTONE) {
@@ -103,7 +103,7 @@ void z__pointer_table_foreach(const Z_Pointer_Table *table, void callback(void *
   }
 }
 
-void z__pointer_table_free(Z_Pointer_Table *table)
+static inline void z__pointer_table_free(Z_Pointer_Table *table)
 {
   free(table->pointers);
 }

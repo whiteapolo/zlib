@@ -66,7 +66,7 @@ Z_Key_Value z__avl_remove(
 );
 
 Z_Key_Value_Array z__avl_to_array(
-  Z_Heap *heap, 
+  Z_Heap *heap,
   const Z_Avl_Node *root
 );
 
@@ -81,13 +81,6 @@ void z__avl_print_hierarchy(
     Z_Print_Fn print_key,
     Z_Print_Fn print_value,
     const char *separator
-);
-
-void z__avl_free(
-    Z_Heap *heap,
-    Z_Avl_Node *root,
-    Z_Free_Fn free_key,
-    Z_Free_Fn free_value
 );
 
 #endif

@@ -198,7 +198,7 @@ Z_Key_Value z__avl_remove(
 }
 
 void z__avl_to_array_implementation(
-  Z_Heap *heap, 
+  Z_Heap *heap,
   const Z_Avl_Node *root,
   Z_Key_Value_Array *output_array
 )
@@ -220,7 +220,7 @@ void z__avl_to_array_implementation(
 }
 
 Z_Key_Value_Array z__avl_to_array(
-  Z_Heap *heap, 
+  Z_Heap *heap,
   const Z_Avl_Node *root
 )
 {
@@ -280,18 +280,4 @@ void z__avl_print(
   }
 
   printf("}\n");
-}
-
-void z__avl_free(Z_Heap *heap, Z_Avl_Node *root, Z_Free_Fn free_key, Z_Free_Fn free_value)
-{
-  if (root == NULL) {
-    return;
-  }
-
-  if (free_key) free_key(heap, root->key);
-  if (free_value) free_value(heap, root->value);
-
-  z__avl_free(heap, root->left, free_key, free_value);
-  z__avl_free(heap, root->right, free_key, free_value);
-  z_heap_free_pointer(heap, root);
 }
