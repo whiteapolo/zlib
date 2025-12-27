@@ -11,8 +11,9 @@ typedef struct {
   size_t capacity;
 } Z_Arena;
 
-Z_Arena z_arena_new(size_t capacity);
-void *z_arena_alocate(Z_Arena *arena, size_t bytes, size_t align);
+Z_Arena z_arena_new();
+void *z_arena_alocate(Z_Arena *arena, size_t bytes);
+void z_arena_reset(Z_Arena *arena);
 void z_arena_free(Z_Arena *arena);
 
 #endif
