@@ -7,7 +7,7 @@
 #define Z_PTR_TABLE_MAX_LOAD_FACTOR 0.7
 #define Z_PTR_TABLE_TOMBSTONE ((void*)1)
 
-static inline size_t z__max(size_t a, size_t b)
+static inline size_t z__heap_max(size_t a, size_t b)
 {
   return a > b ? a : b;
 }
@@ -74,7 +74,7 @@ static inline void z__pointer_table_resize(Z_Pointer_Table *table, size_t new_ca
 static inline void z__pointer_table_insert(Z_Pointer_Table *table, void *pointer)
 {
   if (table->capacity == 0 || z_ptr_table_load_factor(table) >= Z_PTR_TABLE_MAX_LOAD_FACTOR) {
-    size_t new_capacity = z__max(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_BUFFER_GROWTH_FACTOR);
+    size_t new_capacity = z__heap_max(Z_PTR_TABLE_MIN_CAPACITY, table->capacity * Z_BUFFER_GROWTH_FACTOR);
     z__pointer_table_resize(table, new_capacity);
   }
 

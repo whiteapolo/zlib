@@ -1,22 +1,12 @@
 CC = cc
-CFLAGS = -I./include -I./src -g
-LIB = libzatar.a
-OBJDIR = obj
-SRC = $(shell find src -name "*.c")
-OBJ = $(addprefix $(OBJDIR)/, $(notdir $(SRC:.c=.o)))
-SRCDIRS = $(sort $(dir $(SRC)))
-VPATH = $(SRCDIRS)
+CFLAGS = -g -I./include
 
-all: $(LIB)
-
-$(LIB): $(OBJ)
-	ar rcs $@ $^
-
-$(OBJDIR)/%.o: %.c
-	@mkdir -p $(OBJDIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+all:
+	@mkdir -p obj
+	$(CC) $(CFLAGS) -c ./src/all.c -o obj/libzatar.o
+	ar rcs libzatar.a ./obj/libzatar.o
 
 clean:
-	rm -rf $(OBJDIR) $(LIB)
+	rm -rf obj libzatar.a
 
 .PHONY: all clean

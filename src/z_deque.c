@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-static size_t z__max(size_t a, size_t b)
+static size_t z__deque_max(size_t a, size_t b)
 {
   return a > b ? a : b;
 }
@@ -70,7 +70,7 @@ void z__deque_debug_print(const Z_Deque *deque, Z_Print_Fn print_element)
 void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
 {
    if (deque->capacity < needed) {
-    size_t new_capacity = z__max(needed, deque->capacity * Z_BUFFER_GROWTH_FACTOR);
+    size_t new_capacity = z__deque_max(needed, deque->capacity * Z_BUFFER_GROWTH_FACTOR);
     size_t old_capacity = deque->capacity;
     deque->ptr = z_heap_realloc(deque->heap, deque->ptr, sizeof(void *) * new_capacity);
     deque->capacity = new_capacity;
