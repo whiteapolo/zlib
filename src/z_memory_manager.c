@@ -30,5 +30,12 @@ void z_memory_manager_free_pointer(Z_Memory_Manager *manager, void *ptr)
 
 }
 
-void z_memory_manager_reset(Z_Memory_Manager *manager);
-void z_memory_manager_free_all(Z_Memory_Manager *manager);
+void z_memory_manager_reset(Z_Memory_Manager *manager)
+{
+
+}
+
+void z_memory_manager_free_all(Z_Memory_Manager *manager)
+{
+  
+}
