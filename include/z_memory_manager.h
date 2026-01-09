@@ -10,11 +10,7 @@ typedef enum {
 } Z_Memory_Manager_Mode;
 
 typedef struct {
-  void *(*malloc)(Z_Memory_Manager *manager, size_t size);
-  void (*realloc)(Z_Memory_Manager *manager, void *ptr, size_t size);
-  void (*free_pointer)(Z_Memory_Manager *manager, void *ptr);
-  void (*reset)(Z_Memory_Manager *manager);
-  void (*free_all)(Z_Memory_Manager *manager);
+  Z_Memory_Manager_Mode mode;
   union {
     Z_Heap heap;
     Z_Arena arena;
