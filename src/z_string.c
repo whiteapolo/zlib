@@ -173,24 +173,24 @@ Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View del
   return result;
 }
 
-Z_String_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
+Z_String_View_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
 {
-  if (delimiter.length == 0) {
-    return z_array_new(heap, Z_String_Array);
-  }
+  Z_String_View_Array result = z_array_new(heap, Z_String_View_Array);
 
-  Z_String_Array result = z_array_new(heap, Z_String_Array);
+  if (delimiter.length == 0) {
+    return result;
+  }
 
   ssize_t offset = 0;
   ssize_t length = 0;
 
   while ((length = z_sv_find_index(z_sv_offset(s, offset), delimiter)) != -1) {
     Z_String_View slice = z_sv_substring(s, offset, offset + length);
-    z_array_push(&result, z_str_new_from_sv(heap, slice));
+    z_array_push(&result, slice);
     offset += length + delimiter.length;
   }
 
-  z_array_push(&result, z_str_new_from_sv(heap, z_sv_substring(s, offset, s.length)));
+  z_array_push(&result, z_sv_substring(s, offset, s.length));
 
   return result;
 }

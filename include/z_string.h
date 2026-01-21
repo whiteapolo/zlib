@@ -13,6 +13,7 @@ typedef struct {
 
 Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
+Z_DEFINE_ARRAY(Z_String_View_Array, Z_String_View);
 
 Z_String z_str_new(Z_Heap *heap, const char *format, ...);
 Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args);
@@ -36,7 +37,7 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 void z_str_clear(Z_String *s);
 
 Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter);
-Z_String_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter);
+Z_String_View_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter);
 
 void z_str_trim(Z_String *s);
 void z_str_trim_cset(Z_String *s, Z_String_View cset);
