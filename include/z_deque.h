@@ -2,10 +2,10 @@
 #define DEQUE_H
 
 #include <stdlib.h>
-#include <z_heap.h>
+#include <z_allocator.h>
 
 typedef struct {
-  Z_Heap *heap;
+  Z_Allocator *allocator;
   void **ptr;
   size_t size;
   size_t capacity;
@@ -13,7 +13,7 @@ typedef struct {
   size_t rear;
 } Z_Deque;
 
-Z_Deque z_deque_new(Z_Heap *heap);
+Z_Deque z_deque_new(Z_Allocator *allocator);
 size_t z_deque_size(const Z_Deque *deque);
 void *z_deque_at(const Z_Deque *deque, size_t i);
 void z_deque_push_back(Z_Deque *deque, void *element);

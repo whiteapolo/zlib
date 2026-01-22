@@ -1,6 +1,6 @@
 #include <z_deque.h>
 #include <z_compare.h>
-#include <z_config.h>
+#include <internal/z_config.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
@@ -11,10 +11,10 @@ static size_t z__deque_max(size_t a, size_t b)
   return a > b ? a : b;
 }
 
-Z_Deque z_deque_new(Z_Heap *heap)
+Z_Deque z_deque_new(Z_Allocator *allocator)
 {
   Z_Deque deque = {
-    .heap = heap,
+    .allocator = allocator,
     .capacity = 0,
     .size = 0,
     .front = 0,
@@ -75,7 +75,7 @@ void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
 
   size_t new_capacity = z__deque_max(needed, deque->capacity * Z_BUFFER_GROWTH_FACTOR);
   size_t old_capacity = deque->capacity;
-  deque->ptr = z_heap_realloc(deque->heap, deque->ptr, sizeof(void *) * new_capacity);
+  deque->ptr = z_allocator_realloc(deque->allocator, deque->ptr, sizeof(void *) * new_capacity);
   deque->capacity = new_capacity;
 
   if (deque->front > deque->rear) {

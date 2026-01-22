@@ -1,6 +1,6 @@
 #include <z_allocator.h>
-#include <z_arena.h>
-#include <z_heap.h>
+#include <internal/z_arena.h>
+#include <internal/z_heap.h>
 
 Z_Allocator z_allocator_new(Z_Allocator_Mode mode)
 {
@@ -47,7 +47,7 @@ void *z_allocator_realloc(Z_Allocator *allocator, void *ptr, size_t bytes)
   return NULL;
 }
 
-void z_allocator_free(Z_Allocator *allocator, void *ptr)
+void z_allocator_free_pointer(Z_Allocator *allocator, void *ptr)
 {
   switch (allocator->mode) {
     case Z_ALLOCATOR_MODE_HEAP:
@@ -72,7 +72,7 @@ void z_allocator_reset(Z_Allocator *allocator)
   }
 }
 
-void z_allocator_destroy(Z_Allocator *allocator)
+void z_allocator_free(Z_Allocator *allocator)
 {
   switch (allocator->mode) {
     case Z_ALLOCATOR_MODE_HEAP:

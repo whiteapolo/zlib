@@ -1,9 +1,9 @@
-#include "z_config.h"
 #include <stdio.h>
-#include <z_arena.h>
+#include <internal/z_arena.h>
 #include <unistd.h>
 #include <assert.h>
 #include <sys/mman.h>
+#include <internal/z_config.h>
 
 Z_Arena z_arena_new()
 {

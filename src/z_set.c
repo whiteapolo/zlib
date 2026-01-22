@@ -1,8 +1,8 @@
 #include <z_set.h>
 
-Z_Set z_set_new(Z_Heap *heap, Z_Compare_Fn compare_elements)
+Z_Set z_set_new(Z_Allocator *allocator, Z_Compare_Fn compare_elements)
 {
-  return z_map_new(heap, compare_elements);
+  return z_map_new(allocator, compare_elements);
 }
 
 size_t z_set_size(const Z_Set *set)

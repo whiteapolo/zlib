@@ -22,7 +22,7 @@ typedef struct {
 } Z_CLI_Option;
 
 typedef struct {
-  Z_Heap *heap;
+  Z_Allocator *allocator;
   Z_CLI_Option *ptr;
   size_t length;
   size_t capacity;

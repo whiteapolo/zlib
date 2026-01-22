@@ -13,8 +13,6 @@ typedef struct {
   Z_Pointer_Table table;
 } Z_Heap;
 
-#define Z_Heap_Auto __attribute__((cleanup(z_heap_free))) Z_Heap
-
 typedef void (*Z_Free_Fn)(Z_Heap *, void *);
 
 Z_Heap z_heap_new();

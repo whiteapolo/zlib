@@ -2,23 +2,23 @@
 #define ARRAY_H
 
 #include <string.h>
-#include <z_config.h>
+#include <internal/z_config.h>
 
 #define Z_DEFINE_ARRAY(identifier, element_type) \
 typedef struct {                                 \
-  Z_Heap *heap;                                  \
+  Z_Allocator *allocator;                        \
   element_type *ptr;                             \
   size_t length;                                 \
   size_t capacity;                               \
 } identifier
 
-#define z_array_new(heap_ptr, type) ((type){ .heap = heap_ptr, .ptr = NULL, .length = 0, .capacity = 0 })
+#define z_array_new(allocator_ptr, type) ((type){ .allocator = allocator_ptr, .ptr = NULL, .length = 0, .capacity = 0 })
 
 #define z_array_ensure_capacity(array_ptr, needed)                                                                               \
   do {                                                                                                                           \
     if ((array_ptr)->capacity < (needed)) {                                                                                      \
       size_t new_capacity = z__calculate_new_capacity(array_ptr, needed);                                                                \
-      (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity);          \
+      (array_ptr)->ptr = z_allocator_realloc((array_ptr)->allocator, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity);          \
       (array_ptr)->capacity = new_capacity;                                                                                      \
     }                                                                                                                            \
   } while (0)
