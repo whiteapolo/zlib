@@ -115,6 +115,12 @@ static inline void z__pointer_table_free(Z_Pointer_Table *table)
   free(table->pointers);
 }
 
+Z_Heap z_heap_new()
+{
+  Z_Heap heap = {0};
+  return heap;
+}
+
 void *z_heap_malloc(Z_Heap *heap, size_t bytes)
 {
   void *pointer = malloc(bytes);
