@@ -34,7 +34,7 @@ static size_t align_up(size_t n)
 
 void *z_arena_alocate(Z_Arena *arena, size_t bytes)
 {
-  size_t new_offset = align_up(arena->offset);
+  size_t new_offset = arena->offset + bytes + (bytes % Z_MEMORY_ALIGHMENT);
   assert(arena->ptr + new_offset < arena->ptr + arena->capacity);
   void *ptr = arena->ptr + arena->offset;
   arena->offset = new_offset;
@@ -48,6 +48,5 @@ void z_arena_reset(Z_Arena *arena)
 
 void z_arena_free(Z_Arena *arena)
 {
-  printf("hey\n");
   munmap(arena->ptr, arena->capacity);
 }

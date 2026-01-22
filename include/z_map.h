@@ -2,7 +2,7 @@
 #define MAP_H
 
 #include <z_heap.h>
-#include <z_comparator.h>
+#include <z_compare.h>
 #include <z_array.h>
 #include <internal/z_avl.h>
 #include <stdbool.h>

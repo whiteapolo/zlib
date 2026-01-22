@@ -1,5 +1,5 @@
 #include <z_deque.h>
-#include <z_comparator.h>
+#include <z_compare.h>
 #include <z_config.h>
 #include <assert.h>
 #include <string.h>
