@@ -12,7 +12,7 @@ typedef struct {
 } Z_Arena;
 
 Z_Arena z_arena_new();
-void *z_arena_alocate(Z_Arena *arena, size_t bytes);
+void *z_arena_allocate(Z_Arena *arena, size_t bytes);
 void z_arena_reset(Z_Arena *arena);
 void z_arena_free(Z_Arena *arena);
 

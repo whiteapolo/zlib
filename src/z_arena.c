@@ -27,12 +27,7 @@ Z_Arena z_arena_new()
   return arena;
 }
 
-static size_t align_up(size_t n)
-{
-  return n + (n % Z_MEMORY_ALIGHMENT);
-}
-
-void *z_arena_alocate(Z_Arena *arena, size_t bytes)
+void *z_arena_allocate(Z_Arena *arena, size_t bytes)
 {
   size_t new_offset = arena->offset + bytes + (bytes % Z_MEMORY_ALIGHMENT);
   assert(arena->ptr + new_offset < arena->ptr + arena->capacity);

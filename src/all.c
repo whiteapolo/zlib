@@ -6,7 +6,7 @@
 #include "z_file.c"
 #include "z_heap.c"
 #include "z_map.c"
-#include "z_memory_manager.c"
+#include "z_allocator.c"
 #include "z_path.c"
 #include "z_scanner.c"
 #include "z_set.c"

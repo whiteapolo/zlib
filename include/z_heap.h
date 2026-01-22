@@ -17,6 +17,7 @@ typedef struct {
 
 typedef void (*Z_Free_Fn)(Z_Heap *, void *);
 
+Z_Heap z_heap_new();
 void *z_heap_malloc(Z_Heap *heap, size_t bytes);
 void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size);
 void z_heap_free_pointer(Z_Heap *heap, void *pointer);
