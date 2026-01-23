@@ -1,6 +1,6 @@
 CC = cc
 CFLAGS = -I./include -O3
-DEV_CFLAGS = -I./include -O0 -Wall -Wextra
+DEV_CFLAGS = -I./include -O0 -Wall -Wextra -g -pedantic
 
 all: release
 

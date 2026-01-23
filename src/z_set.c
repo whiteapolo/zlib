@@ -27,8 +27,10 @@ void *z_set_remove(Z_Set *set, void *element)
   return deleted.key;
 }
 
-void z__set_print_nothing(const void *)
-{ }
+void z__set_print_nothing(const void *a)
+{
+  (void)a;
+}
 
 void z_set_print(const Z_Set *set, Z_Print_Fn print_element)
 {

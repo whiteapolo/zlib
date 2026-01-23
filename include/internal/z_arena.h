@@ -2,17 +2,17 @@
 #define Z_ARENA_H
 
 #include <stdlib.h>
-
-#define Z_Arena_Auto __attribute__((cleanup(z_arena_free))) Z_Arena
+#include <stdint.h>
 
 typedef struct {
-  char *ptr;
-  size_t offset;
-  size_t capacity;
+  char *begin;
+  char *current;
+  char *end;
 } Z_Arena;
 
 Z_Arena z_arena_new();
-void *z_arena_allocate(Z_Arena *arena, size_t bytes);
+void *z_arena_malloc(Z_Arena *arena, size_t size);
+void *z_arena_realloc(Z_Arena *arena, void *ptr, size_t size);
 void z_arena_reset(Z_Arena *arena);
 void z_arena_free(Z_Arena *arena);
 

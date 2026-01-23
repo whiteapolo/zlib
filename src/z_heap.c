@@ -121,9 +121,9 @@ Z_Heap z_heap_new()
   return heap;
 }
 
-void *z_heap_malloc(Z_Heap *heap, size_t bytes)
+void *z_heap_malloc(Z_Heap *heap, size_t size)
 {
-  void *pointer = malloc(bytes);
+  void *pointer = malloc(size);
   z__pointer_table_insert(&heap->table, pointer);
   return pointer;
 }

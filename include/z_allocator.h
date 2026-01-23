@@ -22,8 +22,8 @@ typedef struct {
 
 Z_Allocator z_allocator_new(Z_Allocator_Mode mode);
 
-void *z_allocator_malloc(Z_Allocator *allocator, size_t bytes);
-void *z_allocator_realloc(Z_Allocator *allocator, void *ptr, size_t bytes);
+void *z_allocator_malloc(Z_Allocator *allocator, size_t size);
+void *z_allocator_realloc(Z_Allocator *allocator, void *ptr, size_t size);
 void z_allocator_free_pointer(Z_Allocator *allocator, void *ptr);
 
 void z_allocator_reset(Z_Allocator *allocator);
