@@ -48,7 +48,7 @@ void z_str_trim_left_cset(Z_String *s, Z_String_View cset);
 
 Z_String_View z_sv_from_str(const Z_String *s);
 Z_String_View z_sv_from_cstr(const char *s);
-Z_String_View z_sv_offset(Z_String_View s, size_t offset);
+Z_String_View z_sv_advance(Z_String_View s, size_t offset);
 Z_String_View z_sv_substring(Z_String_View s, int start, int end);
 
 char z_sv_peek(Z_String_View s);
@@ -56,6 +56,9 @@ int  z_sv_compare(Z_String_View a, Z_String_View b);
 bool z_sv_equal(Z_String_View a, Z_String_View b);
 int  z_sv_compare_n(Z_String_View a, Z_String_View b, size_t n);
 bool z_sv_equal_n(Z_String_View a, Z_String_View b, size_t n);
+bool z_sv_like(Z_String_View a, Z_String_View b);
+bool z_sv_naive_like(Z_String_View str, Z_String_View pattern);
+
 bool z_sv_starts_with(Z_String_View s, Z_String_View start);
 bool z_sv_ends_with(Z_String_View s, Z_String_View end);
 bool z_sv_contains(Z_String_View haystack, Z_String_View needle);

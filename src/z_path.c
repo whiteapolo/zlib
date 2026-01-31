@@ -5,7 +5,7 @@ Z_String z_expand_tilde(Z_Allocator *allocator, Z_String_View pathname)
 {
   if (z_sv_starts_with(pathname, z_sv_from_cstr("~"))) {
     Z_String expanded = z_str_new(allocator, "%s", z_try_get_env("HOME", "."));
-    z_str_append_str(&expanded, z_sv_offset(pathname, 1));
+    z_str_append_str(&expanded, z_sv_advance(pathname, 1));
     return expanded;
   }
 
@@ -18,7 +18,7 @@ Z_String z_compress_tilde(Z_Allocator *allocator, Z_String_View pathname)
 
   if (home && z_sv_starts_with(pathname, z_sv_from_cstr(home))) {
     Z_String compressed = z_str_new(allocator, "~");
-    z_str_append_str(&compressed, z_sv_offset(pathname, strlen(home)));
+    z_str_append_str(&compressed, z_sv_advance(pathname, strlen(home)));
     return compressed;
   }
 
