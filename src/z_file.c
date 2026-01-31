@@ -69,7 +69,7 @@ bool z_scanf_file(const char *pathname, const char *format, ...)
   return true;
 }
 
-Z_Maybe_String z_read_file(Z_Allocator *allocator, const char *pathname)
+Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname)
 {
   FILE *fp = fopen(pathname, "r");
 
@@ -77,7 +77,7 @@ Z_Maybe_String z_read_file(Z_Allocator *allocator, const char *pathname)
     return (Z_Maybe_String){ .ok = false };
   }
 
-  Z_String content = z_str_new(allocator, "");
+  Z_String content = z_str_new(heap, "");
   size_t file_size = z__get_file_size(fp);
 
   z_array_ensure_capacity(&content, file_size);
@@ -88,7 +88,7 @@ Z_Maybe_String z_read_file(Z_Allocator *allocator, const char *pathname)
   return (Z_Maybe_String){ .ok = true, .value = content };
 }
 
-Z_Maybe_String_Array z_read_directory(Z_Allocator *allocator, const char *pathname)
+Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
 {
   DIR *directory = opendir(pathname);
 
@@ -96,11 +96,11 @@ Z_Maybe_String_Array z_read_directory(Z_Allocator *allocator, const char *pathna
     return (Z_Maybe_String_Array){ .ok = false };
   }
 
-  Z_String_Array entries = z_array_new(allocator, Z_String_Array);
+  Z_String_Array entries = z_array_new(heap, Z_String_Array);
   struct dirent *directory_entry;
 
   while ((directory_entry = readdir(directory))) {
-    z_array_push(&entries, z_str_new(allocator, "%s", directory_entry->d_name));
+    z_array_push(&entries, z_str_new(heap, "%s", directory_entry->d_name));
   }
 
   closedir(directory);

@@ -1,4 +1,3 @@
-#include "z_arena.c"
 #include "z_avl.c"
 #include "z_compare.c"
 #include "z_deque.c"
@@ -6,7 +5,6 @@
 #include "z_file.c"
 #include "z_heap.c"
 #include "z_map.c"
-#include "z_allocator.c"
 #include "z_path.c"
 #include "z_scanner.c"
 #include "z_set.c"

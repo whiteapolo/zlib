@@ -26,30 +26,30 @@ size_t z__get_format_length(const char *format, va_list args)
   return size;
 }
 
-Z_String z_str_new(Z_Allocator *allocator, const char *format, ...)
+Z_String z_str_new(Z_Heap *heap, const char *format, ...)
 {
   va_list args;
   va_start(args, format);
-  Z_String s = z_str_new_args(allocator, format, args);
+  Z_String s = z_str_new_args(heap, format, args);
   va_end(args);
   return s;
 }
 
-Z_String z_str_new_args(Z_Allocator *allocator, const char *format, va_list args)
+Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args)
 {
-  Z_String s = z_array_new(allocator, Z_String);
+  Z_String s = z_array_new(heap, Z_String);
   z_str_append_format_va(&s, format, args);
   return s;
 }
 
-Z_String z_str_new_from_sv(Z_Allocator *allocator, Z_String_View s)
+Z_String z_str_new_from_sv(Z_Heap *heap, Z_String_View s)
 {
-  return z_str_new(allocator, "%.*s", z__size_t_to_int(s.length), s.ptr);
+  return z_str_new(heap, "%.*s", z__size_t_to_int(s.length), s.ptr);
 }
 
-char *z_sv_to_cstr(Z_Allocator *allocator, Z_String_View s)
+char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s)
 {
-  char *ret = z_allocator_malloc(allocator, sizeof(char) * (s.length + 1));
+  char *ret = z_heap_malloc(heap, sizeof(char) * (s.length + 1));
   memcpy(ret, s.ptr, sizeof(char) * s.length);
   ret[s.length] = 0;
   return ret;
@@ -111,8 +111,8 @@ void z_str_prepend_format(Z_String *s, const char *format, ...)
 
 void z_str_prepend_va(Z_String *s, const char *format, va_list args)
 {
-  Z_Allocator_Auto allocator = z_allocator_new(Z_ALLOCATOR_MODE_HEAP);
-  Z_String tmp = z_str_new_args(&allocator, format, args);
+  Z_Heap_Auto heap = {0};
+  Z_String tmp = z_str_new_args(&heap, format, args);
   z_str_append_format(&tmp, "%s", s->ptr);
   z_str_clear(s);
   z_str_append_format(s, "%s", tmp.ptr);
@@ -137,8 +137,8 @@ char z_str_pop_char(Z_String *s)
 
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 {
-  Z_Allocator_Auto allocator = z_allocator_new(Z_ALLOCATOR_MODE_HEAP);
-  Z_String tmp = z_str_new(&allocator, "");
+  Z_Heap_Auto heap = {0};
+  Z_String tmp = z_str_new(&heap, "");
 
   size_t i = 0;
 
@@ -156,13 +156,13 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
   z_str_append_format(s, "%s", tmp.ptr);
 }
 
-Z_String z_str_join(Z_Allocator *allocator, const Z_String_Array *array, Z_String_View delimiter)
+Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter)
 {
   if (array->length == 0) {
-    return z_str_new(allocator, "");
+    return z_str_new(heap, "");
   }
 
-  Z_String result = z_str_new(allocator, "");
+  Z_String result = z_str_new(heap, "");
 
   for (size_t i = 0; i < array->length - 1; i++) {
     z_str_append_str(&result, z_sv_from_str(array->ptr + i));
@@ -173,9 +173,9 @@ Z_String z_str_join(Z_Allocator *allocator, const Z_String_Array *array, Z_Strin
   return result;
 }
 
-Z_String_View_Array z_str_split(Z_Allocator *allocator, Z_String_View s, Z_String_View delimiter)
+Z_String_View_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
 {
-  Z_String_View_Array result = z_array_new(allocator, Z_String_View_Array);
+  Z_String_View_Array result = z_array_new(heap, Z_String_View_Array);
 
   if (delimiter.length == 0) {
     return result;

@@ -3,7 +3,7 @@
 
 #include <z_array.h>
 #include <z_compare.h>
-#include <z_allocator.h>
+#include <z_heap.h>
 #include <stdbool.h>
 
 typedef struct {
@@ -22,7 +22,7 @@ typedef struct Z_Avl_Node {
 } Z_Avl_Node;
 
 Z_Avl_Node *z__avl_new(
-    Z_Allocator *allocator,
+    Z_Heap *heap,
     void *key,
     void *value
 );
@@ -51,7 +51,7 @@ bool z__avl_has(
 );
 
 Z_Key_Value z__avl_put(
-    Z_Allocator *allocator,
+    Z_Heap *heap,
     Z_Avl_Node **root,
     void *key,
     void *value,
@@ -59,14 +59,14 @@ Z_Key_Value z__avl_put(
 );
 
 Z_Key_Value z__avl_remove(
-    Z_Allocator *allocator,
+    Z_Heap *heap,
     Z_Avl_Node **root,
     void *key,
     Z_Compare_Fn compare_keys
 );
 
 Z_Key_Value_Array z__avl_to_array(
-  Z_Allocator *allocator,
+  Z_Heap *heap,
   const Z_Avl_Node *root
 );
 

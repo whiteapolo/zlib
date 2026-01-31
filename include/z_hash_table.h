@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <z_compare.h>
 #include <z_array.h>
+#include <z_heap.h>
 
 #define Z_HASH_TABLE_MIN_CAPACITY 16
 #define Z_HASH_TABLE_MAX_LOAD_FACTOR 0.7
@@ -26,16 +27,17 @@ typedef struct {
     size_t capacity;
     Z_Equal_Fn equal;
     Z_Hash_Fn hash;
+    Z_Heap *heap;
 } Z_Hash_Table;
 
 Z_Key_Value z_make_key_value(void *key, void *value);
 
-Z_Hash_Table z_hash_table_new(Z_Equal_Fn equal, Z_Hash_Table hash)
+Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Table hash)
 {
-    return z_hash_table_new_with_capacity(equal, hash, 0);
+    return z_hash_table_new_with_capacity(heap, equal, hash, 0);
 }
 
-Z_Hash_Table z_hash_table_new_with_capacity(Z_Equal_Fn equal, Z_Hash_Table hash, size_t capacity)
+Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Table hash, size_t capacity)
 {
     Z_Hash_Table table = {
         .keys = calloc(capacity, sizeof(Z_Key_Value)),
@@ -46,6 +48,7 @@ Z_Hash_Table z_hash_table_new_with_capacity(Z_Equal_Fn equal, Z_Hash_Table hash,
         .capacity = capacity,
         .equal = equal,
         .hash = hash,
+        .heap = heap,
     };
 
     return hash_table;
@@ -73,7 +76,7 @@ float z__hash_table_get_load_factor(const Z_Hash_Table *table)
 
 void z__hash_table_resize(Z_Hash_Table *table, size_t new_capacity)
 {
-    Z_Hash_Table new_table = z_hash_table_new_with_capacity(table->compare, table->hash, new_capacity);
+    Z_Hash_Table new_table = z_hash_table_new_with_capacity(table->heap, table->compare, table->hash, new_capacity);
 
     for (size_t i = 0; i < table->capacity; i++) {
         if (table->ptr[i] && table->ptr[i] != Z_HASH_TABLE_TOMBSTONE) {

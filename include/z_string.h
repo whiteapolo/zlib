@@ -1,7 +1,7 @@
 #ifndef STRING_H
 #define STRING_H
 
-#include <z_allocator.h>
+#include <z_heap.h>
 #include <z_array.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -15,10 +15,10 @@ Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
 Z_DEFINE_ARRAY(Z_String_View_Array, Z_String_View);
 
-Z_String z_str_new(Z_Allocator *allocator, const char *format, ...);
-Z_String z_str_new_args(Z_Allocator *allocator, const char *format, va_list args);
-Z_String z_str_new_from_sv(Z_Allocator *allocator, Z_String_View s);
-char *z_sv_to_cstr(Z_Allocator *allocator, Z_String_View s);
+Z_String z_str_new(Z_Heap *heap, const char *format, ...);
+Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args);
+Z_String z_str_new_from_sv(Z_Heap *heap, Z_String_View s);
+char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s);
 char *z_str_to_cstr(Z_String s);
 
 void z_str_append_cstr(Z_String *s, const char *cstr);
@@ -36,8 +36,8 @@ char z_str_pop_char(Z_String *s);
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement);
 void z_str_clear(Z_String *s);
 
-Z_String z_str_join(Z_Allocator *allocator, const Z_String_Array *array, Z_String_View delimiter);
-Z_String_View_Array z_str_split(Z_Allocator *allocator, Z_String_View s, Z_String_View delimiter);
+Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter);
+Z_String_View_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter);
 
 void z_str_trim(Z_String *s);
 void z_str_trim_cset(Z_String *s, Z_String_View cset);

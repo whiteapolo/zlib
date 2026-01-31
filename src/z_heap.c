@@ -1,4 +1,4 @@
-#include <internal/z_heap.h>
+#include <z_heap.h>
 #include <internal/z_config.h>
 #include <stdbool.h>
 #include <stdint.h>

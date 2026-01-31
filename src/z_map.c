@@ -1,10 +1,10 @@
 #include <z_map.h>
 #include <internal/z_avl.h>
 
-Z_Map z_map_new(Z_Allocator *allocator, Z_Compare_Fn compare_keys)
+Z_Map z_map_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
 {
   Z_Map map = {
-    .allocator = allocator,
+    .heap = heap,
     .root = NULL,
     .compare_keys = compare_keys,
     .size = 0,
@@ -20,7 +20,7 @@ size_t z_map_size(const Z_Map *map)
 
 Z_Key_Value z_map_put(Z_Map *map, void *key, void *value)
 {
-  Z_Key_Value old_key_value = z__avl_put(map->allocator, &map->root, key, value, map->compare_keys);
+  Z_Key_Value old_key_value = z__avl_put(map->heap, &map->root, key, value, map->compare_keys);
 
   if (old_key_value.key) {
     map->size++;
@@ -46,7 +46,7 @@ bool z_map_has(const Z_Map *map, void *key)
 
 Z_Key_Value z_map_delete(Z_Map *map, void *key)
 {
-  Z_Key_Value old_key_value = z__avl_remove(map->allocator, &map->root, key, map->compare_keys);
+  Z_Key_Value old_key_value = z__avl_remove(map->heap, &map->root, key, map->compare_keys);
 
   if (old_key_value.key) {
     map->size--;
@@ -55,9 +55,9 @@ Z_Key_Value z_map_delete(Z_Map *map, void *key)
   return old_key_value;
 }
 
-Z_Key_Value_Array z_map_to_array(Z_Allocator *allocator, Z_Map *map)
+Z_Key_Value_Array z_map_to_array(Z_Heap *heap, Z_Map *map)
 {
-  return z__avl_to_array(allocator, map->root);
+  return z__avl_to_array(heap, map->root);
 }
 
 void z_map_print(const Z_Map *map, Z_Print_Fn print_key, Z_Print_Fn print_value)

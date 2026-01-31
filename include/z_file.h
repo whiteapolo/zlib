@@ -1,7 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
-#include <z_allocator.h>
+#include <z_heap.h>
 #include <z_string.h>
 
 typedef struct {
@@ -18,7 +18,7 @@ bool z_write_file(const char *pathname, const char *format, ...);
 bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
 
-Z_Maybe_String z_read_file(Z_Allocator *allocator, const char *pathname);
-Z_Maybe_String_Array z_read_directory(Z_Allocator *allocator, const char *pathname);
+Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname);
+Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname);
 
 #endif
