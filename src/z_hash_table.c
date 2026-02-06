@@ -1,0 +1,215 @@
+#include <z_hash_table.h>
+
+size_t z__hash_table_max(size_t a, size_t b)
+{
+  return a > b ? a : b;
+}
+
+Z_Pair z_make_pair(void *key, void *value)
+{
+  Z_Pair pair = {
+    .key = key,
+    .value = value,
+  };
+
+  return pair;
+}
+
+Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash)
+{
+    return z_hash_table_new_with_capacity(heap, equal, hash, 0);
+}
+
+Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity)
+{
+    void **keys = z_heap_malloc(heap, sizeof(void*) * capacity);
+    void **values = z_heap_malloc(heap, sizeof(void*) * capacity);
+    size_t *hashes = z_heap_malloc(heap, sizeof(size_t) * capacity);
+
+    memset(keys, 0, sizeof(void *) * capacity);
+    memset(values, 0, sizeof(void *) * capacity);
+    memset(hashes, 0, sizeof(size_t) * capacity);
+
+    Z_Hash_Table table = {
+        .keys = keys,
+        .values = values,
+        .hashes = hashes,
+        .occupied = 0,
+        .size = 0,
+        .capacity = capacity,
+        .equal = equal,
+        .hash = hash,
+        .heap = heap,
+    };
+
+    return table;
+}
+
+
+void z__hash_table_free(Z_Hash_Table *table)
+{
+  if (table->capacity == 0) {
+    return;
+  }
+
+  z_heap_free_pointer(table->heap, table->keys);
+  z_heap_free_pointer(table->heap, table->values);
+  z_heap_free_pointer(table->heap, table->hashes);
+}
+
+size_t z__hash_table_hash(const Z_Hash_Table *table, void *key)
+{
+    size_t hash = table->hash(key);
+
+    if (hash < 2) {
+        return 2;
+    }
+
+    return hash * 11;
+}
+
+float z__hash_table_get_load_factor(const Z_Hash_Table *table)
+{
+    if (table->capacity == 0) {
+        return 1;
+    }
+
+    return (float)table->occupied / (float)table->capacity;
+}
+
+void *z_hash_table_get(const Z_Hash_Table *table, void *key)
+{
+    if (table->capacity == 0) {
+      return NULL;
+    }
+
+    size_t hash = z__hash_table_hash(table, key);
+    size_t i = hash & (table->capacity - 1);
+
+    while (table->hashes[i] != Z_HASH_TABLE_EMPTY) {
+
+        if (table->hashes[i] == hash && table->equal(table->keys[i], key)) {
+            return table->values[i];
+        }
+
+        i = (i + 1) & (table->capacity - 1);
+    }
+
+    return NULL;
+}
+
+Z_Pair z__hash_table_put_no_resize(Z_Hash_Table *table, void *key, void *value, size_t hash)
+{
+    size_t i = hash & (table->capacity - 1);
+    ssize_t first_tompstone = -1;
+
+    while (table->hashes[i] != Z_HASH_TABLE_EMPTY) {
+
+        if (first_tompstone == -1 && table->hashes[i] == Z_HASH_TABLE_TOMBSTONE) {
+            first_tompstone = i;
+        }
+
+        if (table->hashes[i] == hash && table->equal(table->keys[i], key)) {
+            return z_make_pair(key, value);
+        }
+
+        i = (i + 1) & (table->capacity - 1);
+    }
+
+    if (first_tompstone == -1) {
+      table->keys[i] = key;
+      table->values[i] = value;
+      table->hashes[i] = hash;
+      table->occupied++;
+    } else {
+      table->keys[first_tompstone] = key;
+      table->values[first_tompstone] = value;
+      table->hashes[first_tompstone] = hash;
+    }
+
+    table->size++;
+
+    return z_make_pair(key, value);
+}
+
+void z__hash_table_resize(Z_Hash_Table *table, size_t new_capacity)
+{
+    Z_Hash_Table new_table = z_hash_table_new_with_capacity(table->heap, table->equal, table->hash, new_capacity);
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        if (table->hashes[i] >= 2) {
+            z__hash_table_put_no_resize(&new_table, table->keys[i], table->values[i], table->hashes[i]);
+        }
+    }
+
+    z__hash_table_free(table);
+    *table = new_table;
+}
+
+Z_Pair z_hash_table_put(Z_Hash_Table *table, void *key, void *value)
+{
+    if (z__hash_table_get_load_factor(table) >= Z_HASH_TABLE_MAX_LOAD_FACTOR) {
+        size_t new_capacity = z__hash_table_max(Z_HASH_TABLE_MIN_CAPACITY, table->capacity * 2);
+        z__hash_table_resize(table, new_capacity);
+    }
+
+    size_t hash = z__hash_table_hash(table, key);
+    return z__hash_table_put_no_resize(table, key, value, hash);
+}
+
+Z_Pair z_hash_table_delete(Z_Hash_Table *table, void *key)
+{
+    size_t hash = z__hash_table_hash(table, key);
+    size_t i = hash & (table->capacity - 1);
+
+    while (table->hashes[i] != Z_HASH_TABLE_EMPTY && (table->hashes[i] != hash || !table->equal(key, table->keys[i]))) {
+        i = (i + 1) & (table->capacity - 1);
+    }
+
+    if (table->hashes[i] == Z_HASH_TABLE_EMPTY) {
+        return z_make_pair(NULL, NULL);
+    }
+
+    table->hashes[i] = Z_HASH_TABLE_TOMBSTONE;
+    table->size--;
+
+    return z_make_pair(table->keys[i], table->values[i]);
+}
+
+bool z_hash_table_contains(const Z_Hash_Table *table, void *key)
+{
+    if (table->capacity == 0) {
+      return false;
+    }
+
+    size_t hash = z__hash_table_hash(table, key);
+    size_t i = hash & (table->capacity - 1);
+
+    while (table->hashes[i] != Z_HASH_TABLE_EMPTY) {
+        if (table->hashes[i] == hash && table->equal(key, table->keys[i])) {
+            return true;
+        }
+
+        i = (i + 1) & (table->capacity - 1);
+    }
+
+    return false;
+}
+
+size_t z_hash_table_size(const Z_Hash_Table *table)
+{
+    return table->size;
+}
+
+Z_Pair_Array z_hash_table_to_array(Z_Heap *heap, const Z_Hash_Table *table)
+{
+    Z_Pair_Array array = z_array_new(heap, Z_Pair_Array);
+
+    for (size_t i = 0; i < table->capacity; i++) {
+        if (table->hashes[i] >= 2) {
+            z_array_push(&array, z_make_pair(table->keys[i], table->values[i]));
+        }
+    }
+
+    return array;
+}

@@ -10,3 +10,4 @@
 #include "z_set.c"
 #include "z_string.c"
 #include "z_time.c"
+#include "z_hash_table.c"
