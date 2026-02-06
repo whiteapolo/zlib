@@ -1,10 +1,5 @@
 #include <z_hash_table.h>
 
-static inline size_t z__hash_table_max(size_t a, size_t b)
-{
-  return a > b ? a : b;
-}
-
 // mod needs to be a power of two
 static inline size_t z__fast_modulo(size_t value, size_t mod)
 {
@@ -146,7 +141,7 @@ void z__hash_table_resize(Z_Hash_Table *table, size_t new_capacity)
 Z_Pair z_hash_table_put(Z_Hash_Table *table, void *key, void *value)
 {
     if (z__hash_table_get_load_factor(table) >= Z_HASH_TABLE_MAX_LOAD_FACTOR) {
-        size_t new_capacity = z__hash_table_max(Z_HASH_TABLE_MIN_CAPACITY, table->capacity * 2);
+        size_t new_capacity = z__max_size_t(Z_HASH_TABLE_MIN_CAPACITY, table->capacity * 2);
         z__hash_table_resize(table, new_capacity);
     }
 

@@ -2,17 +2,13 @@
 #include <z_array.h>
 #include <limits.h>
 #include <stdio.h>
+#include <internal/z_math.h>
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 
 int z__size_t_to_int(size_t a)
 {
   return a > INT_MAX ? INT_MAX : (int)a;
-}
-
-size_t z__str_min(size_t a, size_t b)
-{
-  return a > b ? b : a;
 }
 
 size_t z__get_format_length(const char *format, va_list args)
@@ -242,7 +238,7 @@ char z_sv_peek(Z_String_View s)
 
 int z_sv_compare(Z_String_View a, Z_String_View b)
 {
-  int result = memcmp(a.ptr, b.ptr, z__str_min(a.length, b.length));
+  int result = memcmp(a.ptr, b.ptr, z__min_size_t(a.length, b.length));
 
   if (result == 0) {
     return z__size_t_to_int(a.length) - z__size_t_to_int(b.length);
@@ -281,7 +277,7 @@ bool z_sv_naive_like(Z_String_View str, Z_String_View pattern)
 
 int z_sv_compare_n(Z_String_View a, Z_String_View b, size_t n)
 {
-  int compare = memcmp(a.ptr, b.ptr, z__str_min(n, z__str_min(a.length, b.length)));
+  int compare = memcmp(a.ptr, b.ptr, z__min_size_t(n, z__min_size_t(a.length, b.length)));
 
   if (compare == 0) {
     return z__size_t_to_int(a.length) - z__size_t_to_int(b.length);
