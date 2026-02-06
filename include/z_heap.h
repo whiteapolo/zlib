@@ -19,6 +19,7 @@ typedef void (*Z_Free_Fn)(Z_Heap *, void *);
 
 Z_Heap z_heap_new();
 void *z_heap_malloc(Z_Heap *heap, size_t size);
+void *z_heap_calloc(Z_Heap *heap, size_t size);
 void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size);
 void z_heap_free_pointer(Z_Heap *heap, void *pointer);
 void z_heap_free(Z_Heap *heap);

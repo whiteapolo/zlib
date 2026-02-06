@@ -128,6 +128,13 @@ void *z_heap_malloc(Z_Heap *heap, size_t size)
   return pointer;
 }
 
+void *z_heap_calloc(Z_Heap *heap, size_t size)
+{
+  void *pointer = calloc(1, size);
+  z__pointer_table_insert(&heap->table, pointer);
+  return pointer;
+}
+
 void *z_heap_realloc(Z_Heap *heap, void *pointer, size_t new_size)
 {
   if (pointer == NULL) {

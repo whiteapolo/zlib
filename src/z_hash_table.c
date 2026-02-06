@@ -1,8 +1,14 @@
 #include <z_hash_table.h>
 
-size_t z__hash_table_max(size_t a, size_t b)
+static inline size_t z__hash_table_max(size_t a, size_t b)
 {
   return a > b ? a : b;
+}
+
+// mod needs to be a power of two
+static inline size_t z__fast_modulo(size_t value, size_t mod)
+{
+  return value & (mod - 1);
 }
 
 Z_Pair z_make_pair(void *key, void *value)
@@ -22,18 +28,10 @@ Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash)
 
 Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity)
 {
-    void **keys = z_heap_malloc(heap, sizeof(void*) * capacity);
-    void **values = z_heap_malloc(heap, sizeof(void*) * capacity);
-    size_t *hashes = z_heap_malloc(heap, sizeof(size_t) * capacity);
-
-    memset(keys, 0, sizeof(void *) * capacity);
-    memset(values, 0, sizeof(void *) * capacity);
-    memset(hashes, 0, sizeof(size_t) * capacity);
-
     Z_Hash_Table table = {
-        .keys = keys,
-        .values = values,
-        .hashes = hashes,
+        .keys = z_heap_calloc(heap, sizeof(void *) * capacity),
+        .values = z_heap_calloc(heap, sizeof(void *) * capacity),
+        .hashes = z_heap_calloc(heap, sizeof(size_t *) * capacity),
         .occupied = 0,
         .size = 0,
         .capacity = capacity,
@@ -44,7 +42,6 @@ Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Ha
 
     return table;
 }
-
 
 void z__hash_table_free(Z_Hash_Table *table)
 {
@@ -57,7 +54,7 @@ void z__hash_table_free(Z_Hash_Table *table)
   z_heap_free_pointer(table->heap, table->hashes);
 }
 
-size_t z__hash_table_hash(const Z_Hash_Table *table, void *key)
+static inline size_t z__hash_table_hash(const Z_Hash_Table *table, void *key)
 {
     size_t hash = table->hash(key);
 
@@ -68,7 +65,7 @@ size_t z__hash_table_hash(const Z_Hash_Table *table, void *key)
     return hash * 11;
 }
 
-float z__hash_table_get_load_factor(const Z_Hash_Table *table)
+static inline float z__hash_table_get_load_factor(const Z_Hash_Table *table)
 {
     if (table->capacity == 0) {
         return 1;
@@ -84,7 +81,7 @@ void *z_hash_table_get(const Z_Hash_Table *table, void *key)
     }
 
     size_t hash = z__hash_table_hash(table, key);
-    size_t i = hash & (table->capacity - 1);
+    size_t i = z__fast_modulo(hash, table->capacity);
 
     while (table->hashes[i] != Z_HASH_TABLE_EMPTY) {
 
@@ -92,7 +89,7 @@ void *z_hash_table_get(const Z_Hash_Table *table, void *key)
             return table->values[i];
         }
 
-        i = (i + 1) & (table->capacity - 1);
+        i = z__fast_modulo(i + 1, table->capacity);
     }
 
     return NULL;
@@ -113,7 +110,7 @@ Z_Pair z__hash_table_put_no_resize(Z_Hash_Table *table, void *key, void *value, 
             return z_make_pair(key, value);
         }
 
-        i = (i + 1) & (table->capacity - 1);
+        i = z__fast_modulo(i + 1, table->capacity);
     }
 
     if (first_tompstone == -1) {
@@ -163,7 +160,7 @@ Z_Pair z_hash_table_delete(Z_Hash_Table *table, void *key)
     size_t i = hash & (table->capacity - 1);
 
     while (table->hashes[i] != Z_HASH_TABLE_EMPTY && (table->hashes[i] != hash || !table->equal(key, table->keys[i]))) {
-        i = (i + 1) & (table->capacity - 1);
+        i = z__fast_modulo(i + 1, table->capacity);
     }
 
     if (table->hashes[i] == Z_HASH_TABLE_EMPTY) {
@@ -183,14 +180,14 @@ bool z_hash_table_contains(const Z_Hash_Table *table, void *key)
     }
 
     size_t hash = z__hash_table_hash(table, key);
-    size_t i = hash & (table->capacity - 1);
+    size_t i = z__fast_modulo(hash, table->capacity);
 
     while (table->hashes[i] != Z_HASH_TABLE_EMPTY) {
         if (table->hashes[i] == hash && table->equal(key, table->keys[i])) {
             return true;
         }
 
-        i = (i + 1) & (table->capacity - 1);
+        i = z__fast_modulo(i + 1, table->capacity);
     }
 
     return false;
