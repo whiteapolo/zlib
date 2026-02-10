@@ -5,6 +5,7 @@
 #include <z_array.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 typedef struct {
   const char *ptr;
