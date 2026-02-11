@@ -139,7 +139,7 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
         size_t i = 0;
 
         while (i < s->length) {
-                if (z_sv_equal(z_sv_advance(z_sv_from_str(s), i), target)) {
+                if (z_sv_equal(z_sv_advance(z_sv(s), i), target)) {
                         z_str_append_str(&tmp, replacement);
                         i += replacement.length;
                 } else {
@@ -161,11 +161,11 @@ Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View del
         Z_String result = z_str_new(heap, "");
 
         for (size_t i = 0; i < array->length - 1; i++) {
-                z_str_append_str(&result, z_sv_from_str(array->ptr + i));
+                z_str_append_str(&result, z_sv_from_str(array->ptr[i]));
                 z_str_append_str(&result, delimiter);
         }
 
-        z_str_append_str(&result, z_sv_from_str(&z_array_peek(array)));
+        z_str_append_str(&result, z_sv_from_str(z_array_peek(array)));
         return result;
 }
 
@@ -191,11 +191,21 @@ Z_String_View_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View del
         return result;
 }
 
-Z_String_View z_sv_from_str(const Z_String *s)
+Z_String_View z_sv_from_str_ptr(const Z_String *s)
 {
         Z_String_View view = {
                 .ptr = s->ptr,
                 .length = s->length
+        };
+
+        return view;
+}
+
+Z_String_View z_sv_from_str(Z_String s)
+{
+        Z_String_View view = {
+                .ptr = s.ptr,
+                .length = s.length
         };
 
         return view;
@@ -231,7 +241,7 @@ Z_String_View z_sv_substring(Z_String_View s, int start, int end)
         return view;
 }
 
-char z_sv_peek(Z_String_View s)
+char z_sv_top(Z_String_View s)
 {
         return s.ptr[s.length - 1];
 }
@@ -302,7 +312,7 @@ bool z_sv_like(Z_String_View str, Z_String_View pattern)
                 return true;
         }
 
-        if ((j == pattern.length || j + 1 == pattern.length) && z_sv_peek(pattern) == '%') {
+        if ((j == pattern.length || j + 1 == pattern.length) && z_sv_top(pattern) == '%') {
                 return true;
         }
 
@@ -401,7 +411,7 @@ void z_str_trim_left(Z_String *s)
 
 void z_str_trim_right_cset(Z_String *s, Z_String_View cset)
 {
-        Z_String_View trimmed = z_sv_trim_right_cset(z_sv_from_str(s), cset);
+        Z_String_View trimmed = z_sv_trim_right_cset(z_sv(s), cset);
         memmove(s->ptr, trimmed.ptr, trimmed.length);
         s->length = trimmed.length;
         z_array_zero_terminate(s);
@@ -409,7 +419,7 @@ void z_str_trim_right_cset(Z_String *s, Z_String_View cset)
 
 void z_str_trim_left_cset(Z_String *s, Z_String_View cset)
 {
-        Z_String_View trimmed = z_sv_trim_left_cset(z_sv_from_str(s), cset);
+        Z_String_View trimmed = z_sv_trim_left_cset(z_sv(s), cset);
         memmove(s->ptr, trimmed.ptr, trimmed.length);
         s->length = trimmed.length;
         z_array_zero_terminate(s);
@@ -435,7 +445,7 @@ Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset)
 {
         Z_String_View trimmed = s;
 
-        while (trimmed.length > 0 && z_sv_contain_char(cset, z_sv_peek(trimmed))) {
+        while (trimmed.length > 0 && z_sv_contain_char(cset, z_sv_top(trimmed))) {
                 trimmed.length--;
         }
 

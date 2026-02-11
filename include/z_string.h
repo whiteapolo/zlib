@@ -47,12 +47,19 @@ void z_str_trim_left(Z_String *s);
 void z_str_trim_right_cset(Z_String *s, Z_String_View cset);
 void z_str_trim_left_cset(Z_String *s, Z_String_View cset);
 
-Z_String_View z_sv_from_str(const Z_String *s);
+Z_String_View z_sv_from_str_ptr(const Z_String *s);
+Z_String_View z_sv_from_str(Z_String s);
 Z_String_View z_sv_from_cstr(const char *s);
+
+#define z_sv(s) _Generic((s),                    \
+                Z_String   : z_sv_from_str,      \
+                Z_String * : z_sv_from_str_ptr,  \
+                char *     : z_sv_from_cstr)(s)
+
 Z_String_View z_sv_advance(Z_String_View s, size_t offset);
 Z_String_View z_sv_substring(Z_String_View s, int start, int end);
 
-char z_sv_peek(Z_String_View s);
+char z_sv_top(Z_String_View s);
 int  z_sv_compare(Z_String_View a, Z_String_View b);
 bool z_sv_equal(Z_String_View a, Z_String_View b);
 int  z_sv_compare_n(Z_String_View a, Z_String_View b, size_t n);
