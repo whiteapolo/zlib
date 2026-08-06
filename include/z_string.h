@@ -3,6 +3,7 @@
 
 #include <z_heap.h>
 #include <z_array.h>
+#include <z_maybe.h>
 #include <stdarg.h>
 #include <stdbool.h>
 
@@ -13,6 +14,16 @@ typedef struct {
 
 Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
+
+Z_DEFINE_MAYBE(Z_Maybe_String, Z_String);
+Z_DEFINE_MAYBE(Z_Maybe_String_View, Z_String_View);
+Z_DEFINE_MAYBE(Z_Maybe_String_Array, Z_String_Array);
+
+typedef struct {
+  Z_String_View world;
+  Z_String_View delimeter;
+  size_t current;
+} Z_Sv_Split_Iterator;
 
 Z_String z_str_new(Z_Heap *heap, const char *format, ...);
 Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args);
@@ -37,6 +48,9 @@ void z_str_clear(Z_String *s);
 
 Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter);
 Z_String_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter);
+Z_Sv_Split_Iterator z_sv_split();
+Z_Maybe_String_View z_sv_split_next(Z_Sv_Split_Iterator *iter);
+Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index);
 
 void z_str_trim(Z_String *s);
 void z_str_trim_cset(Z_String *s, Z_String_View cset);

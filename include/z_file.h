@@ -4,16 +4,6 @@
 #include <z_heap.h>
 #include <z_string.h>
 
-typedef struct {
-  Z_String value;
-  bool ok;
-} Z_Maybe_String;
-
-typedef struct {
-  Z_String_Array value;
-  bool ok;
-} Z_Maybe_String_Array;
-
 bool z_write_file(const char *pathname, const char *format, ...);
 bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
