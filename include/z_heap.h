@@ -2,6 +2,7 @@
 #define HEAP_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 typedef struct {
   uintptr_t *ptr;
