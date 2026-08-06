@@ -88,6 +88,7 @@ Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname)
     return (Z_Maybe_String){ .ok = true, .value = content };
 }
 
+// TODO: not use array
 Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
 {
     DIR *directory = opendir(pathname);

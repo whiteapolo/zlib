@@ -48,9 +48,7 @@ char z_str_pop_char(Z_String *s);
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement);
 void z_str_clear(Z_String *s);
 
-Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter);
-Z_String_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter);
-Z_Sv_Split_Iterator z_sv_split();
+Z_Sv_Split_Iterator z_sv_split(Z_String_View world, Z_String_View delimeter);
 Z_Maybe_String_View z_sv_split_next(Z_Sv_Split_Iterator *iter);
 Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index);
 

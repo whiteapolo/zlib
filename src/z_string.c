@@ -152,62 +152,45 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
     z_str_append_format(s, "%s", tmp.ptr);
 }
 
-Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View delimiter)
-{
-    if (array->length == 0) {
-        return z_str_new(heap, "");
-    }
-
-    Z_String result = z_str_new(heap, "");
-
-    for (size_t i = 0; i < array->length - 1; i++) {
-        z_str_append_str(&result, z_sv_from_str(array->ptr[i]));
-        z_str_append_str(&result, delimiter);
-    }
-
-    z_str_append_str(&result, z_sv_from_str(z_array_peek(array)));
-    return result;
-}
-
 Z_Sv_Split_Iterator z_sv_split(Z_String_View world, Z_String_View delimeter)
 {
-  Z_Sv_Split_Iterator iter = {
-    .world = world,
-    .delimeter = delimeter,
-    .current = 0,
-  };
+    Z_Sv_Split_Iterator iter = {
+        .world = world,
+        .delimeter = delimeter,
+        .current = 0,
+    };
 
-  return iter;
+    return iter;
 }
 
 Z_Maybe_String_View z_sv_split_next(Z_Sv_Split_Iterator *iter)
 {
-  if (iter->current == iter->world.length) {
-    return Z_MAYBE_NOT(Z_Maybe_String_View);
-  }
+    if (iter->current == iter->world.length) {
+        return Z_MAYBE_NOT(Z_Maybe_String_View);
+    }
 
-  Z_String_View small_world = z_sv_advance(iter->world, iter->current);
-  ssize_t next = z_sv_find_index(small_world, iter->delimeter);
+    Z_String_View small_world = z_sv_advance(iter->world, iter->current);
+    ssize_t next = z_sv_find_index(small_world, iter->delimeter);
 
-  if (next == -1) {
-    iter->current = iter->world.length;
-    return Z_MAYBE_YES(Z_Maybe_String_View, small_world);
-  }
+    if (next == -1) {
+        iter->current = iter->world.length;
+        return Z_MAYBE_YES(Z_Maybe_String_View, small_world);
+    }
 
-  iter->current += next;
+    iter->current += next;
 
-  return Z_MAYBE_YES(Z_Maybe_String_View, z_sv_substring(small_world, 0, next));
+    return Z_MAYBE_YES(Z_Maybe_String_View, z_sv_substring(small_world, 0, next));
 }
 
 Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index)
 {
-  Z_Sv_Split_Iterator iter = z_sv_split(s, delimiter);
+    Z_Sv_Split_Iterator iter = z_sv_split(s, delimiter);
 
-  for (size_t i = 0; i < index; i++) {
-    z_sv_split_next(&iter);
-  }
+    for (size_t i = 0; i < index; i++) {
+        z_sv_split_next(&iter);
+    }
 
-  return z_sv_split_next(&iter).value;
+    return z_sv_split_next(&iter).value;
 }
 
 Z_String_View z_sv_from_str_ptr(const Z_String *s)
