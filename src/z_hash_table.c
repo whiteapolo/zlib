@@ -2,12 +2,12 @@
 
 Z_Pair z_make_pair(void *key, void *value)
 {
-  Z_Pair pair = {
-    .key = key,
-    .value = value,
-  };
+    Z_Pair pair = {
+        .key = key,
+        .value = value,
+    };
 
-  return pair;
+    return pair;
 }
 
 Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash)
@@ -34,13 +34,13 @@ Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Ha
 
 void z__hash_table_free(Z_Hash_Table *table)
 {
-  if (table->capacity == 0) {
-    return;
-  }
+    if (table->capacity == 0) {
+        return;
+    }
 
-  z_heap_free(table->heap, table->keys);
-  z_heap_free(table->heap, table->values);
-  z_heap_free(table->heap, table->hashes);
+    z_heap_free(table->heap, table->keys);
+    z_heap_free(table->heap, table->values);
+    z_heap_free(table->heap, table->hashes);
 }
 
 static inline size_t z__hash_table_hash(const Z_Hash_Table *table, void *key)
@@ -66,7 +66,7 @@ static inline float z__hash_table_get_load_factor(const Z_Hash_Table *table)
 void *z_hash_table_try_get(const Z_Hash_Table *table, void *key, void *fallback)
 {
     if (table->capacity == 0) {
-      return fallback;
+        return fallback;
     }
 
     size_t hash = z__hash_table_hash(table, key);
@@ -111,14 +111,14 @@ Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *table, void *key, void *v
     }
 
     if (first_tompstone == -1) {
-      table->keys[i] = key;
-      table->values[i] = value;
-      table->hashes[i] = hash;
-      table->occupied++;
+        table->keys[i] = key;
+        table->values[i] = value;
+        table->hashes[i] = hash;
+        table->occupied++;
     } else {
-      table->keys[first_tompstone] = key;
-      table->values[first_tompstone] = value;
-      table->hashes[first_tompstone] = hash;
+        table->keys[first_tompstone] = key;
+        table->values[first_tompstone] = value;
+        table->hashes[first_tompstone] = hash;
     }
 
     table->size++;
@@ -173,7 +173,7 @@ Z_Maybe_Pair z_hash_table_delete(Z_Hash_Table *table, void *key)
 bool z_hash_table_contains(const Z_Hash_Table *table, void *key)
 {
     if (table->capacity == 0) {
-      return false;
+        return false;
     }
 
     size_t hash = z__hash_table_hash(table, key);

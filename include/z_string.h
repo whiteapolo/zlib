@@ -9,8 +9,8 @@
 #include <unistd.h>
 
 typedef struct {
-  const char *ptr;
-  size_t length;
+    const char *ptr;
+    size_t length;
 } Z_String_View;
 
 Z_DEFINE_ARRAY(Z_String, char);
@@ -22,9 +22,9 @@ Z_DEFINE_MAYBE(Z_Maybe_String_View, Z_String_View);
 Z_DEFINE_MAYBE(Z_Maybe_String_Array, Z_String_Array);
 
 typedef struct {
-  Z_String_View world;
-  Z_String_View delimeter;
-  size_t current;
+    Z_String_View world;
+    Z_String_View delimeter;
+    size_t current;
 } Z_Sv_Split_Iterator;
 
 Z_String z_str_new(Z_Heap *heap, const char *format, ...);

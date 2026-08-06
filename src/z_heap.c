@@ -108,16 +108,16 @@ void z_ptr_table_reset(Z_Ptr_Table *table)
 
 void *z_heap_malloc(Z_Heap *heap, size_t size)
 {
-   void *ptr = malloc(size);
-   z_ptr_table_insert(heap, (uintptr_t)ptr);
-   return ptr;
+    void *ptr = malloc(size);
+    z_ptr_table_insert(heap, (uintptr_t)ptr);
+    return ptr;
 }
 
 void *z_heap_calloc(Z_Heap *heap, size_t size)
 {
-   void *ptr = calloc(1, size);
-   z_ptr_table_insert(heap, (uintptr_t)ptr);
-   return ptr;
+    void *ptr = calloc(1, size);
+    z_ptr_table_insert(heap, (uintptr_t)ptr);
+    return ptr;
 }
 
 void *z_heap_realloc(Z_Heap *heap, void *ptr, size_t new_size)

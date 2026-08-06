@@ -6,23 +6,23 @@
 #include <z_string.h>
 
 typedef enum {
-  Z_GET_OPT_BOOL,
-  Z_GET_OPT_INT,
-  Z_GET_OPT_DOUBLE,
-  Z_GET_OPT_STRING,
+    Z_GET_OPT_BOOL,
+    Z_GET_OPT_INT,
+    Z_GET_OPT_DOUBLE,
+    Z_GET_OPT_STRING,
 } Z_CLI_Option_Type;
 
 typedef enum {
-  Z_GET_OPT_REQUIRED,
-  Z_GET_OPT_OPTIONAL,
+    Z_GET_OPT_REQUIRED,
+    Z_GET_OPT_OPTIONAL,
 } Z_CLI_Option_Status;
 
 typedef struct {
-  Z_Set flags;
-  const char *description;
-  void *value;
-  Z_CLI_Option_Type type;
-  Z_CLI_Option_Status status;
+    Z_Set flags;
+    const char *description;
+    void *value;
+    Z_CLI_Option_Type type;
+    Z_CLI_Option_Status status;
 } Z_CLI_Option;
 
 Z_DEFINE_ARRAY(Z_CLI_Option_Array, Z_CLI_Option);
