@@ -107,3 +107,4 @@ Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
 
   return (Z_Maybe_String_Array){ .ok = true, .value = entries };
 }
+

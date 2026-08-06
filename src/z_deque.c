@@ -1,15 +1,11 @@
 #include <z_deque.h>
-#include <z_comparator.h>
-#include <z_config.h>
+#include <z_compare.h>
+#include <internal/z_config.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-
-static size_t z__max(size_t a, size_t b)
-{
-  return a > b ? a : b;
-}
+#include <internal/z_math.h>
 
 Z_Deque z_deque_new(Z_Heap *heap)
 {
@@ -69,20 +65,22 @@ void z__deque_debug_print(const Z_Deque *deque, Z_Print_Fn print_element)
 
 void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
 {
-   if (deque->capacity < needed) {
-    size_t new_capacity = z__max(needed, deque->capacity * Z_BUFFER_GROWTH_FACTOR);
-    size_t old_capacity = deque->capacity;
-    deque->ptr = z_heap_realloc(deque->heap, deque->ptr, sizeof(void *) * new_capacity);
-    deque->capacity = new_capacity;
+  if (deque->capacity >= needed) {
+    return;
+  }
 
-    if (deque->front > deque->rear) {
-      size_t front_offset = new_capacity - old_capacity;
-      void **old_front = deque->ptr + deque->front;
-      void **new_front = old_front + front_offset;
-      memmove(new_front, old_front, sizeof(void *) * (front_offset));
+  size_t new_capacity = z__max_size_t(needed, deque->capacity * Z_BUFFER_GROWTH_FACTOR);
+  size_t old_capacity = deque->capacity;
+  deque->ptr = z_heap_realloc(deque->heap, deque->ptr, sizeof(void *) * new_capacity);
+  deque->capacity = new_capacity;
 
-      deque->front += front_offset;
-    }
+  if (deque->front > deque->rear) {
+    size_t front_offset = new_capacity - old_capacity;
+    void **old_front = deque->ptr + deque->front;
+    void **new_front = old_front + front_offset;
+    memmove(new_front, old_front, sizeof(void *) * (front_offset));
+
+    deque->front += front_offset;
   }
 }
 

@@ -1,5 +1,5 @@
-#ifndef COMPARATOR_H
-#define COMPARATOR_H
+#ifndef COMPARE_H
+#define COMPARE_H
 
 typedef int (*Z_Compare_Fn)(const void *, const void *);
 typedef void (*Z_Print_Fn)(const void *);
