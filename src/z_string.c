@@ -169,26 +169,45 @@ Z_String z_str_join(Z_Heap *heap, const Z_String_Array *array, Z_String_View del
         return result;
 }
 
-Z_String_View_Array z_str_split(Z_Heap *heap, Z_String_View s, Z_String_View delimiter)
+Z_Sv_Split_Iterator z_sv_split(Z_String_View world, Z_String_View delimeter)
 {
-        Z_String_View_Array result = z_array_new(heap, Z_String_View_Array);
+  Z_Sv_Split_Iterator iter = {
+    .world = world,
+    .delimeter = delimeter,
+    .current = 0,
+  };
 
-        if (delimiter.length == 0) {
-                return result;
-        }
+  return iter;
+}
 
-        ssize_t offset = 0;
-        ssize_t length = 0;
+Z_Maybe_String_View z_sv_split_next(Z_Sv_Split_Iterator *iter)
+{
+  if (iter->current == iter->world.length) {
+    return Z_MAYBE_NOT(Z_Maybe_String_View);
+  }
 
-        while ((length = z_sv_find_index(z_sv_advance(s, offset), delimiter)) != -1) {
-                Z_String_View slice = z_sv_substring(s, offset, offset + length);
-                z_array_push(&result, slice);
-                offset += length + delimiter.length;
-        }
+  Z_String_View small_world = z_sv_advance(iter->world, iter->current);
+  ssize_t next = z_sv_find_index(small_world, iter->delimeter);
 
-        z_array_push(&result, z_sv_substring(s, offset, s.length));
+  if (next == -1) {
+    iter->current = iter->world.length;
+    return Z_MAYBE_YES(Z_Maybe_String_View, small_world);
+  }
 
-        return result;
+  iter->current += next;
+
+  return Z_MAYBE_YES(Z_Maybe_String_View, z_sv_substring(small_world, 0, next));
+}
+
+Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index)
+{
+  Z_Sv_Split_Iterator iter = z_sv_split(s, delimiter);
+
+  for (size_t i = 0; i < index; i++) {
+    z_sv_split_next(&iter);
+  }
+
+  return z_sv_split_next(&iter).value;
 }
 
 Z_String_View z_sv_from_str_ptr(const Z_String *s)
