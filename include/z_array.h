@@ -6,7 +6,7 @@
 
 #define Z_DEFINE_ARRAY(identifier, element_type) \
 typedef struct {                                 \
-  Z_Heap *heap;                        \
+  Z_Heap *heap;                                  \
   element_type *ptr;                             \
   size_t length;                                 \
   size_t capacity;                               \
@@ -17,7 +17,7 @@ typedef struct {                                 \
 #define z_array_ensure_capacity(array_ptr, needed)                                                                               \
   do {                                                                                                                           \
     if ((array_ptr)->capacity < (needed)) {                                                                                      \
-      size_t new_capacity = z__calculate_new_capacity(array_ptr, needed);                                                                \
+      size_t new_capacity = z__calculate_new_capacity(array_ptr, needed);                                                        \
       (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity);          \
       (array_ptr)->capacity = new_capacity;                                                                                      \
     }                                                                                                                            \
