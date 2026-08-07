@@ -48,8 +48,8 @@ char z_str_pop_char(Z_String *s);
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement);
 void z_str_clear(Z_String *s);
 
-Z_Sv_Split_Iterator z_sv_split(Z_String_View world, Z_String_View delimeter);
-Z_Maybe_String_View z_sv_split_next(Z_Sv_Split_Iterator *iter);
+Z_Sv_Split_Iterator z_sv_split(Z_String_View s, Z_String_View delimeter);
+bool z_sv_split_next(Z_Sv_Split_Iterator *iter, Z_String_View *next);
 Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index);
 
 void z_str_trim(Z_String *s);
