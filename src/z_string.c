@@ -145,6 +145,7 @@ void z_str_prepend_char(Z_String *s, char c)
 
 char z_str_pop_char(Z_String *s)
 {
+    assert(s->length > 0);
     char c = z_array_pop(s);
     z_array_zero_terminate(s);
     return c;
@@ -212,7 +213,7 @@ Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t i
         z_sv_split_next(&iter, &slice);
     }
 
-    z_sv_split_next(&iter, &slice);
+    assert(z_sv_split_next(&iter, &slice) && "index of split is overreaching");
     return slice;
 }
 

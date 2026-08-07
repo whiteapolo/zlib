@@ -14,7 +14,7 @@ size_t z__get_file_size(FILE *fp)
     return size;
 }
 
-bool z_write_file(const char *pathname, const char *format, ...)
+bool z_file_write(const char *pathname, const char *format, ...)
 {
     FILE *fp = fopen(pathname, "w");
 
@@ -30,7 +30,7 @@ bool z_write_file(const char *pathname, const char *format, ...)
     return true;
 }
 
-bool z_append_file(const char *pathname, const char *format, ...)
+bool z_file_append(const char *pathname, const char *format, ...)
 {
     FILE *fp = fopen(pathname, "a");
 
@@ -46,7 +46,7 @@ bool z_append_file(const char *pathname, const char *format, ...)
     return true;
 }
 
-bool z_scanf_file(const char *pathname, const char *format, ...)
+bool z_file_scanf(const char *pathname, const char *format, ...)
 {
     FILE *fp = fopen(pathname, "r");
 
@@ -67,6 +67,21 @@ bool z_scanf_file(const char *pathname, const char *format, ...)
     fclose(fp);
 
     return true;
+}
+
+ssize_t z_file_read_line(FILE *fp, Z_String *out)
+{
+    char buffer[READ_BUFFER_SIZE] = {0};
+    size_t start_length = out->length;
+
+    while (fgets(buffer, READ_BUFFER_SIZE, fp) && !strchr(buffer, '\n')) {
+        z_str_append_cstr(out, buffer);
+        buffer[0] = '\0';
+    }
+
+    z_str_append_cstr(out, buffer);
+
+    return out->length - start_length;
 }
 
 // TODO: fix
