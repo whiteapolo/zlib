@@ -97,6 +97,25 @@ void z_str_append_char(Z_String *s, char c)
     z_array_zero_terminate(s);
 }
 
+bool z_str_append_file(Z_String *s, const char *pathname)
+{
+    FILE *fp = fopen(pathname, "r");
+
+    if (fp == NULL) {
+        return false;
+    }
+
+    size_t file_size = z__get_file_size(fp);
+
+    z_array_ensure_capacity(s, s->length + file_size);
+    s->length += fread(s->ptr + s->length, 1, file_size, fp);
+    z_array_zero_terminate(s);
+    fclose(fp);
+
+    return true;
+}
+
+
 void z_str_prepend_format(Z_String *s, const char *format, ...)
 {
     va_list args;
@@ -152,10 +171,10 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
     z_str_append_format(s, "%s", tmp.ptr);
 }
 
-Z_Sv_Split_Iterator z_sv_split(Z_String_View world, Z_String_View delimeter)
+Z_Sv_Split_Iterator z_sv_split(Z_String_View s, Z_String_View delimeter)
 {
     Z_Sv_Split_Iterator iter = {
-        .world = world,
+        .s = s,
         .delimeter = delimeter,
         .current = 0,
     };
@@ -163,34 +182,37 @@ Z_Sv_Split_Iterator z_sv_split(Z_String_View world, Z_String_View delimeter)
     return iter;
 }
 
-Z_Maybe_String_View z_sv_split_next(Z_Sv_Split_Iterator *iter)
+bool z_sv_split_next(Z_Sv_Split_Iterator *iterator, Z_String_View *slice)
 {
-    if (iter->current == iter->world.length) {
-        return Z_MAYBE_NOT(Z_Maybe_String_View);
+    if (iterator->current == iterator->s.length) {
+        return false;
     }
 
-    Z_String_View small_world = z_sv_advance(iter->world, iter->current);
-    ssize_t next = z_sv_find_index(small_world, iter->delimeter);
+    Z_String_View small_world = z_sv_advance(iterator->s, iterator->current);
+    ssize_t next = z_sv_find_index(small_world, iterator->delimeter);
 
     if (next == -1) {
-        iter->current = iter->world.length;
-        return Z_MAYBE_YES(Z_Maybe_String_View, small_world);
+        iterator->current = iterator->s.length;
+        *slice = small_world;
+        return true;
     }
 
-    iter->current += next;
-
-    return Z_MAYBE_YES(Z_Maybe_String_View, z_sv_substring(small_world, 0, next));
+    iterator->current += next;
+    *slice = z_sv_substring(small_world, 0, next);
+    return true;
 }
 
 Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index)
 {
     Z_Sv_Split_Iterator iter = z_sv_split(s, delimiter);
+    Z_String_View slice;
 
     for (size_t i = 0; i < index; i++) {
-        z_sv_split_next(&iter);
+        z_sv_split_next(&iter, &slice);
     }
 
-    return z_sv_split_next(&iter).value;
+    z_sv_split_next(&iter, &slice);
+    return slice;
 }
 
 Z_String_View z_sv_from_str_ptr(const Z_String *s)

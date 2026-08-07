@@ -8,7 +8,7 @@ bool z_write_file(const char *pathname, const char *format, ...);
 bool z_append_file(const char *pathname, const char *format, ...);
 bool z_scanf_file(const char *pathname, const char *format, ...);
 
-Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname);
-Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname);
+// TODO: fix
+// Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname);
 
 #endif

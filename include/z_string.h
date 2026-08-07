@@ -3,7 +3,6 @@
 
 #include <z_heap.h>
 #include <z_array.h>
-#include <z_maybe.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <unistd.h>
@@ -17,12 +16,8 @@ Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
 Z_DEFINE_ARRAY(Z_String_View_Array, Z_String);
 
-Z_DEFINE_MAYBE(Z_Maybe_String, Z_String);
-Z_DEFINE_MAYBE(Z_Maybe_String_View, Z_String_View);
-Z_DEFINE_MAYBE(Z_Maybe_String_Array, Z_String_Array);
-
 typedef struct {
-    Z_String_View world;
+    Z_String_View s;
     Z_String_View delimeter;
     size_t current;
 } Z_Sv_Split_Iterator;
@@ -38,6 +33,7 @@ void z_str_append_format(Z_String *s, const char *format, ...);
 void z_str_append_format_va(Z_String *s, const char *format, va_list args);
 void z_str_append_str(Z_String *target, Z_String_View source);
 void z_str_append_char(Z_String *s, char c);
+bool z_str_append_file(Z_String *s, const char *pathname);
 
 void z_str_prepend_format(Z_String *s, const char *format, ...);
 void z_str_prepend_va(Z_String *s, const char *format, va_list args);
@@ -49,7 +45,7 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 void z_str_clear(Z_String *s);
 
 Z_Sv_Split_Iterator z_sv_split(Z_String_View s, Z_String_View delimeter);
-bool z_sv_split_next(Z_Sv_Split_Iterator *iter, Z_String_View *next);
+bool z_sv_split_next(Z_Sv_Split_Iterator *iterator, Z_String_View *next);
 Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index);
 
 void z_str_trim(Z_String *s);

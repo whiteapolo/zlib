@@ -69,43 +69,24 @@ bool z_scanf_file(const char *pathname, const char *format, ...)
     return true;
 }
 
-Z_Maybe_String z_read_file(Z_Heap *heap, const char *pathname)
-{
-    FILE *fp = fopen(pathname, "r");
+// TODO: fix
+// Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
+// {
+//     DIR *directory = opendir(pathname);
 
-    if (fp == NULL) {
-        return (Z_Maybe_String){ .ok = false };
-    }
+//     if (directory == NULL) {
+//         return (Z_Maybe_String_Array){ .ok = false };
+//     }
 
-    Z_String content = z_str_new(heap, "");
-    size_t file_size = z__get_file_size(fp);
+//     Z_String_Array entries = z_array_new(heap, Z_String_Array);
+//     struct dirent *directory_entry;
 
-    z_array_ensure_capacity(&content, file_size);
-    content.length = fread(content.ptr, sizeof(char), file_size, fp);
-    z_array_zero_terminate(&content);
-    fclose(fp);
+//     while ((directory_entry = readdir(directory))) {
+//         z_array_push(&entries, z_str_new(heap, "%s", directory_entry->d_name));
+//     }
 
-    return (Z_Maybe_String){ .ok = true, .value = content };
-}
+//     closedir(directory);
 
-// TODO: not use array
-Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
-{
-    DIR *directory = opendir(pathname);
-
-    if (directory == NULL) {
-        return (Z_Maybe_String_Array){ .ok = false };
-    }
-
-    Z_String_Array entries = z_array_new(heap, Z_String_Array);
-    struct dirent *directory_entry;
-
-    while ((directory_entry = readdir(directory))) {
-        z_array_push(&entries, z_str_new(heap, "%s", directory_entry->d_name));
-    }
-
-    closedir(directory);
-
-    return (Z_Maybe_String_Array){ .ok = true, .value = entries };
-}
+//     return (Z_Maybe_String_Array){ .ok = true, .value = entries };
+// }
 
