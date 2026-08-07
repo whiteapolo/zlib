@@ -20,6 +20,7 @@ typedef struct {
     Z_String_View s;
     Z_String_View delimeter;
     size_t current;
+    bool is_done;
 } Z_Sv_Split_Iterator;
 
 Z_String z_str_new(Z_Heap *heap, const char *format, ...);

@@ -177,6 +177,7 @@ Z_Sv_Split_Iterator z_sv_split(Z_String_View s, Z_String_View delimeter)
         .s = s,
         .delimeter = delimeter,
         .current = 0,
+        .is_done = false,
     };
 
     return iter;
@@ -184,7 +185,7 @@ Z_Sv_Split_Iterator z_sv_split(Z_String_View s, Z_String_View delimeter)
 
 bool z_sv_split_next(Z_Sv_Split_Iterator *iterator, Z_String_View *slice)
 {
-    if (iterator->current == iterator->s.length) {
+    if (iterator->current > iterator->s.length) {
         return false;
     }
 
@@ -192,12 +193,12 @@ bool z_sv_split_next(Z_Sv_Split_Iterator *iterator, Z_String_View *slice)
     ssize_t next = z_sv_find_index(small_world, iterator->delimeter);
 
     if (next == -1) {
-        iterator->current = iterator->s.length;
+        iterator->current += small_world.length + 1;
         *slice = small_world;
         return true;
     }
 
-    iterator->current += next;
+    iterator->current += next + iterator->delimeter.length;
     *slice = z_sv_substring(small_world, 0, next);
     return true;
 }
