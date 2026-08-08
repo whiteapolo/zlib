@@ -350,13 +350,8 @@ bool z_sv_like(Z_String_View str, Z_String_View pattern)
 
 int z_sv_compare_n(Z_String_View a, Z_String_View b, size_t n)
 {
-    int compare = memcmp(a.ptr, b.ptr, z__min_size_t(n, z__min_size_t(a.length, b.length)));
-
-    if (compare == 0) {
-        return z__size_t_to_int(a.length) - z__size_t_to_int(b.length);
-    }
-
-    return compare;
+    assert(n <= z__min_size_t(n, z__min_size_t(a.length, b.length)));
+    return memcmp(a.ptr, b.ptr, z__min_size_t(n, z__min_size_t(a.length, b.length)));
 }
 
 bool z_sv_equal_n(Z_String_View a, Z_String_View b, size_t n)
