@@ -69,18 +69,20 @@ void z_ptr_table_insert(Z_Ptr_Table *table, uintptr_t ptr)
     z__ptr_table_insert_no_check(table, ptr);
 }
 
-void z_ptr_table_delete(Z_Ptr_Table *table, uintptr_t ptr)
+bool z_ptr_table_delete(Z_Ptr_Table *table, uintptr_t ptr)
 {
     size_t i = z__ptr_table_fast_mod(z__ptr_table_hash(ptr), table->capacity);
 
     while (table->ptr[i] != Z_PTR_TABLE_EMPTY) {
         if (table->ptr[i] == ptr) {
             table->ptr[i] = Z_PTR_TABLE_TOMBSTONE;
-            return;
+            return true;
         }
 
         i = z__ptr_table_fast_mod(i + 1, table->capacity);
     }
+
+    return false;
 }
 
 void z_ptr_table_free(Z_Ptr_Table *table)

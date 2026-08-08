@@ -83,25 +83,3 @@ ssize_t z_file_read_line(FILE *fp, Z_String *out)
 
     return out->length - start_length;
 }
-
-// TODO: fix
-// Z_Maybe_String_Array z_read_directory(Z_Heap *heap, const char *pathname)
-// {
-//     DIR *directory = opendir(pathname);
-
-//     if (directory == NULL) {
-//         return (Z_Maybe_String_Array){ .ok = false };
-//     }
-
-//     Z_String_Array entries = z_array_new(heap, Z_String_Array);
-//     struct dirent *directory_entry;
-
-//     while ((directory_entry = readdir(directory))) {
-//         z_array_push(&entries, z_str_new(heap, "%s", directory_entry->d_name));
-//     }
-
-//     closedir(directory);
-
-//     return (Z_Maybe_String_Array){ .ok = true, .value = entries };
-// }
-
