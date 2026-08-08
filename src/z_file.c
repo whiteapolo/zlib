@@ -69,7 +69,7 @@ bool z_file_scanf(const char *pathname, const char *format, ...)
     return true;
 }
 
-ssize_t z_file_read_line(FILE *fp, Z_String *out)
+size_t z_file_read_line(FILE *fp, Z_String *out)
 {
     char buffer[READ_BUFFER_SIZE] = {0};
     size_t start_length = out->length;
