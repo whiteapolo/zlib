@@ -60,10 +60,11 @@ Z_String_View z_sv_from_str_ptr(const Z_String *s);
 Z_String_View z_sv_from_str(Z_String s);
 Z_String_View z_sv_from_cstr(const char *s);
 
-#define z_sv(s) _Generic((s),                    \
-                Z_String   : z_sv_from_str,      \
-                Z_String * : z_sv_from_str_ptr,  \
-                char *     : z_sv_from_cstr)(s)
+#define z_sv(s) _Generic((s),                     \
+                Z_String     : z_sv_from_str,     \
+                Z_String *   : z_sv_from_str_ptr, \
+                char *       : z_sv_from_cstr,    \
+                const char * : z_sv_from_cstr)(s)
 
 Z_String_View z_sv_advance(Z_String_View s, size_t offset);
 Z_String_View z_sv_substring(Z_String_View s, int start, int end);

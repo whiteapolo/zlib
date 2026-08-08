@@ -108,5 +108,5 @@ void z_scanner_skip_cset(Z_Scanner *scanner, Z_String_View cset)
 
 void z_scanner_skip_spaces(Z_Scanner *scanner)
 {
-    z_scanner_skip_cset(scanner, z_sv_from_cstr(" \f\n\r\t\v"));
+    z_scanner_skip_cset(scanner, z_sv(" \f\n\r\t\v"));
 }

@@ -58,7 +58,7 @@ char *z_str_to_cstr(Z_String s)
 
 void z_str_append_cstr(Z_String *s, const char *cstr)
 {
-    z_str_append_str(s, z_sv_from_cstr(cstr));
+    z_str_append_str(s, z_sv(cstr));
 }
 
 void z_str_append_format(Z_String *s, const char *format, ...)
@@ -427,12 +427,12 @@ void z_str_trim_cset(Z_String *s, Z_String_View cset)
 
 void z_str_trim_right(Z_String *s)
 {
-    z_str_trim_right_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
+    z_str_trim_right_cset(s, z_sv(Z__WHITE_SPACE));
 }
 
 void z_str_trim_left(Z_String *s)
 {
-    z_str_trim_left_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
+    z_str_trim_left_cset(s, z_sv(Z__WHITE_SPACE));
 }
 
 void z_str_trim_right_cset(Z_String *s, Z_String_View cset)
@@ -453,7 +453,7 @@ void z_str_trim_left_cset(Z_String *s, Z_String_View cset)
 
 Z_String_View z_sv_trim(Z_String_View s)
 {
-    return z_sv_trim_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
+    return z_sv_trim_cset(s, z_sv(Z__WHITE_SPACE));
 }
 
 Z_String_View z_sv_trim_cset(Z_String_View s, Z_String_View cset)
@@ -464,7 +464,7 @@ Z_String_View z_sv_trim_cset(Z_String_View s, Z_String_View cset)
 
 Z_String_View z_sv_trim_right(Z_String_View s)
 {
-    return z_sv_trim_right_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
+    return z_sv_trim_right_cset(s, z_sv(Z__WHITE_SPACE));
 }
 
 Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset)
@@ -480,7 +480,7 @@ Z_String_View z_sv_trim_right_cset(Z_String_View s, Z_String_View cset)
 
 Z_String_View z_sv_trim_left(Z_String_View s)
 {
-    return z_sv_trim_left_cset(s, z_sv_from_cstr(Z__WHITE_SPACE));
+    return z_sv_trim_left_cset(s, z_sv(Z__WHITE_SPACE));
 }
 
 Z_String_View z_sv_trim_left_cset(Z_String_View s, Z_String_View cset)
