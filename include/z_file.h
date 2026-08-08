@@ -1,6 +1,7 @@
 #ifndef FILE_H
 #define FILE_H
 
+#include <stdio.h>
 #include <z_heap.h>
 #include <z_string.h>
 
