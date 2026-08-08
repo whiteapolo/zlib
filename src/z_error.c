@@ -9,7 +9,7 @@ void z_perror_format(const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    z_perror_format_va(s, format, args);
+    z_perror_format_va(format, args);
     va_end(args);
 }
 
