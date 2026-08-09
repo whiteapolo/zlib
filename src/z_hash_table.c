@@ -95,7 +95,7 @@ void *z_hash_table_get(const Z_Hash_Table *table, void *key)
 
 bool z__hash_table_put_no_resize(Z_Hash_Table *table, void *key, void *value, size_t hash, Z_Pair *pair)
 {
-    size_t i = hash & (table->capacity - 1);
+    size_t i = hash % table->capacity;
     ssize_t first_tompstone = -1;
 
     while (table->hashes[i] != Z_HASH_TABLE_EMPTY) {
