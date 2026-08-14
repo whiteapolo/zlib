@@ -54,6 +54,11 @@ char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s)
     return ret;
 }
 
+char *z_cstr_dup(Z_Heap *heap, const char *s)
+{
+    return z_sv_to_cstr(heap, z_sv(s));
+}
+
 char *z_str_to_cstr(Z_String s)
 {
     return s.ptr;
