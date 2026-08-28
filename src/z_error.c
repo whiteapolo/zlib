@@ -32,7 +32,6 @@ void z_perror_format_va(const char *format, va_list args)
 {
     Z_Heap_Auto heap = {0};
     Z_String s = z_str_new(&heap, "");
-
     z_str_append_format_va(&s, format, args);
     perror(z_str_to_cstr(s));
 }

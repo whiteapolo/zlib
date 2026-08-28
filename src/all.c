@@ -9,3 +9,4 @@
 #include "z_time.c"
 #include "z_hash_table.c"
 #include "z_error.c"
+#include "z_common.c"

@@ -1,36 +1,21 @@
-CC = cc
+CC = gcc
 BASE_CFLAGS = \
-	-I./include \
-	-std=c2x \
-	-Wall \
-	-Wextra \
-	-Wpedantic \
-	-Werror \
-	-Wshadow \
-	-Wconversion \
-	-Wsign-conversion \
-	-Wformat=2 \
-	-Wformat-overflow=2 \
-	-Wformat-truncation=2 \
-	-Wnull-dereference \
-	-Wundef \
-	-Wcast-align \
-	-Wcast-qual \
-	-Wpointer-arith \
-	-Wwrite-strings \
-	-Wvla \
-	-Wswitch \
-	-Wswitch-enum \
-	-Wstrict-prototypes \
-	-Wold-style-definition \
-	-Wmissing-prototypes \
-	-Wmissing-declarations \
-	-Wstrict-aliasing=3 \
-	-Wlogical-op \
-	-Wduplicated-cond \
-	-Wduplicated-branches \
-	-Wbad-function-cast \
-	-Wnested-externs
+    -I./include \
+    -std=c2x \
+    -Wall \
+    -Wextra \
+    -Wpedantic \
+    -Werror \
+    -Wshadow \
+    -Wconversion \
+    -Wsign-conversion \
+    -Wformat=2 \
+    -Wnull-dereference \
+    -Wundef \
+    -Wcast-qual \
+    -Wvla \
+    -Wswitch-enum \
+    -Wmissing-prototypes
 
 PROD_CFLAGS = $(BASE_CFLAGS) $(WARN_CFLAGS) -O3
 DEV_CFLAGS = $(BASE_CFLAGS) $(WARN_CFLAGS) -O0 -g

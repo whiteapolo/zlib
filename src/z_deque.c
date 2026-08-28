@@ -75,7 +75,7 @@ void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
         return;
     }
 
-    size_t new_capacity = z__max_size_t(needed, deque->capacity * Z_BUFFER_GROWTH_FACTOR);
+    size_t new_capacity = z__max_size_t(needed, deque->capacity * Z_DEQUE_GROWTH_FACTOR);
     size_t old_capacity = deque->capacity;
     deque->ptr = z_heap_realloc(deque->heap, deque->ptr, sizeof(void *) * new_capacity);
     deque->capacity = new_capacity;

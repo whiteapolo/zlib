@@ -48,9 +48,9 @@ typedef struct {                                 \
 
 #define z__calculate_new_capacity(array_ptr, needed)            \
 (                                                               \
-    (needed) > ((array_ptr)->capacity * Z_BUFFER_GROWTH_FACTOR) \
+    (needed) > ((array_ptr)->capacity * Z_ARRAY_GROWTH_FACTOR) \
         ? (needed)                                              \
-        : ((array_ptr)->capacity * Z_BUFFER_GROWTH_FACTOR)      \
+        : ((array_ptr)->capacity * Z_ARRAY_GROWTH_FACTOR)      \
 )
 
 #endif

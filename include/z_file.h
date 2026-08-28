@@ -7,9 +7,9 @@
 #include <dirent.h>
 
 typedef enum {
-    Z_Redirect_Stdin = 0b001,
-    Z_Redirect_Stdout = 0b010,
-    Z_Redirect_Stderr = 0b100,
+    Z_Redirect_Stdin  = 1 << 0,
+    Z_Redirect_Stdout = 1 << 1,
+    Z_Redirect_Stderr = 1 << 2,
 } Z_Redirect;
 
 typedef struct {
