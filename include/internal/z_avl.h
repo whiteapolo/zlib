@@ -7,10 +7,14 @@
 #include <z_heap.h>
 #include <stdbool.h>
 
+/*
+ * Things to keep in mind:
+ * - index 0 means NULL in the Avl node array.
+ */
+
 typedef struct Z_Avl_Node {
-    Z_Avl_Node *right;
-    Z_Avl_Node *left;
     size_t right;
+    size_t left;
     void *key;
     void *value;
     char height;
@@ -20,7 +24,7 @@ Z_DEFINE_ARRAY(Z_Avl_Node_Array, Z_Avl_Node);
 Z_DEFINE_ARRAY(Z_Free_List, size_t);
 
 typedef struct {
-    Z_Avl_Node *root;
+    size_t root;
     Z_Avl_Node_Array nodes;
     Z_Free_List free_list;
     Z_Compare_Fn compare_keys;

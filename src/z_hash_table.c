@@ -149,7 +149,7 @@ void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
 Z_Maybe_Pair z_hash_table_put(Z_Hash_Table *ht, void *key, void *value)
 {
     if (z__hash_table_get_load_factor(ht) >= Z_HASH_TABLE_MAX_LOAD_FACTOR) {
-        size_t new_capacity = z__max_size_t(Z_HASH_TABLE_MIN_CAPACITY, ht->capacity * 2);
+        size_t new_capacity = Z_MAX(Z_HASH_TABLE_MIN_CAPACITY, ht->capacity * 2);
         z__hash_table_resize(ht, new_capacity);
     }
 

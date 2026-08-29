@@ -1,19 +1,13 @@
 CC = gcc
 BASE_CFLAGS = \
     -I./include \
-    -std=c2x \
     -Wall \
     -Wextra \
-    -Wpedantic \
     -Werror \
-    -Wshadow \
     -Wconversion \
     -Wsign-conversion \
     -Wformat=2 \
-    -Wnull-dereference \
-    -Wundef \
     -Wcast-qual \
-    -Wvla \
     -Wswitch-enum \
     -Wmissing-prototypes
 

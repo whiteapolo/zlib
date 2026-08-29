@@ -2,7 +2,7 @@
 #include <stdbool.h>
 #include <z_hash_table.h>
 
-#define Z__PTR_TABLE_MIN_CAPACITY 16
+#define Z__PTR_TABLE_MIN_CAPACITY 16u
 #define Z__PTR_TABLE_MAX_LOAD_FACTOR 0.7
 #define Z__PTR_TABLE_TOMBSTONE ((uintptr_t)1)
 #define Z__PTR_TABLE_EMPTY ((uintptr_t)0)
@@ -71,7 +71,7 @@ void z__ptr_table_resize(Z_Ptr_Table *table, size_t new_capacity)
 void z_ptr_table_insert(Z_Ptr_Table *table, uintptr_t ptr)
 {
     if (z__ptr_table_load_factor(table) >= Z__PTR_TABLE_MAX_LOAD_FACTOR) {
-        size_t new_capacity = z__max_size_t(Z__PTR_TABLE_MIN_CAPACITY, table->capacity * 2);
+        size_t new_capacity = Z_MAX(Z__PTR_TABLE_MIN_CAPACITY, table->capacity * 2);
         z__ptr_table_resize(table, new_capacity);
     }
 

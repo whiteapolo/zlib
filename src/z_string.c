@@ -292,7 +292,7 @@ char z_sv_top(Z_String_View s)
 
 int z_sv_compare(Z_String_View a, Z_String_View b)
 {
-    int result = memcmp(a.ptr, b.ptr, z__min_size_t(a.length, b.length));
+    int result = memcmp(a.ptr, b.ptr, Z_MIN(a.length, b.length));
 
     if (result == 0) {
         return z__size_t_to_int(a.length) - z__size_t_to_int(b.length);
@@ -365,7 +365,7 @@ bool z_sv_like(Z_String_View str, Z_String_View pattern)
 
 int z_sv_compare_n(Z_String_View a, Z_String_View b, size_t n)
 {
-    size_t length = z__min_size_t(n, z__min_size_t(a.length, b.length));
+    size_t length = Z_MIN(n, Z_MIN(a.length, b.length));
     int result = memcmp(a.ptr, b.ptr, length);
 
     if (result != 0) return result;
