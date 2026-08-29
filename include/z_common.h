@@ -8,6 +8,12 @@ typedef struct {
     void *value;
 } Z_Pair;
 
+typedef struct {
+    bool ok;
+    Z_Pair pair;
+} Z_Maybe_Pair;
+
+
 Z_DEFINE_ARRAY(Z_Pair_Array, Z_Pair);
 
 Z_Pair z_make_pair(void *key, void *value);

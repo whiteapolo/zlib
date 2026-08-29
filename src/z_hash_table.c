@@ -4,7 +4,7 @@
 #define Z__HASH_TABLE_TOMBSTONE 1
 
 void z__hash_table_free(Z_Hash_Table *ht);
-bool z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash, Z_Pair *pair);
+Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash);
 void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity);
 
 Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash)
@@ -86,7 +86,7 @@ void *z_hash_table_get(const Z_Hash_Table *ht, const void *key)
     return z_hash_table_try_get(ht, key, NULL);
 }
 
-bool z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash, Z_Pair *pair)
+Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash)
 {
     size_t i = hash % ht->capacity;
     ssize_t first_tompstone = -1;
@@ -98,15 +98,15 @@ bool z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_
         }
 
         if (ht->hashes[i] == hash && ht->equal(ht->keys[i], key)) {
-            Z_Pair old = z_make_pair(ht->keys[i], ht->values[i]);
+            Z_Maybe_Pair old_pair = {
+                .ok = true,
+                .pair = z_make_pair(ht->keys[i], ht->values[i]),
+            };
+
             ht->keys[i] = key;
             ht->values[i] = value;
 
-            if (pair) {
-                *pair = old;
-            }
-
-            return true;
+            return old_pair;
         }
 
         i = (i + 1) % ht->capacity;
@@ -125,7 +125,11 @@ bool z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_
 
     ht->size++;
 
-    return false;
+    Z_Maybe_Pair pair = {
+        .ok = true,
+    };
+
+    return pair;
 }
 
 void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
@@ -134,7 +138,7 @@ void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
 
     for (size_t i = 0; i < ht->capacity; i++) {
         if (ht->hashes[i] >= 2) {
-            z__hash_table_put_no_resize(&new_ht, ht->keys[i], ht->values[i], ht->hashes[i], NULL);
+            z__hash_table_put_no_resize(&new_ht, ht->keys[i], ht->values[i], ht->hashes[i]);
         }
     }
 
@@ -142,7 +146,7 @@ void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
     *ht = new_ht;
 }
 
-bool z_hash_table_put(Z_Hash_Table *ht, void *key, void *value, Z_Pair *pair)
+Z_Maybe_Pair z_hash_table_put(Z_Hash_Table *ht, void *key, void *value)
 {
     if (z__hash_table_get_load_factor(ht) >= Z_HASH_TABLE_MAX_LOAD_FACTOR) {
         size_t new_capacity = z__max_size_t(Z_HASH_TABLE_MIN_CAPACITY, ht->capacity * 2);
@@ -150,13 +154,17 @@ bool z_hash_table_put(Z_Hash_Table *ht, void *key, void *value, Z_Pair *pair)
     }
 
     size_t hash = z__hash_table_hash(ht, key);
-    return z__hash_table_put_no_resize(ht, key, value, hash, pair);
+    return z__hash_table_put_no_resize(ht, key, value, hash);
 }
 
-bool z_hash_table_delete(Z_Hash_Table *ht, void *key, Z_Pair *pair)
+Z_Maybe_Pair z_hash_table_delete(Z_Hash_Table *ht, void *key)
 {
     if (ht->size == 0) {
-        return false;
+        Z_Maybe_Pair result = {
+            .ok = false,
+        };
+
+        return result;
     }
 
     size_t hash = z__hash_table_hash(ht, key);
@@ -167,17 +175,22 @@ bool z_hash_table_delete(Z_Hash_Table *ht, void *key, Z_Pair *pair)
     }
 
     if (ht->hashes[i] == Z__HASH_TABLE_EMPTY) {
-        return false;
+        Z_Maybe_Pair result = {
+            .ok = false,
+        };
+
+        return result;
     }
 
     ht->hashes[i] = Z__HASH_TABLE_TOMBSTONE;
     ht->size--;
 
-    if (pair) {
-        *pair = z_make_pair(ht->keys[i], ht->values[i]);
-    }
+    Z_Maybe_Pair old_pair = {
+        .ok = true,
+        .pair = z_make_pair(ht->keys[i], ht->values[i]),
+    };
 
-    return true;
+    return old_pair;
 }
 
 bool z_hash_table_contains(const Z_Hash_Table *ht, void *key)

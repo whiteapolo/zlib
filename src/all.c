@@ -10,3 +10,4 @@
 #include "z_hash_table.c"
 #include "z_error.c"
 #include "z_common.c"
+#include "z_avl.c"
