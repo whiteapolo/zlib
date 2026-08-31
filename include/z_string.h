@@ -27,7 +27,6 @@ Z_String z_str_new(Z_Heap *heap, const char *format, ...);
 Z_String z_str_new_args(Z_Heap *heap, const char *format, va_list args);
 Z_String z_str_new_from_sv(Z_Heap *heap, Z_String_View s);
 char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s);
-char *z_str_to_cstr(Z_String s);
 char *z_cstr_dup(Z_Heap *heap, const char *s);
 
 void z_str_append_cstr(Z_String *s, const char *cstr);

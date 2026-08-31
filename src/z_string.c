@@ -59,11 +59,6 @@ char *z_cstr_dup(Z_Heap *heap, const char *s)
     return z_sv_to_cstr(heap, z_sv(s));
 }
 
-char *z_str_to_cstr(Z_String s)
-{
-    return s.ptr;
-}
-
 void z_str_append_cstr(Z_String *s, const char *cstr)
 {
     z_str_append_str(s, z_sv(cstr));
