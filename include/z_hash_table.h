@@ -8,9 +8,7 @@
 #include <z_heap.h>
 #include <z_common.h>
 #include <internal/z_config.h>
-
-typedef size_t (*Z_Hash_Fn)(const void *);
-typedef bool (*Z_Equal_Fn)(const void *, const void *);
+#include <z_types.h>
 
 typedef struct {
     void **keys;

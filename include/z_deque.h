@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <z_heap.h>
+#include <z_types.h>
 
 typedef struct {
     Z_Heap *heap;

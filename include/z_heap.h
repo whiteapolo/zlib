@@ -12,8 +12,6 @@ typedef struct {
 
 typedef Z_Ptr_Table Z_Heap;
 
-typedef void (*Z_Free_Fn)(Z_Heap *, void *);
-
 #define Z_Heap_Auto __attribute__((cleanup(z_heap_free_all))) Z_Heap
 
 void *z_heap_malloc(Z_Heap *heap, size_t size);
