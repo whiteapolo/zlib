@@ -2,7 +2,7 @@
 #include <z_array.h>
 #include <limits.h>
 #include <stdio.h>
-#include <internal/z_math.h>
+#include <z_min_max.h>
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 

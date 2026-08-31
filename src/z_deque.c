@@ -1,11 +1,11 @@
+#include <internal/z_config.h>
 #include <z_deque.h>
 #include <z_compare.h>
-#include <internal/z_config.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <internal/z_math.h>
+#include <z_min_max.h>
 
 size_t z__circular_buffer_next_index(size_t size, size_t i);
 size_t z__circular_buffer_previous_index(size_t size, size_t i);
