@@ -44,8 +44,8 @@ typedef enum {
 } Z_Avl_Tree_Order_By;
 
 Z_Avl_Tree z_avl_tree_new(Z_Heap *heap, Z_Compare_Fn compare_keys);
-void *z_avl_tree_try_get(const Z_Avl_Tree *tree, const void *key, const void *fallback);
-void *z_avl_tree_get(const Z_Avl_Tree *tree, const void *key);
+const void *z_avl_tree_try_get(const Z_Avl_Tree *tree, const void *key, const void *fallback);
+const void *z_avl_tree_get(const Z_Avl_Tree *tree, const void *key);
 bool z_avl_tree_contains(const Z_Avl_Tree *tree, const void *key);
 Z_Maybe_Pair z_avl_tree_put(Z_Avl_Tree *tree, void *key, void *value);
 Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key);
