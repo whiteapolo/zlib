@@ -16,8 +16,9 @@ typedef struct {                                 \
 
 #define z_array_ensure_capacity(array_ptr, needed)                                                                            \
     do {                                                                                                                      \
-        if ((array_ptr)->capacity < (needed)) {                                                                               \
-            size_t new_capacity = z__calculate_new_capacity(array_ptr, needed);                                               \
+        size_t _needed = needed;                                                                                              \
+        if ((array_ptr)->capacity < (_needed)) {                                                                              \
+            size_t new_capacity = z__calculate_new_capacity(array_ptr, _needed);                                              \
             (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity); \
             (array_ptr)->capacity = new_capacity;                                                                             \
         }                                                                                                                     \
