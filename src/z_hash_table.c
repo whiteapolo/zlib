@@ -249,7 +249,8 @@ bool z_hash_table_iter_next(Z_Hash_Table_Iter *iter, Z_Pair *pair)
 
     while (*i < ht->capacity) {
         if (ht->hashes[*i] >= 2) {
-            *pair = z_make_pair(ht->keys[*i], ht->values[*i]);
+            pair->key = ht->keys[*i];
+            pair->value = ht->values[*i];
             (*i)++;
             return true;
         }

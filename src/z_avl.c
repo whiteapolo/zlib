@@ -15,6 +15,7 @@ size_t z_avl_tree_get_next_id(Z_Avl_Tree *tree);
 size_t z__avl_new_node(Z_Avl_Tree *tree, void *key, void *value);
 size_t z__avl_find_min(const Z_Avl_Tree *tree, size_t node_id);
 size_t z__avl_find_node(const Z_Avl_Tree *tree, const void *key);
+Z_Maybe_Pair z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t *root_id, void *key, void *value);
 
 size_t z_avl_tree_size(const Z_Avl_Tree *tree)
 {
@@ -205,21 +206,46 @@ bool z_avl_tree_contains(const Z_Avl_Tree *tree, const void *key)
     return z__avl_find_node(tree, key) != Z__AVL_NULL_ID;
 }
 
-// Z_Maybe_Pair z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t root_id, void *key, void *value)
-// {
+Z_Maybe_Pair z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t *root_id, void *key, void *value)
+{
+    if (*root_id == Z__AVL_NULL_ID) {
+        *root_id = z__avl_new_node(tree, key, value);
+        Z_Maybe_Pair result = { .ok = false };
+        return result;
+    }
 
-// }
+    Z_Avl_Node *node = z__avl_node_by_id(tree, *root_id);
+    int compare_result = tree->compare_keys(key, node->key);
+
+    Z_Maybe_Pair result;
+
+    if (compare_result > 0) {
+        result = z_avl_tree_put_impl(tree, &node->right, key, value);
+    } else if (compare_result < 0) {
+        result = z_avl_tree_put_impl(tree, &node->left, key, value);
+    } else {
+        Z_Maybe_Pair result = {
+            .ok = true,
+            .pair.key = node->key,
+            .pair.value = node->value,
+        };
+
+        node->key = key;
+        node->value = value;
+
+        return result;
+    }
+
+    z__avl_rebalance_node(tree, *root_id);
+    return result;
+}
 
 Z_Maybe_Pair z_avl_tree_put(Z_Avl_Tree *tree, void *key, void *value)
 {
-    (void)tree;
-    (void)key;
-    (void)value;
-    Z_Maybe_Pair pair = {0};
-    return pair;
+    return z_avl_tree_put_impl(tree, &tree->root, key, value);
 }
 
-Z_Maybe_Pair  z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
+Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
 {
     (void)tree;
     (void)key;

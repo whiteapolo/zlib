@@ -6,7 +6,6 @@
 #include <z_compare.h>
 #include <z_array.h>
 #include <z_heap.h>
-#include <z_common.h>
 #include <internal/z_config.h>
 #include <z_types.h>
 
