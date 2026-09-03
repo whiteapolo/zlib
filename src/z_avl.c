@@ -6,16 +6,16 @@
 char z_avl_tree_get_height(const Z_Avl_Tree *tree, size_t node_id);
 void z__avl_update_height(const Z_Avl_Tree *tree, size_t node_id);
 int z_avl_tree_get_balance_factor(const Z_Avl_Tree *tree, size_t node_id);
-void z__avl_right_rotate(Z_Avl_Tree *tree, size_t root_id);
-void z__avl_left_rotate(Z_Avl_Tree *tree, size_t root_id);
-void z__avl_left_right_rotate(Z_Avl_Tree *tree, size_t root_id);
-void z__avl_right_left_rotate(Z_Avl_Tree *tree, size_t root_id);
-void z__avl_rebalance_node(Z_Avl_Tree *tree, size_t node_id);
+size_t z__avl_right_rotate(Z_Avl_Tree *tree, size_t root_id);
+size_t z__avl_left_rotate(Z_Avl_Tree *tree, size_t root_id);
+size_t z__avl_left_right_rotate(Z_Avl_Tree *tree, size_t root_id);
+size_t z__avl_right_left_rotate(Z_Avl_Tree *tree, size_t root_id);
+size_t z__avl_rebalance_node(Z_Avl_Tree *tree, size_t node_id);
 size_t z_avl_tree_get_next_id(Z_Avl_Tree *tree);
 size_t z__avl_new_node(Z_Avl_Tree *tree, void *key, void *value);
 size_t z__avl_find_min(const Z_Avl_Tree *tree, size_t node_id);
 size_t z__avl_find_node(const Z_Avl_Tree *tree, const void *key);
-Z_Maybe_Pair z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t *root_id, void *key, void *value);
+size_t z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t node_id, void *key, void *value, Z_Maybe_Pair *pair);
 
 size_t z_avl_tree_size(const Z_Avl_Tree *tree)
 {
@@ -52,7 +52,7 @@ int z_avl_tree_get_balance_factor(const Z_Avl_Tree *tree, size_t node_id)
     return z_avl_tree_get_height(tree, node->left) - z_avl_tree_get_height(tree, node->right);
 }
 
-void z__avl_left_rotate(Z_Avl_Tree *tree, size_t root_id)
+size_t z__avl_left_rotate(Z_Avl_Tree *tree, size_t root_id)
 {
     Z_Avl_Node *root = z__avl_node_by_id(tree, root_id);
     size_t pivot_id = root->right;
@@ -62,14 +62,10 @@ void z__avl_left_rotate(Z_Avl_Tree *tree, size_t root_id)
     pivot->left = root_id;
     root->right = pivot_left_id;
 
-    Z_Avl_Node tmp = *root;
-    *root = *pivot;
-    *pivot = tmp;
-
-    root->left = root_id;
+    return pivot_id;
 }
 
-void z__avl_right_rotate(Z_Avl_Tree *tree, size_t root_id)
+size_t z__avl_right_rotate(Z_Avl_Tree *tree, size_t root_id)
 {
     Z_Avl_Node *root = z__avl_node_by_id(tree, root_id);
     size_t pivot_id = root->left;
@@ -79,40 +75,38 @@ void z__avl_right_rotate(Z_Avl_Tree *tree, size_t root_id)
     pivot->right = root_id;
     root->left = pivot_right_id;
 
-    Z_Avl_Node tmp = *root;
-    *root = *pivot;
-    *pivot = tmp;
-
-    root->right = root_id;
+    return pivot_id;
 }
 
-void z__avl_left_right_rotate(Z_Avl_Tree *tree, size_t root_id)
+size_t z__avl_left_right_rotate(Z_Avl_Tree *tree, size_t root_id)
 {
-    z__avl_left_rotate(tree, z__avl_node_by_id(tree, root_id)->left);
-    z__avl_right_rotate(tree, root_id);
+    size_t new_id = z__avl_left_rotate(tree, z__avl_node_by_id(tree, root_id)->left);
+    return z__avl_right_rotate(tree, new_id);
 }
 
-void z__avl_right_left_rotate(Z_Avl_Tree *tree, size_t root_id)
+size_t z__avl_right_left_rotate(Z_Avl_Tree *tree, size_t root_id)
 {
-    z__avl_right_rotate(tree, z__avl_node_by_id(tree, root_id)->right);
-    z__avl_left_rotate(tree, root_id);
+    size_t new_id = z__avl_right_rotate(tree, z__avl_node_by_id(tree, root_id)->right);
+    return z__avl_left_rotate(tree, new_id);
 }
 
-void z__avl_rebalance_node(Z_Avl_Tree *tree, size_t node_id)
+size_t z__avl_rebalance_node(Z_Avl_Tree *tree, size_t node_id)
 {
     Z_Avl_Node *node = z__avl_node_by_id(tree, node_id);
     z__avl_update_height(tree, node_id);
     int balance_factor = z_avl_tree_get_balance_factor(tree, node_id);
 
     if (balance_factor > 1 && z_avl_tree_get_balance_factor(tree, node->left) >= 0) {
-        z__avl_right_rotate(tree, node_id);
+        return z__avl_right_rotate(tree, node_id);
     } else if (balance_factor < -1 && z_avl_tree_get_balance_factor(tree, node->right) <= 0) {
-        z__avl_left_rotate(tree, node_id);
+        return z__avl_left_rotate(tree, node_id);
     } else if (balance_factor > 1 && z_avl_tree_get_balance_factor(tree, node->left) < 0) {
-        z__avl_left_right_rotate(tree, node_id);
+        return z__avl_left_right_rotate(tree, node_id);
     } else if (balance_factor < -1 && z_avl_tree_get_balance_factor(tree, node->right) > 0) {
-        z__avl_right_left_rotate(tree, node_id);
+        return z__avl_right_left_rotate(tree, node_id);
     }
+
+    return node_id;
 }
 
 size_t z_avl_tree_get_next_id(Z_Avl_Tree *tree)
@@ -206,43 +200,37 @@ bool z_avl_tree_contains(const Z_Avl_Tree *tree, const void *key)
     return z__avl_find_node(tree, key) != Z__AVL_NULL_ID;
 }
 
-Z_Maybe_Pair z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t *root_id, void *key, void *value)
+size_t z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t node_id, void *key, void *value, Z_Maybe_Pair *pair)
 {
-    if (*root_id == Z__AVL_NULL_ID) {
-        *root_id = z__avl_new_node(tree, key, value);
-        Z_Maybe_Pair result = { .ok = false };
-        return result;
+    if (node_id == Z__AVL_NULL_ID) {
+        pair->ok = false;
+        return z__avl_new_node(tree, key, value);
     }
 
-    Z_Avl_Node *node = z__avl_node_by_id(tree, *root_id);
+    Z_Avl_Node *node = z__avl_node_by_id(tree, node_id);
     int compare_result = tree->compare_keys(key, node->key);
 
-    Z_Maybe_Pair result;
-
     if (compare_result > 0) {
-        result = z_avl_tree_put_impl(tree, &node->right, key, value);
+        node->right = z_avl_tree_put_impl(tree, node->right, key, value, pair);
     } else if (compare_result < 0) {
-        result = z_avl_tree_put_impl(tree, &node->left, key, value);
+        node->left = z_avl_tree_put_impl(tree, node->left, key, value, pair);
     } else {
-        Z_Maybe_Pair result = {
-            .ok = true,
-            .pair.key = node->key,
-            .pair.value = node->value,
-        };
-
+        pair->ok = true;
+        pair->pair.key = node->key;
+        pair->pair.value = node->value;
         node->key = key;
         node->value = value;
-
-        return result;
+        return node_id;
     }
 
-    z__avl_rebalance_node(tree, *root_id);
-    return result;
+    return z__avl_rebalance_node(tree, node_id);
 }
 
 Z_Maybe_Pair z_avl_tree_put(Z_Avl_Tree *tree, void *key, void *value)
 {
-    return z_avl_tree_put_impl(tree, &tree->root, key, value);
+    Z_Maybe_Pair pair;
+    tree->root = z_avl_tree_put_impl(tree, tree->root, key, value, &pair);
+    return pair;
 }
 
 Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
