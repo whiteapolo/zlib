@@ -1,6 +1,7 @@
 #ifndef AVL_H
 #define AVL_H
 
+#include <z_types.h>
 #include <z_array.h>
 #include <z_compare.h>
 #include <z_heap.h>
@@ -50,6 +51,8 @@ Z_Maybe_Pair z_avl_tree_put(Z_Avl_Tree *tree, void *key, void *value);
 Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key);
 size_t z_avl_tree_size(const Z_Avl_Tree *tree);
 Z_Pair_Array z_avl_tree_to_array(Z_Heap *heap, const Z_Avl_Tree *tree);
+Z_Maybe_Pair z_avl_tree_get_max(const Z_Avl_Tree *tree);
+Z_Maybe_Pair z_avl_tree_get_min(const Z_Avl_Tree *tree);
 
 Z_Avl_tree_Iter z_avl_tree_iter(Z_Heap *heap, const Z_Avl_Tree *tree, Z_Avl_Where_Condition where, Z_Avl_Tree_Order_By order_by);
 bool z_avl_tree_iter_next(Z_Avl_tree_Iter *iter, Z_Pair *pair);
