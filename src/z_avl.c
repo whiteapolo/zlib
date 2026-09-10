@@ -20,6 +20,7 @@ size_t z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t node_id, void *key, void *va
 size_t z_avl_tree_delete_impl(Z_Avl_Tree *tree, size_t node_id, void *key, Z_Maybe_Pair *pair);
 bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree);
 static inline Z_Avl_Node *z_avl_tree_node_by_id(const Z_Avl_Tree *tree, size_t node_id);
+bool z_avl_tree_is_healthy_impl(const Z_Avl_Tree *tree, size_t node_id);
 
 size_t z_avl_tree_size(const Z_Avl_Tree *tree)
 {
@@ -328,7 +329,7 @@ size_t z_avl_tree_delete_impl(Z_Avl_Tree *tree, size_t node_id, void *key, Z_May
         Z_Avl_Node *successor = z_avl_tree_node_by_id(tree, successor_id);
         node->key = successor->key;
         node->value = successor->value;
-        z_avl_tree_delete_impl(tree, node_id, successor->key, successor->value);
+        z_avl_tree_delete_impl(tree, node->right, successor->key, pair);
     }
 
     return z_avl_tree_rebalance_node(tree, node_id);
@@ -377,12 +378,23 @@ Z_Pair_Array z_avl_tree_to_array(Z_Heap *heap, const Z_Avl_Tree *tree)
     return array;
 }
 
-// bool z_avl_tree_is_healthy_impl(const Z_Avl_Tree *tree, size_t node_id)
-// {
+bool z_avl_tree_is_healthy_impl(const Z_Avl_Tree *tree, size_t node_id)
+{
+    if (node_id == Z_AVL_TREE_NULL_ID) {
+        return true;
+    }
 
-// }
+    int bf = z_avl_tree_get_node_balance_factor(tree, node_id);
+    Z_Avl_Node *node = z_avl_tree_node_by_id(tree, node_id);
 
-// bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree)
-// {
-//     return z_avl_tree_is_healthy_impl(tree, tree->root);
-// }
+    if (bf < -1 || bf > 1) {
+        return false;
+    }
+
+    return z_avl_tree_is_healthy_impl(tree, node->left) && z_avl_tree_is_healthy_impl(tree, node->right);
+}
+
+bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree)
+{
+    return z_avl_tree_is_healthy_impl(tree, tree->root);
+}
