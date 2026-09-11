@@ -44,7 +44,7 @@ char z_avl_tree_get_height(const Z_Avl_Tree *tree, size_t node_id)
 void z_avl_tree_update_node_height(const Z_Avl_Tree *tree, size_t node_id)
 {
     Z_Avl_Node *node = z_avl_tree_node_by_id(tree, node_id);
-    node->height = 1 + (char)Z_MIN(z_avl_tree_get_height(tree, node->right), z_avl_tree_get_height(tree, node->left));
+    node->height = 1 + (char)Z_MAX(z_avl_tree_get_height(tree, node->right), z_avl_tree_get_height(tree, node->left));
 }
 
 int z_avl_tree_get_node_balance_factor(const Z_Avl_Tree *tree, size_t node_id)
@@ -126,7 +126,8 @@ size_t z_avl_tree_generate_next_id(Z_Avl_Tree *tree)
         return z_array_pop(&tree->free_list);
     }
 
-    z_array_ensure_capacity(&tree->nodes, ++tree->nodes.length);
+    tree->nodes.length++;
+    z_array_ensure_capacity(&tree->nodes, tree->nodes.length);
     return tree->nodes.length;
 }
 
@@ -272,19 +273,20 @@ size_t z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t node_id, void *key, void *va
         return z_avl_tree_new_node(tree, key, value);
     }
 
-    Z_Avl_Node *node = z_avl_tree_node_by_id(tree, node_id);
-    int compare_result = tree->compare_keys(key, node->key);
+    int compare_result = tree->compare_keys(key, z_avl_tree_node_by_id(tree, node_id)->key);
 
     if (compare_result > 0) {
-        node->right = z_avl_tree_put_impl(tree, node->right, key, value, pair);
+        size_t new_right = z_avl_tree_put_impl(tree, z_avl_tree_node_by_id(tree, node_id)->right, key, value, pair);;
+        z_avl_tree_node_by_id(tree, node_id)->right = new_right;
     } else if (compare_result < 0) {
-        node->left = z_avl_tree_put_impl(tree, node->left, key, value, pair);
+        size_t new_left = z_avl_tree_put_impl(tree, z_avl_tree_node_by_id(tree, node_id)->left, key, value, pair);;
+        z_avl_tree_node_by_id(tree, node_id)->left = new_left;
     } else {
         pair->ok = true;
-        pair->pair.key = node->key;
-        pair->pair.value = node->value;
-        node->key = key;
-        node->value = value;
+        pair->pair.key = z_avl_tree_node_by_id(tree, node_id)->key;
+        pair->pair.value = z_avl_tree_node_by_id(tree, node_id)->value;
+        z_avl_tree_node_by_id(tree, node_id)->key = key;
+        z_avl_tree_node_by_id(tree, node_id)->value = value;
         return node_id;
     }
 

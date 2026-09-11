@@ -47,10 +47,10 @@ typedef struct {                                 \
     } while (0)
 
 
-#define z__calculate_new_capacity(array_ptr, needed)            \
-(                                                               \
+#define z__calculate_new_capacity(array_ptr, needed)           \
+(                                                              \
     (needed) > ((array_ptr)->capacity * Z_ARRAY_GROWTH_FACTOR) \
-        ? (needed)                                              \
+        ? (needed)                                             \
         : ((array_ptr)->capacity * Z_ARRAY_GROWTH_FACTOR)      \
 )
 
