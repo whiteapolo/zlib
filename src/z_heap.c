@@ -133,10 +133,11 @@ void *z_heap_calloc(Z_Heap *heap, size_t size)
 
 void *z_heap_realloc(Z_Heap *heap, void *ptr, size_t new_size)
 {
+    uintptr_t old_ptr = (uintptr_t)ptr;
     void *new_ptr = realloc(ptr, new_size);
 
-    if (ptr != NULL) {
-        z_ptr_table_delete(heap, (uintptr_t)ptr);
+    if ((void*)old_ptr != NULL) {
+        z_ptr_table_delete(heap, old_ptr);
     }
 
     if (ptr != new_ptr) {
@@ -152,8 +153,8 @@ void z_heap_free(Z_Heap *heap, void *ptr)
         return;
     }
 
-    free(ptr);
     z_ptr_table_delete(heap, (uintptr_t)ptr);
+    free(ptr);
 }
 
 void z_heap_free_all(Z_Heap *heap)
