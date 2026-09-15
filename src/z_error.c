@@ -35,3 +35,15 @@ void z_perror_format_va(const char *format, va_list args)
     z_str_append_format_va(&s, format, args);
     perror(s.ptr);
 }
+
+void z_enforce(bool predicate, const char *format, ...)
+{
+    if (predicate) {
+        return;
+    }
+
+    va_list args;
+    va_start(args, format);
+    z_die_va(format, args);
+    va_end(args);
+}
