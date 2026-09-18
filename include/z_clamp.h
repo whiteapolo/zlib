@@ -1,5 +1,5 @@
-#ifndef Z_CLAMP
-#define Z_CLAMP
+#ifndef Z_CLAMP_H
+#define Z_CLAMP_H
 
 #define Z_CLAMP(min, value, max)  \
 ({                                \
