@@ -4,13 +4,14 @@
 #include <time.h>
 
 typedef clock_t Z_Clock;
+typedef clock_t Z_Time;
 
-Z_Clock z_get_clock(void);
+Z_Time z_time(void);
 
-double z_clock_get_elapsed_seconds(Z_Clock start);
-double z_clock_get_elapsed_mseconds(Z_Clock start);
+double z_time_elapsed_seconds(Z_Time time);
+double z_time_elapsed_mseconds(Z_Time time);
 
-void z_print_elapsed_seconds(Z_Clock start);
-void z_print_elapsed_mseconds(Z_Clock start);
+void z_time_print_elapsed_seconds(Z_Time time);
+void z_time_print_elapsed_mseconds(Z_Time time);
 
 #endif

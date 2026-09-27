@@ -1,29 +1,36 @@
 #include <z_time.h>
 #include <stdio.h>
 
-Z_Clock z_get_clock(void)
+Z_Time z_time(void);
+
+double z_time_elapsed_seconds(Z_Time time);
+double z_time_elapsed_mseconds(Z_Time time);
+
+void z_time_print_elapsed_seconds(Z_Time time);
+void z_time_print_elapsed_mseconds(Z_Time time);
+
+
+Z_Clock z_time(void)
 {
     return clock();
 }
 
-double z_clock_get_elapsed_seconds(Z_Clock start)
+double z_time_elapsed_seconds(Z_Clock time)
 {
-    return ((double)(z_get_clock() - start)) / CLOCKS_PER_SEC;
+    return ((double)(z_time() - time)) / CLOCKS_PER_SEC;
 }
 
-double z_clock_get_elapsed_mseconds(Z_Clock start)
+double z_time_elapsed_mseconds(Z_Clock time)
 {
-    return z_clock_get_elapsed_seconds(start) * 1000;
+    return z_time_elapsed_seconds(time) * 1000;
 }
 
-void z_print_elapsed_seconds(Z_Clock start)
+void z_time_print_elapsed_seconds(Z_Clock time)
 {
-    double elapsed_seconds = z_clock_get_elapsed_seconds(start);
-    printf("%lfs\n", elapsed_seconds);
+    printf("%lfs\n", z_time_elapsed_seconds(time));
 }
 
-void z_print_elapsed_mseconds(Z_Clock start)
+void z_time_print_elapsed_mseconds(Z_Clock time)
 {
-    double elapsed_mseconds = z_clock_get_elapsed_mseconds(start);
-    printf("%lfms\n", elapsed_mseconds);
+    printf("%lfms\n", z_time_elapsed_mseconds(time));
 }

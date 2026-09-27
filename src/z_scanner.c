@@ -61,7 +61,7 @@ bool z_scanner_check_string(const Z_Scanner *scanner, Z_String_View expected)
         return false;
     }
 
-    Z_String_View slice = z_sv_substring(scanner->source, scanner->current, scanner->current + expected.length);
+    Z_String_View slice = z_sv_substring(scanner->source, scanner->current, expected.length);
     return z_sv_equal(slice, expected);
 }
 
@@ -91,7 +91,7 @@ void z_scanner_advance_until_string(Z_Scanner *scanner, Z_String_View expected)
 
 Z_String_View z_scanner_capture(const Z_Scanner *scanner)
 {
-    return z_sv_substring(scanner->source, scanner->start, scanner->current);
+    return z_sv_substring(scanner->source, scanner->start, scanner->current - scanner->start);
 }
 
 void z_scanner_reset_mark(Z_Scanner *scanner)
@@ -101,7 +101,7 @@ void z_scanner_reset_mark(Z_Scanner *scanner)
 
 void z_scanner_skip_cset(Z_Scanner *scanner, Z_String_View cset)
 {
-    while (!z_scanner_is_at_end(scanner) && z_sv_contain_char(cset, z_scanner_peek(scanner))) {
+    while (!z_scanner_is_at_end(scanner) && z_sv_contains_char(cset, z_scanner_peek(scanner))) {
         z_scanner_advance(scanner, 1);
     }
 }

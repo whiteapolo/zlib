@@ -115,30 +115,30 @@ int z_safe_fork(void)
     return pid;
 }
 
-Z_Piped_Process z_pipe_process(char *args[], Z_Redirect redirect)
+Z_Piped_Process z_pipe_process(char *args[], Z_File_Redirect redirect)
 {
     int stdin[2];
     int stdout[2];
     int stderr[2];
 
-    if (redirect & Z_Redirect_Stdin) z_safe_pipe(stdin);
-    if (redirect & Z_Redirect_Stdout) z_safe_pipe(stdout);
-    if (redirect & Z_Redirect_Stderr) z_safe_pipe(stderr);
+    if (redirect & Z_File_Redirect_Stdin) z_safe_pipe(stdin);
+    if (redirect & Z_File_Redirect_Stdout) z_safe_pipe(stdout);
+    if (redirect & Z_File_Redirect_Stderr) z_safe_pipe(stderr);
 
     int pid = z_safe_fork();
 
     if (pid == 0) { // child
-        if (redirect & Z_Redirect_Stdin) {
+        if (redirect & Z_File_Redirect_Stdin) {
             dup2(stdin[PIPE_OUT], STDIN_FILENO);
             close(stdin[PIPE_IN]);
         }
 
-        if (redirect & Z_Redirect_Stdout) {
+        if (redirect & Z_File_Redirect_Stdout) {
             dup2(stdout[PIPE_IN], STDOUT_FILENO);
             close(stdout[PIPE_OUT]);
         }
 
-        if (redirect & Z_Redirect_Stderr) {
+        if (redirect & Z_File_Redirect_Stderr) {
             dup2(stderr[PIPE_IN], STDERR_FILENO);
             close(stderr[PIPE_OUT]);
         }
@@ -150,17 +150,17 @@ Z_Piped_Process z_pipe_process(char *args[], Z_Redirect redirect)
 
     Z_Piped_Process piped_process = {0};
 
-    if (redirect & Z_Redirect_Stdin) {
+    if (redirect & Z_File_Redirect_Stdin) {
         close(stdin[PIPE_OUT]);
         piped_process.stdin = fdopen(stdin[PIPE_IN], "w");
     }
 
-    if (redirect & Z_Redirect_Stdout) {
+    if (redirect & Z_File_Redirect_Stdout) {
         close(stdout[PIPE_IN]);
         piped_process.stdout = fdopen(stdout[PIPE_OUT], "r");
     }
 
-    if (redirect & Z_Redirect_Stderr) {
+    if (redirect & Z_File_Redirect_Stderr) {
         close(stderr[PIPE_IN]);
         piped_process.stderr = fdopen(stderr[PIPE_OUT], "r");
     }
