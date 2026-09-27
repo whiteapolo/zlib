@@ -1,6 +1,5 @@
 #include "../include/internal/z_config.h"
 #include "../include/z_deque.h"
-#include "../include/z_compare.h"
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
