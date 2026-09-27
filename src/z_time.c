@@ -1,4 +1,4 @@
-#include <z_time.h>
+#include "../include/z_time.h"
 #include <stdio.h>
 
 Z_Time z_time(void);

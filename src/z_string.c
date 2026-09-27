@@ -1,8 +1,8 @@
-#include <z_string.h>
-#include <z_array.h>
+#include "../include/z_string.h"
+#include "../include/z_array.h"
 #include <limits.h>
 #include <stdio.h>
-#include <z_min_max.h>
+#include "../include/z_min_max.h"
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 

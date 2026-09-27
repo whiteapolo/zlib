@@ -1,5 +1,5 @@
-#include <z_hash_table.h>
-#include <z_min_max.h>
+#include "../include/z_hash_table.h"
+#include "../include/z_min_max.h"
 
 #define Z__HASH_TABLE_EMPTY 0
 #define Z__HASH_TABLE_TOMBSTONE 1

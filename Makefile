@@ -1,6 +1,5 @@
 CC = gcc
 BASE_CFLAGS =             \
-    -I./include           \
     -Wall                 \
     -Wextra               \
     -Werror               \

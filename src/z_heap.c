@@ -1,6 +1,6 @@
 #include <stdbool.h>
-#include <z_hash_table.h>
-#include <z_min_max.h>
+#include "../include/z_hash_table.h"
+#include "../include/z_min_max.h"
 
 #define Z__PTR_TABLE_MIN_CAPACITY 16u
 #define Z__PTR_TABLE_MAX_LOAD_FACTOR 0.7
