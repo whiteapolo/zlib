@@ -1,5 +1,5 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef Z_ARRAY_H
+#define Z_ARRAY_H
 
 #include <string.h>
 #include "internal/config.h"

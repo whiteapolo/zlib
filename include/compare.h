@@ -1,5 +1,5 @@
-#ifndef COMPARE_H
-#define COMPARE_H
+#ifndef Z_COMPARE_H
+#define Z_COMPARE_H
 
 int z_compare_int_pointers(const int *a, const int *b);
 int z_compare_float_pointers(const float *a, const float *b);

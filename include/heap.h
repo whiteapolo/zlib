@@ -1,5 +1,5 @@
-#ifndef HEAP_H
-#define HEAP_H
+#ifndef Z_HEAP_H
+#define Z_HEAP_H
 
 #include <stdint.h>
 #include <stddef.h>

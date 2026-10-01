@@ -1,5 +1,5 @@
-#ifndef AVL_H
-#define AVL_H
+#ifndef Z_AVL_H
+#define Z_AVL_H
 
 #include "../types.h"
 #include "../array.h"

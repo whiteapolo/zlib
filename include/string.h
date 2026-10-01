@@ -1,5 +1,5 @@
-#ifndef STRING_H
-#define STRING_H
+#ifndef Z_STRING_H
+#define Z_STRING_H
 
 #include "heap.h"
 #include "array.h"

@@ -1,5 +1,5 @@
-#ifndef DEQUE_H
-#define DEQUE_H
+#ifndef Z_DEQUE_H
+#define Z_DEQUE_H
 
 #include <stdlib.h>
 #include "heap.h"

@@ -1,5 +1,5 @@
-#ifndef CLI_H
-#define CLI_H
+#ifndef Z_CLI_H
+#define Z_CLI_H
 
 #include "heap.h"
 #include "array.h"

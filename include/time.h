@@ -1,5 +1,5 @@
-#ifndef TIME_H
-#define TIME_H
+#ifndef Z_TIME_H
+#define Z_TIME_H
 
 #include <time.h>
 

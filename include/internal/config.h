@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef Z_CONFIG_H
+#define Z_CONFIG_H
 
 #define READ_BUFFER_SIZE 256
 #define Z_HASH_TABLE_MIN_CAPACITY 16
