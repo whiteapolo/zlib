@@ -47,6 +47,6 @@ uninstall-binary:
 	@rm -f /usr/local/lib/libzatar.so /usr/local/lib/libzatar.a
 
 clean:
-	@rm -rf libzatar.o libzatar
+	@rm -rf libzatar
 
 .PHONY: all release dev install install-include install-binary uninstall uninstall-include uninstall-binary clean
