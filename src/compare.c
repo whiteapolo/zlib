@@ -1,5 +1,5 @@
 #include <string.h>
-#include "../include/z_compare.h"
+#include "../include/compare.h"
 
 int z_compare_int_pointers(const int *a, const int *b)
 {

@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include "z_compare.h"
-#include "z_array.h"
-#include "z_heap.h"
-#include "internal/z_config.h"
-#include "z_types.h"
+#include "compare.h"
+#include "array.h"
+#include "heap.h"
+#include "internal/config.h"
+#include "types.h"
 
 typedef struct {
     void **keys;

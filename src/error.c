@@ -1,6 +1,6 @@
-#include "../include/z_error.h"
-#include "../include/z_heap.h"
-#include "../include/z_string.h"
+#include "../include/error.h"
+#include "../include/heap.h"
+#include "../include/string.h"
 #include <stdio.h>
 
 void z_die(const char *format, ...)

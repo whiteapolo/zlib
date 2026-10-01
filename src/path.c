@@ -1,5 +1,5 @@
-#include "../include/z_path.h"
-#include "../include/z_env.h"
+#include "../include/path.h"
+#include "../include/env.h"
 #include <sys/stat.h>
 
 bool z_path_expand_tilde(Z_String_View pathname, Z_String *out)

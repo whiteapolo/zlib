@@ -1,4 +1,4 @@
-#include "../include/z_scanner.h"
+#include "../include/scanner.h"
 
 Z_Scanner z_scanner_new(Z_String_View source)
 {

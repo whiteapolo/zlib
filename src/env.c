@@ -1,5 +1,5 @@
 #include <stdlib.h>
-#include "../include/z_env.h"
+#include "../include/env.h"
 
 const char *z_env_get(const char *name, const char *fallback)
 {

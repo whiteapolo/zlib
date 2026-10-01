@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../include/z_file.h"
+#include "../include/file.h"
 #include <string.h>
 #include <dirent.h>
 

@@ -1,4 +1,4 @@
-#include "../include/internal/z_avl.h"
+#include "../include/internal/avl.h"
 #include <math.h>
 
 #define Z_AVL_TREE_NULL_ID 0

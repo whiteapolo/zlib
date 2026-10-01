@@ -2,8 +2,8 @@
 #define ARRAY_H
 
 #include <string.h>
-#include "internal/z_config.h"
-#include "z_heap.h"
+#include "internal/config.h"
+#include "heap.h"
 
 #define Z_DEFINE_ARRAY(identifier, element_type) \
 typedef struct {                                 \
