@@ -2,7 +2,7 @@
 #define Z_FILE_H
 
 #include <stdio.h>
-#include "heap.h"
+#include "pool.h"
 #include "string.h"
 #include <dirent.h>
 

@@ -117,52 +117,52 @@ void z_ptr_table_reset(Z_Ptr_Table *table)
     table->occupied = 0;
 }
 
-void *z_heap_malloc(Z_Heap *heap, size_t size)
+void *z_pool_malloc(Z_Pool *pool, size_t size)
 {
     void *ptr = malloc(size);
-    z_ptr_table_insert(heap, (uintptr_t)ptr);
+    z_ptr_table_insert(pool, (uintptr_t)ptr);
     return ptr;
 }
 
-void *z_heap_calloc(Z_Heap *heap, size_t size)
+void *z_pool_calloc(Z_Pool *pool, size_t size)
 {
     void *ptr = calloc(1, size);
-    z_ptr_table_insert(heap, (uintptr_t)ptr);
+    z_ptr_table_insert(pool, (uintptr_t)ptr);
     return ptr;
 }
 
-void *z_heap_realloc(Z_Heap *heap, void *ptr, size_t new_size)
+void *z_pool_realloc(Z_Pool *pool, void *ptr, size_t new_size)
 {
     uintptr_t old_ptr = (uintptr_t)ptr;
     void *new_ptr = realloc(ptr, new_size);
 
     if ((void*)old_ptr != NULL) {
-        z_ptr_table_delete(heap, old_ptr);
+        z_ptr_table_delete(pool, old_ptr);
     }
 
     if (ptr != new_ptr) {
-        z_ptr_table_insert(heap, (uintptr_t)new_ptr);
+        z_ptr_table_insert(pool, (uintptr_t)new_ptr);
     }
 
     return new_ptr;
 }
 
-void z_heap_free(Z_Heap *heap, void *ptr)
+void z_pool_free(Z_Pool *pool, void *ptr)
 {
     if (ptr == NULL) {
         return;
     }
 
-    z_ptr_table_delete(heap, (uintptr_t)ptr);
+    z_ptr_table_delete(pool, (uintptr_t)ptr);
     free(ptr);
 }
 
-void z_heap_free_all(Z_Heap *heap)
+void z_pool_free_all(Z_Pool *pool)
 {
-    z_ptr_table_free(heap);
+    z_ptr_table_free(pool);
 }
 
-void z_heap_reset(Z_Heap *heap)
+void z_pool_reset(Z_Pool *pool)
 {
-    z_ptr_table_reset(heap);
+    z_ptr_table_reset(pool);
 }

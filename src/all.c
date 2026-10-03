@@ -2,7 +2,7 @@
 #include "deque.c"
 #include "env.c"
 #include "file.c"
-#include "heap.c"
+#include "pool.c"
 #include "path.c"
 #include "scanner.c"
 #include "string.c"

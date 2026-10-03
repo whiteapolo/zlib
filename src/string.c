@@ -25,38 +25,38 @@ size_t z__get_format_length(const char *format, va_list args)
     return (size_t)size;
 }
 
-Z_String z_str_new(Z_Heap *heap, const char *format, ...)
+Z_String z_str_new(Z_Pool *pool, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    Z_String s = z_str_new_va(heap, format, args);
+    Z_String s = z_str_new_va(pool, format, args);
     va_end(args);
     return s;
 }
 
-Z_String z_str_new_va(Z_Heap *heap, const char *format, va_list args)
+Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args)
 {
-    Z_String s = z_array_new(heap, Z_String);
+    Z_String s = z_array_new(pool, Z_String);
     z_str_append_va(&s, format, args);
     return s;
 }
 
-Z_String z_str_new_from_sv(Z_Heap *heap, Z_String_View s)
+Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s)
 {
-    return z_str_new(heap, "%.*s", z__size_t_to_int(s.length), s.ptr);
+    return z_str_new(pool, "%.*s", z__size_t_to_int(s.length), s.ptr);
 }
 
-char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s)
+char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s)
 {
-    char *ret = z_heap_malloc(heap, sizeof(char) * (s.length + 1));
+    char *ret = z_pool_malloc(pool, sizeof(char) * (s.length + 1));
     memcpy(ret, s.ptr, sizeof(char) * s.length);
     ret[s.length] = 0;
     return ret;
 }
 
-char *z_cstr_dup(Z_Heap *heap, const char *s)
+char *z_cstr_dup(Z_Pool *pool, const char *s)
 {
-    return z_sv_to_cstr(heap, z_sv(s));
+    return z_sv_to_cstr(pool, z_sv(s));
 }
 
 void z_str_append_cstr(Z_String *s, const char *cstr)
@@ -129,8 +129,8 @@ void z_str_prepend(Z_String *s, const char *format, ...)
 
 void z_str_prepend_va(Z_String *s, const char *format, va_list args)
 {
-    Z_Heap_Auto heap = {0};
-    Z_String tmp = z_str_new_va(&heap, format, args);
+    Z_Pool_Auto pool = {0};
+    Z_String tmp = z_str_new_va(&pool, format, args);
     z_str_append(&tmp, "%s", s->ptr);
     z_str_clear(s);
     z_str_append(s, "%s", tmp.ptr);
@@ -156,8 +156,8 @@ char z_str_pop_char(Z_String *s)
 
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 {
-    Z_Heap_Auto heap = {0};
-    Z_String tmp = z_str_new(&heap, "");
+    Z_Pool_Auto pool = {0};
+    Z_String tmp = z_str_new(&pool, "");
 
     size_t i = 0;
 
@@ -212,7 +212,7 @@ void z_str_split(Z_String_View s, Z_String_View delimiter, Z_String_Array *out)
     Z_String_View curr;
 
     while (z_sv_split_iter_next(&iter, &curr)) {
-        z_array_push(out, z_str_new_from_sv(out->heap, curr));
+        z_array_push(out, z_str_new_from_sv(out->pool, curr));
     }
 }
 

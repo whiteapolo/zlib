@@ -150,12 +150,12 @@ void z_avl_tree_free_node(Z_Avl_Tree *tree, size_t node_id)
     z_array_push(&tree->free_list, node_id);
 }
 
-Z_Avl_Tree z_avl_tree_new(Z_Heap *heap, Z_Compare_Fn compare_keys)
+Z_Avl_Tree z_avl_tree_new(Z_Pool *pool, Z_Compare_Fn compare_keys)
 {
     Z_Avl_Tree tree = {
         .root = Z_AVL_TREE_NULL_ID,
-        .nodes = z_array_new(heap, Z_Avl_Node_Array),
-        .free_list = z_array_new(heap, Z_Avl_Id_Array),
+        .nodes = z_array_new(pool, Z_Avl_Node_Array),
+        .free_list = z_array_new(pool, Z_Avl_Id_Array),
         .compare_keys = compare_keys,
     };
 
@@ -344,14 +344,14 @@ Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
     return pair;
 }
 
-// Z_Avl_tree_Iter z_avl_tree_iter(Z_Heap *heap, const Z_Avl_Tree *tree)
+// Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree)
 // {
 //     Z_Avl_tree_Iter iter = {
 //         .tree = tree,
 //         .did_visit_left = false,
 //         .did_visit_curr = false,
 //         .did_visit_right = false,
-//         .stack = z_array_new(heap, Z_Avl_Id_Array),
+//         .stack = z_array_new(pool, Z_Avl_Id_Array),
 //     };
 
 //     size_t curr = tree->root;
@@ -369,9 +369,9 @@ Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
 
 // }
 
-Z_Pair_Array z_avl_tree_to_array(Z_Heap *heap, const Z_Avl_Tree *tree)
+Z_Pair_Array z_avl_tree_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)
 {
-    Z_Pair_Array array = z_array_new(heap, Z_Pair_Array);
+    Z_Pair_Array array = z_array_new(pool, Z_Pair_Array);
 
     for (size_t i = 0; i < tree->nodes.length; i++) {
         z_array_push(&array, z_make_pair(tree->nodes.ptr[i].key, tree->nodes.ptr[i].value));

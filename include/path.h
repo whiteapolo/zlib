@@ -2,7 +2,7 @@
 #define Z_PATH_H
 
 #include "string.h"
-#include "heap.h"
+#include "pool.h"
 
 bool z_path_expand_tilde(Z_String_View pathname, Z_String *out);
 bool z_path_compress_tilde(Z_String_View pathname, Z_String *out);

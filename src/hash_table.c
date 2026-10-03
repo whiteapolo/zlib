@@ -8,23 +8,23 @@ void z__hash_table_free(Z_Hash_Table *ht);
 Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash);
 void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity);
 
-Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash)
+Z_Hash_Table z_hash_table_new(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash)
 {
-    return z_hash_table_new_with_capacity(heap, equal, hash, 0);
+    return z_hash_table_new_with_capacity(pool, equal, hash, 0);
 }
 
-Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity)
+Z_Hash_Table z_hash_table_new_with_capacity(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity)
 {
     Z_Hash_Table table = {
-        .keys = z_heap_calloc(heap, sizeof(void *) * capacity),
-        .values = z_heap_calloc(heap, sizeof(void *) * capacity),
-        .hashes = z_heap_calloc(heap, sizeof(size_t) * capacity),
+        .keys = z_pool_calloc(pool, sizeof(void *) * capacity),
+        .values = z_pool_calloc(pool, sizeof(void *) * capacity),
+        .hashes = z_pool_calloc(pool, sizeof(size_t) * capacity),
         .occupied = 0,
         .size = 0,
         .capacity = capacity,
         .equal = equal,
         .hash = hash,
-        .heap = heap,
+        .pool = pool,
     };
 
     return table;
@@ -36,9 +36,9 @@ void z__hash_table_free(Z_Hash_Table *ht)
         return;
     }
 
-    z_heap_free(ht->heap, ht->keys);
-    z_heap_free(ht->heap, ht->values);
-    z_heap_free(ht->heap, ht->hashes);
+    z_pool_free(ht->pool, ht->keys);
+    z_pool_free(ht->pool, ht->values);
+    z_pool_free(ht->pool, ht->hashes);
 }
 
 static inline size_t z__hash_table_hash(const Z_Hash_Table *ht, const void *key)
@@ -135,7 +135,7 @@ Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *valu
 
 void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
 {
-    Z_Hash_Table new_ht = z_hash_table_new_with_capacity(ht->heap, ht->equal, ht->hash, new_capacity);
+    Z_Hash_Table new_ht = z_hash_table_new_with_capacity(ht->pool, ht->equal, ht->hash, new_capacity);
 
     for (size_t i = 0; i < ht->capacity; i++) {
         if (ht->hashes[i] >= 2) {
@@ -219,9 +219,9 @@ size_t z_hash_table_size(const Z_Hash_Table *ht)
     return ht->size;
 }
 
-Z_Pair_Array z_hash_table_to_array(Z_Heap *heap, const Z_Hash_Table *ht)
+Z_Pair_Array z_hash_table_to_array(Z_Pool *pool, const Z_Hash_Table *ht)
 {
-    Z_Pair_Array array = z_array_new(heap, Z_Pair_Array);
+    Z_Pair_Array array = z_array_new(pool, Z_Pair_Array);
 
     for (size_t i = 0; i < ht->capacity; i++) {
         if (ht->hashes[i] >= 2) {

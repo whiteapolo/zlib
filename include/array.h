@@ -3,24 +3,24 @@
 
 #include <string.h>
 #include "internal/config.h"
-#include "heap.h"
+#include "pool.h"
 
 #define Z_DEFINE_ARRAY(identifier, element_type) \
 typedef struct {                                 \
-    Z_Heap *heap;                                \
+    Z_Pool *pool;                                \
     element_type *ptr;                           \
     size_t length;                               \
     size_t capacity;                             \
 } identifier
 
-#define z_array_new(heap_ptr, type) ((type){ .heap = heap_ptr, .ptr = NULL, .length = 0, .capacity = 0 })
+#define z_array_new(pool_ptr, type) ((type){ .pool = pool_ptr, .ptr = NULL, .length = 0, .capacity = 0 })
 
 #define z_array_ensure_capacity(array_ptr, needed)                                                                            \
     do {                                                                                                                      \
         size_t _needed = needed;                                                                                              \
         if ((array_ptr)->capacity < (_needed)) {                                                                              \
             size_t new_capacity = z__calculate_new_capacity(array_ptr, _needed);                                              \
-            (array_ptr)->ptr = z_heap_realloc((array_ptr)->heap, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity); \
+            (array_ptr)->ptr = z_pool_realloc((array_ptr)->pool, (array_ptr)->ptr, sizeof(*(array_ptr)->ptr) * new_capacity); \
             (array_ptr)->capacity = new_capacity;                                                                             \
         }                                                                                                                     \
     } while (0)

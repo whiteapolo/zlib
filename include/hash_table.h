@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include "compare.h"
 #include "array.h"
-#include "heap.h"
+#include "pool.h"
 #include "internal/config.h"
 #include "types.h"
 
@@ -18,7 +18,7 @@ typedef struct {
     size_t capacity;
     Z_Equal_Fn equal;
     Z_Hash_Fn hash;
-    Z_Heap *heap;
+    Z_Pool *pool;
 } Z_Hash_Table;
 
 typedef struct {
@@ -26,15 +26,15 @@ typedef struct {
     size_t i;
 } Z_Hash_Table_Iter;
 
-Z_Hash_Table z_hash_table_new(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash);
-Z_Hash_Table z_hash_table_new_with_capacity(Z_Heap *heap, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity);
+Z_Hash_Table z_hash_table_new(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash);
+Z_Hash_Table z_hash_table_new_with_capacity(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity);
 void *z_hash_table_get(const Z_Hash_Table *ht, const void *key);
 void *z_hash_table_try_get(const Z_Hash_Table *ht, const void *key, void *fallback);
 Z_Maybe_Pair z_hash_table_put(Z_Hash_Table *ht, void *key, void *value);
 Z_Maybe_Pair z_hash_table_delete(Z_Hash_Table *ht, void *key);
 bool z_hash_table_contains(const Z_Hash_Table *ht, void *key);
 size_t z_hash_table_size(const Z_Hash_Table *ht);
-Z_Pair_Array z_hash_table_to_array(Z_Heap *heap, const Z_Hash_Table *ht);
+Z_Pair_Array z_hash_table_to_array(Z_Pool *pool, const Z_Hash_Table *ht);
 
 Z_Hash_Table_Iter z_hash_table_iter(const Z_Hash_Table *ht);
 bool z_hash_table_iter_next(Z_Hash_Table_Iter *iter, Z_Pair *pair);

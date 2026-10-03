@@ -12,10 +12,10 @@ bool z__deque_is_index_inside(const Z_Deque *deque, size_t i);
 void z__deque_ensure_capacity(Z_Deque *deque, size_t needed);
 void z__deque_debug_print(const Z_Deque *deque, Z_Print_Fn print_element);
 
-Z_Deque z_deque_new(Z_Heap *heap)
+Z_Deque z_deque_new(Z_Pool *pool)
 {
     Z_Deque deque = {
-        .heap = heap,
+        .pool = pool,
         .capacity = 0,
         .size = 0,
         .front = 0,
@@ -76,7 +76,7 @@ void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
 
     size_t new_capacity = Z_MAX(needed, deque->capacity * Z_DEQUE_GROWTH_FACTOR);
     size_t old_capacity = deque->capacity;
-    deque->ptr = z_heap_realloc(deque->heap, deque->ptr, sizeof(void *) * new_capacity);
+    deque->ptr = z_pool_realloc(deque->pool, deque->ptr, sizeof(void *) * new_capacity);
     deque->capacity = new_capacity;
 
     if (deque->front > deque->rear) {

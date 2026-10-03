@@ -1,5 +1,5 @@
 #include "../include/error.h"
-#include "../include/heap.h"
+#include "../include/pool.h"
 #include "../include/string.h"
 #include <stdio.h>
 
@@ -27,8 +27,8 @@ void z_perror(const char *format, ...)
 
 void z_perror_va(const char *format, va_list args)
 {
-    Z_Heap_Auto heap = {0};
-    Z_String s = z_str_new(&heap, "");
+    Z_Pool_Auto pool = {0};
+    Z_String s = z_str_new(&pool, "");
     z_str_append_va(&s, format, args);
     perror(s.ptr);
 }

@@ -1,7 +1,7 @@
 #ifndef Z_CLI_H
 #define Z_CLI_H
 
-#include "heap.h"
+#include "pool.h"
 #include "array.h"
 #include "string.h"
 
@@ -31,8 +31,8 @@ Z_DEFINE_ARRAY(Z_CLI_Option_Array, Z_CLI_Option);
 
 void z_get_opt(int argc, char **argv, Z_String_Array *unhandled_arguments, ...)
 {
-    Z_Heap_Auto heap = {0};
-    Z_CLI_Option_Array options = z_array_new(&heap, Z_CLI_Option_Array);
+    Z_Pool_Auto pool = {0};
+    Z_CLI_Option_Array options = z_array_new(&pool, Z_CLI_Option_Array);
 
     z__get_opt(argc, argv, unhandled_arguments, &options);
 }
@@ -44,8 +44,8 @@ void z__get_opt(int argc, char **argv, Z_String_Array *unhandled_arguments, cons
 
 // void get_opt(int argc, char **argv, const char *flags, const char *description, void *value, Z_CLI_Option_Type type, Z_CLI_Option_Status status, ...)
 // {
-//   Z_Heap_Auto heap = {0};;
-//   Z_CLI_Option_Array options = z_array_new(&heap, Z_CLI_Option_Array);
+//   Z_Pool_Auto pool = {0};;
+//   Z_CLI_Option_Array options = z_array_new(&pool, Z_CLI_Option_Array);
 //   // TODO: parsing to array
 //   get_opt_array(&options, argc, argv);
 // }

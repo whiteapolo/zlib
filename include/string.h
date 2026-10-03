@@ -1,7 +1,7 @@
 #ifndef Z_STRING_H
 #define Z_STRING_H
 
-#include "heap.h"
+#include "pool.h"
 #include "array.h"
 #include <stdarg.h>
 #include <stdbool.h>
@@ -21,11 +21,11 @@ typedef struct {
     size_t current;
 } Z_Sv_Split_Iter;
 
-Z_String z_str_new(Z_Heap *heap, const char *format, ...);
-Z_String z_str_new_va(Z_Heap *heap, const char *format, va_list args);
-Z_String z_str_new_from_sv(Z_Heap *heap, Z_String_View s);
-char *z_sv_to_cstr(Z_Heap *heap, Z_String_View s);
-char *z_cstr_dup(Z_Heap *heap, const char *s);
+Z_String z_str_new(Z_Pool *pool, const char *format, ...);
+Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args);
+Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s);
+char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s);
+char *z_cstr_dup(Z_Pool *pool, const char *s);
 
 void z_str_append_cstr(Z_String *s, const char *cstr);
 void z_str_append(Z_String *s, const char *format, ...);

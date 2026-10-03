@@ -1,3 +1,4 @@
+MAKEFLAGS += --no-print-directory
 CC := gcc
 BASE_CFLAGS :=            \
 	-O3                   \
@@ -14,22 +15,23 @@ BASE_CFLAGS :=            \
 
 all: release
 
-libzatar:
-	@mkdir -p libzatar
-	@$(CC) $(CFLAGS) -c src/all.c -o libzatar/libzatar.o
-	@ar rcs libzatar/libzatar.a libzatar/libzatar.o
-	@$(CC) libzatar/obj/libzatar.o -shared -o libzatar/libzatar.so
-
 release:
-	@make libzatar
+	@make build CFLAGS=-O3
 
 debug:
-	@make libzatar CFLAGS=-g -O0
+	@make build 'CFLAGS=-g -O0'
 
-install: libzatar
+build:
+	@mkdir -p build
+	@$(CC) $(BASE_CFLAGS) $(CFLAGS) -c src/all.c -o build/libzatar.o
+	@ar rcs build/libzatar.a build/libzatar.o
+	@$(CC) build/libzatar.o -shared -o build/libzatar.so
+
+install:
 	@mkdir -p /usr/local/include/libzatar
 	@cp -r include/* /usr/local/include/libzatar/
 	@mkdir -p /usr/local/lib
+	@cp build/libzatar.a build/libzatar.so /usr/local/lib
 
 uninstall:
 	@rm -rf                               \
@@ -38,6 +40,6 @@ uninstall:
 		/usr/local/lib/libzatar.a
 
 clean:
-	@rm -rf obj libzatar
+	@rm -rf build
 
 .PHONY: all build install uninstall clean
