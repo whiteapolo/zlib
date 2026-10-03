@@ -1,6 +1,34 @@
 #ifndef Z_POOL_H
 #define Z_POOL_H
 
+/*
+ * Z_Pool is a memory pool that groups allocations under a single variable.
+ *
+ * Example:
+ *
+ *     Z_Pool pool = {0};
+ *     char *name = z_pool_malloc(&pool, 32);
+ *
+ *     name = z_pool_realloc(&pool, name, 64);
+ *     z_pool_free(&pool, name);
+ *
+ *     // Or free everything at once:
+ *     z_pool_free_all(&pool);
+ *
+ * For automatic cleanup, use Z_Pool_Auto. The pool and all remaining
+ * allocations are automatically freed when the variable goes out of scope.
+ *
+ *     void foo(void)
+ *     {
+ *         Z_Pool_Auto pool = {0};
+ *
+ *         char *name = z_pool_malloc(&pool, 32);
+ *         // ...
+ *     } // pool is automatically freed here
+ */
+#ifndef Z_POOL_H
+#define Z_POOL_H
+
 #include <stdint.h>
 #include <stddef.h>
 
