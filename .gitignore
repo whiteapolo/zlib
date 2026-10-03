@@ -1,9 +1,2 @@
 .vscode
-exe
-obj
-/build/
-libzatar.a
-tmp
-z_avl_new.c
-z_avl_new.h
-test
+build
