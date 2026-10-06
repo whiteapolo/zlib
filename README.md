@@ -3,7 +3,7 @@
 make
 ```
 
-## For debug builds
+### For debug builds
 ```console
 make debug
 ```
