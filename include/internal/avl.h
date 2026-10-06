@@ -56,7 +56,7 @@ Z_Maybe_Pair z_avl_tree_get_min(const Z_Avl_Tree *tree);
 
 bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree);
 
-Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree, Z_Avl_Where_Condition where, Z_Avl_Tree_Order_By order_by);
+Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree, Z_Avl_Tree_Order_By order_by);
 bool z_avl_tree_iter_next(Z_Avl_tree_Iter *iter, Z_Pair *pair);
 
 // Z_Avl_tree_Iter z_avl_tree_iter_where(Z_Pool *pool, const Z_Avl_Tree *tree, );

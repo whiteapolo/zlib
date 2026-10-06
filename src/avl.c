@@ -141,7 +141,7 @@ size_t z_avl_tree_new_node(Z_Avl_Tree *tree, void *key, void *value)
     node->height = 0;
     node->right = Z_AVL_TREE_NULL_ID;
     node->left = Z_AVL_TREE_NULL_ID;
-    
+
     return id;
 }
 
@@ -344,13 +344,13 @@ Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
     return pair;
 }
 
-// Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree)
+// Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree, Z_Avl_Tree_Order_By order_by)
 // {
 //     Z_Avl_tree_Iter iter = {
 //         .tree = tree,
-//         .did_visit_left = false,
+//         .did_visit_left = true,
 //         .did_visit_curr = false,
-//         .did_visit_right = false,
+//         .did_visit_right = true,
 //         .stack = z_array_new(pool, Z_Avl_Id_Array),
 //     };
 
@@ -366,7 +366,7 @@ Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
 
 // bool z_avl_tree_iter_next(Z_Avl_tree_Iter *iter, Z_Pair *pair)
 // {
-
+//     size_t node_id = z_array_peek(&iter->stack);
 // }
 
 Z_Pair_Array z_avl_tree_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)

@@ -1,6 +1,3 @@
-#ifndef Z_POOL_H
-#define Z_POOL_H
-
 /*
  * Z_Pool is a memory pool that groups allocations under a single variable.
  *

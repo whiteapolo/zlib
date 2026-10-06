@@ -1,5 +1,5 @@
 MAKEFLAGS += --no-print-directory
-CC := gcc
+CC := cc
 BASE_CFLAGS :=            \
 	-O3                   \
 	-fPIC                 \
