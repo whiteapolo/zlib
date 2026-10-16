@@ -1,8 +1,9 @@
 #include "../include/string.h"
 #include "../include/array.h"
+#include "../include/min-max.h"
 #include <limits.h>
 #include <stdio.h>
-#include "../include/min_max.h"
+#include <string.h>
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 
@@ -43,7 +44,14 @@ Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args)
 
 Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s)
 {
-    return z_str_new(pool, "%.*s", z__size_t_to_int(s.length), s.ptr);
+    Z_String str = z_array_new(pool, Z_String);
+    z_str_append_sv(&str, s);
+    return str;
+}
+
+Z_String z_str_new_from_cstr(Z_Pool *pool, const char *cstr)
+{
+   return z_str_new_from_sv(pool, z_sv(cstr));
 }
 
 char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s)
@@ -57,11 +65,6 @@ char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s)
 char *z_cstr_dup(Z_Pool *pool, const char *s)
 {
     return z_sv_to_cstr(pool, z_sv(s));
-}
-
-void z_str_append_cstr(Z_String *s, const char *cstr)
-{
-    z_str_append_sv(s, z_sv(cstr));
 }
 
 void z_str_append(Z_String *s, const char *format, ...)
@@ -87,17 +90,19 @@ void z_str_append_va(Z_String *s, const char *format, va_list args)
 
 void z_str_append_sv(Z_String *target, Z_String_View source)
 {
-    z_array_ensure_capacity(target, target->length + source.length + 1);
-    memcpy(target->ptr + target->length, source.ptr, sizeof(char) * source.length);
-    target->length += source.length;
+    z_array_push_array(target, source);
     z_array_zero_terminate(target);
 }
 
 void z_str_append_char(Z_String *s, char c)
 {
-    z_array_ensure_capacity(s, s->length + 2);
-    s->ptr[s->length++] = c;
+    z_array_push(s, c);
     z_array_zero_terminate(s);
+}
+
+void z_str_append_cstr(Z_String *s, const char *cstr)
+{
+    z_str_append_sv(s, z_sv(cstr));
 }
 
 bool z_str_append_file(Z_String *s, const char *pathname)
@@ -118,6 +123,20 @@ bool z_str_append_file(Z_String *s, const char *pathname)
     return true;
 }
 
+void z_str_append_at(Z_String *s, size_t index, const char *format, ...);
+void z_str_append_at_va(Z_String *s, size_t index, const char *format, ...);
+void z_str_append_cstr_at(Z_String *s, const char *cstr, size_t index);
+
+void z_str_append_sv_at(Z_String *target, Z_String_View source, size_t index)
+{
+
+}
+
+void z_str_append_char_at(Z_String *s, char c, size_t index)
+{
+    z_array_push_at(s, c, index);
+    z_array_zero_terminate(s);
+}
 
 void z_str_prepend(Z_String *s, const char *format, ...)
 {
@@ -129,11 +148,11 @@ void z_str_prepend(Z_String *s, const char *format, ...)
 
 void z_str_prepend_va(Z_String *s, const char *format, va_list args)
 {
-    Z_Pool_Auto pool = {0};
-    Z_String tmp = z_str_new_va(&pool, format, args);
-    z_str_append(&tmp, "%s", s->ptr);
-    z_str_clear(s);
-    z_str_append(s, "%s", tmp.ptr);
+    size_t format_length = z__get_format_length(format, args);
+    z_array_reserve_space_at(s, 0, format_length);
+    char save_char_since_printf_override_with_null = s->ptr[format_length];
+    vsnprintf(s->ptr, format_length + 1, format, args);
+    s->ptr[format_length] = save_char_since_printf_override_with_null;
 }
 
 void z_str_prepend_sv(Z_String *target, Z_String_View source)
@@ -143,7 +162,8 @@ void z_str_prepend_sv(Z_String *target, Z_String_View source)
 
 void z_str_prepend_char(Z_String *s, char c)
 {
-    z_str_prepend(s, "%c", c);
+    z_array_push_at(s, c, 0);
+    z_array_zero_terminate(s);
 }
 
 char z_str_pop_char(Z_String *s)

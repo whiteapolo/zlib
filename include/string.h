@@ -7,13 +7,9 @@
 #include <stdbool.h>
 #include <unistd.h>
 
-typedef struct {
-    const char *ptr;
-    size_t length;
-} Z_String_View;
-
 Z_DEFINE_ARRAY(Z_String, char);
 Z_DEFINE_ARRAY(Z_String_Array, Z_String);
+Z_DEFINE_ARRAY_VIEW(Z_String_View, char);
 
 typedef struct {
     Z_String_View s;
@@ -24,15 +20,22 @@ typedef struct {
 Z_String z_str_new(Z_Pool *pool, const char *format, ...);
 Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args);
 Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s);
+Z_String z_str_new_from_cstr(Z_Pool *pool, const char *cstr);
 char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s);
 char *z_cstr_dup(Z_Pool *pool, const char *s);
 
-void z_str_append_cstr(Z_String *s, const char *cstr);
 void z_str_append(Z_String *s, const char *format, ...);
 void z_str_append_va(Z_String *s, const char *format, va_list args);
+void z_str_append_cstr(Z_String *s, const char *cstr);
 void z_str_append_sv(Z_String *target, Z_String_View source);
 void z_str_append_char(Z_String *s, char c);
 bool z_str_append_file(Z_String *s, const char *pathname);
+
+void z_str_append_at(Z_String *s, size_t index, const char *format, ...);
+void z_str_append_at_va(Z_String *s, size_t index, const char *format, ...);
+void z_str_append_cstr_at(Z_String *s, const char *cstr, size_t index);
+void z_str_append_sv_at(Z_String *target, Z_String_View source, size_t index);
+void z_str_append_char_at(Z_String *s, char c, size_t index);
 
 void z_str_prepend(Z_String *s, const char *format, ...);
 void z_str_prepend_va(Z_String *s, const char *format, va_list args);
