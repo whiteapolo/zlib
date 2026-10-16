@@ -127,10 +127,10 @@ void z_str_append_at(Z_String *s, size_t index, const char *format, ...);
 void z_str_append_at_va(Z_String *s, size_t index, const char *format, ...);
 void z_str_append_cstr_at(Z_String *s, const char *cstr, size_t index);
 
-void z_str_append_sv_at(Z_String *target, Z_String_View source, size_t index)
-{
+// void z_str_append_sv_at(Z_String *target, Z_String_View source, size_t index)
+// {
 
-}
+// }
 
 void z_str_append_char_at(Z_String *s, char c, size_t index)
 {
