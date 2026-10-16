@@ -1,0 +1,8 @@
+peek=a check=1 match=1
+  abc
+comma=1 match-string=1 prev=
+ line=2 col=1
+check-string=1 ,xy
+
+end=1
+skip=x

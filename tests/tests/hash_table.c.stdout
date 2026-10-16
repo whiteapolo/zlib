@@ -1,0 +1,5 @@
+empty=0 fallback=fallback
+initial=1 size=2 get=1 fallback=none
+replaced=1 contains=1
+iter=2 array=2
+deleted=1 size=1

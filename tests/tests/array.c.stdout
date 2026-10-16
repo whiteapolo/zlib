@@ -1,0 +1,4 @@
+len=5 first=10 last=50 peek=50
+inserted=10,15 first=5 capacity=1
+pop=50
+terminator=0

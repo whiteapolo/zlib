@@ -1,0 +1,4 @@
+find world: 6
+contains hello: 1
+starts hello: 1
+ends world: 1
