@@ -5,12 +5,12 @@
 bool z_path_expand_tilde(Z_String_View pathname, Z_String *out)
 {
     if (!z_sv_starts_with(pathname, z_sv("~"))) {
-        z_str_append_sv(out, pathname);
+        z_str_push_back_sv(out, pathname);
         return false;
     }
 
-    z_str_append_cstr(out, z_env_get("HOME", "."));
-    z_str_append_sv(out, z_sv_advance(pathname, 1));
+    z_str_push_back_cstr(out, z_env_get("HOME", "."));
+    z_str_push_back_sv(out, z_sv_advance(pathname, 1));
     return true;
 }
 
@@ -19,12 +19,12 @@ bool z_path_compress_tilde(Z_String_View pathname, Z_String *out)
     const char *home = z_env_get("HOME", ".");
 
     if (!z_sv_starts_with(pathname, z_sv(home))) {
-        z_str_append_sv(out, pathname);
+        z_str_push_back_sv(out, pathname);
         return false;
     }
 
-    z_str_append_cstr(out, "~");
-    z_str_append_sv(out, z_sv_advance(pathname, strlen(home)));
+    z_str_push_back_cstr(out, "~");
+    z_str_push_back_sv(out, z_sv_advance(pathname, strlen(home)));
     return true;
 }
 

@@ -24,23 +24,23 @@ Z_String z_str_new_from_cstr(Z_Pool *pool, const char *cstr);
 char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s);
 char *z_cstr_dup(Z_Pool *pool, const char *s);
 
-void z_str_append(Z_String *s, const char *format, ...);
-void z_str_append_va(Z_String *s, const char *format, va_list args);
-void z_str_append_cstr(Z_String *s, const char *cstr);
-void z_str_append_sv(Z_String *target, Z_String_View source);
-void z_str_append_char(Z_String *s, char c);
-bool z_str_append_file(Z_String *s, const char *pathname);
+void z_str_push_back(Z_String *s, const char *format, ...);
+void z_str_push_back_va(Z_String *s, const char *format, va_list args);
+void z_str_push_back_cstr(Z_String *s, const char *cstr);
+void z_str_push_back_sv(Z_String *target, Z_String_View source);
+void z_str_push_back_char(Z_String *s, char c);
+bool z_str_push_back_file(Z_String *s, const char *pathname);
 
-void z_str_append_at(Z_String *s, size_t index, const char *format, ...);
-void z_str_append_at_va(Z_String *s, size_t index, const char *format, ...);
-void z_str_append_cstr_at(Z_String *s, const char *cstr, size_t index);
-void z_str_append_sv_at(Z_String *target, Z_String_View source, size_t index);
-void z_str_append_char_at(Z_String *s, char c, size_t index);
+void z_str_insert(Z_String *s, size_t index, const char *format, ...);
+void z_str_insert_va(Z_String *s, size_t index, const char *format, ...);
+void z_str_insert_cstr(Z_String *s, const char *cstr, size_t index);
+void z_str_insert_sv(Z_String *target, Z_String_View source, size_t index);
+void z_str_insert_char(Z_String *s, char c, size_t index);
 
-void z_str_prepend(Z_String *s, const char *format, ...);
-void z_str_prepend_va(Z_String *s, const char *format, va_list args);
-void z_str_prepend_sv(Z_String *target, Z_String_View source);
-void z_str_prepend_char(Z_String *s, char c);
+void z_str_push_front(Z_String *s, const char *format, ...);
+void z_str_push_front_va(Z_String *s, const char *format, va_list args);
+void z_str_push_front_sv(Z_String *target, Z_String_View source);
+void z_str_push_front_char(Z_String *s, char c);
 
 char z_str_pop_char(Z_String *s);
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement);

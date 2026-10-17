@@ -123,7 +123,7 @@ size_t z_avl_tree_rebalance_node(Z_Avl_Tree *tree, size_t node_id)
 size_t z_avl_tree_generate_next_id(Z_Avl_Tree *tree)
 {
     if (tree->free_list.length > 0) {
-        return z_array_pop(&tree->free_list);
+        return z_array_pop_back(&tree->free_list);
     }
 
     tree->nodes.length++;
@@ -147,7 +147,7 @@ size_t z_avl_tree_new_node(Z_Avl_Tree *tree, void *key, void *value)
 
 void z_avl_tree_free_node(Z_Avl_Tree *tree, size_t node_id)
 {
-    z_array_push(&tree->free_list, node_id);
+    z_array_push_back(&tree->free_list, node_id);
 }
 
 Z_Avl_Tree z_avl_tree_new(Z_Pool *pool, Z_Compare_Fn compare_keys)
@@ -357,7 +357,7 @@ Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
 //     size_t curr = tree->root;
 
 //     while (curr != Z_AVL_TREE_NULL_ID) {
-//         z_array_push(&iter.stack, curr);
+//         z_array_push_back(&iter.stack, curr);
 //         curr = z_avl_tree_node_by_id(tree, curr)->left;
 //     }
 
@@ -374,7 +374,7 @@ Z_Pair_Array z_avl_tree_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)
     Z_Pair_Array array = z_array_new(pool, Z_Pair_Array);
 
     for (size_t i = 0; i < tree->nodes.length; i++) {
-        z_array_push(&array, z_make_pair(tree->nodes.ptr[i].key, tree->nodes.ptr[i].value));
+        z_array_push_back(&array, z_make_pair(tree->nodes.ptr[i].key, tree->nodes.ptr[i].value));
     }
 
     return array;

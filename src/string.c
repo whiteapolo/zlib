@@ -38,14 +38,14 @@ Z_String z_str_new(Z_Pool *pool, const char *format, ...)
 Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args)
 {
     Z_String s = z_array_new(pool, Z_String);
-    z_str_append_va(&s, format, args);
+    z_str_push_back_va(&s, format, args);
     return s;
 }
 
 Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s)
 {
     Z_String str = z_array_new(pool, Z_String);
-    z_str_append_sv(&str, s);
+    z_str_push_back_sv(&str, s);
     return str;
 }
 
@@ -67,15 +67,15 @@ char *z_cstr_dup(Z_Pool *pool, const char *s)
     return z_sv_to_cstr(pool, z_sv(s));
 }
 
-void z_str_append(Z_String *s, const char *format, ...)
+void z_str_push_back(Z_String *s, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    z_str_append_va(s, format, args);
+    z_str_push_back_va(s, format, args);
     va_end(args);
 }
 
-void z_str_append_va(Z_String *s, const char *format, va_list args)
+void z_str_push_back_va(Z_String *s, const char *format, va_list args)
 {
     size_t format_length = z__get_format_length(format, args);
     z_array_ensure_capacity(s, s->length + format_length + 1);
@@ -88,24 +88,24 @@ void z_str_append_va(Z_String *s, const char *format, va_list args)
     s->length += format_length;
 }
 
-void z_str_append_sv(Z_String *target, Z_String_View source)
+void z_str_push_back_sv(Z_String *target, Z_String_View source)
 {
-    z_array_push_array(target, source);
+    z_array_push_back_array(target, source);
     z_array_zero_terminate(target);
 }
 
-void z_str_append_char(Z_String *s, char c)
+void z_str_push_back_char(Z_String *s, char c)
 {
-    z_array_push(s, c);
+    z_array_push_back(s, c);
     z_array_zero_terminate(s);
 }
 
-void z_str_append_cstr(Z_String *s, const char *cstr)
+void z_str_push_back_cstr(Z_String *s, const char *cstr)
 {
-    z_str_append_sv(s, z_sv(cstr));
+    z_str_push_back_sv(s, z_sv(cstr));
 }
 
-bool z_str_append_file(Z_String *s, const char *pathname)
+bool z_str_push_back_file(Z_String *s, const char *pathname)
 {
     FILE *fp = fopen(pathname, "r");
 
@@ -123,30 +123,30 @@ bool z_str_append_file(Z_String *s, const char *pathname)
     return true;
 }
 
-void z_str_append_at(Z_String *s, size_t index, const char *format, ...);
-void z_str_append_at_va(Z_String *s, size_t index, const char *format, ...);
-void z_str_append_cstr_at(Z_String *s, const char *cstr, size_t index);
+void z_str_insert(Z_String *s, size_t index, const char *format, ...);
+void z_str_insert_va(Z_String *s, size_t index, const char *format, ...);
+void z_str_insert_cstr(Z_String *s, const char *cstr, size_t index);
 
-// void z_str_append_sv_at(Z_String *target, Z_String_View source, size_t index)
+// void z_str_insert_sv(Z_String *target, Z_String_View source, size_t index)
 // {
 
 // }
 
-void z_str_append_char_at(Z_String *s, char c, size_t index)
+void z_str_insert_char(Z_String *s, char c, size_t index)
 {
-    z_array_push_at(s, c, index);
+    z_array_insert(s, c, index);
     z_array_zero_terminate(s);
 }
 
-void z_str_prepend(Z_String *s, const char *format, ...)
+void z_str_push_front(Z_String *s, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    z_str_prepend_va(s, format, args);
+    z_str_push_front_va(s, format, args);
     va_end(args);
 }
 
-void z_str_prepend_va(Z_String *s, const char *format, va_list args)
+void z_str_push_front_va(Z_String *s, const char *format, va_list args)
 {
     size_t format_length = z__get_format_length(format, args);
     z_array_reserve_space_at(s, 0, format_length);
@@ -155,21 +155,21 @@ void z_str_prepend_va(Z_String *s, const char *format, va_list args)
     s->ptr[format_length] = save_char_since_printf_override_with_null;
 }
 
-void z_str_prepend_sv(Z_String *target, Z_String_View source)
+void z_str_push_front_sv(Z_String *target, Z_String_View source)
 {
-    z_str_prepend(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
+    z_str_push_front(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
 }
 
-void z_str_prepend_char(Z_String *s, char c)
+void z_str_push_front_char(Z_String *s, char c)
 {
-    z_array_push_at(s, c, 0);
+    z_array_insert(s, c, 0);
     z_array_zero_terminate(s);
 }
 
 char z_str_pop_char(Z_String *s)
 {
     assert(s->length > 0);
-    char c = z_array_pop(s);
+    char c = z_array_pop_back(s);
     z_array_zero_terminate(s);
     return c;
 }
@@ -183,16 +183,16 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 
     while (i < s->length) {
         if (z_sv_equal_n(z_sv_advance(z_sv(s), i), target, target.length)) {
-            z_str_append_sv(&tmp, replacement);
+            z_str_push_back_sv(&tmp, replacement);
             i += target.length;
         } else {
-            z_str_append_char(&tmp, s->ptr[i]);
+            z_str_push_back_char(&tmp, s->ptr[i]);
             i++;
         }
     }
 
     z_str_clear(s);
-    z_str_append(s, "%s", tmp.ptr);
+    z_str_push_back(s, "%s", tmp.ptr);
 }
 
 Z_Sv_Split_Iter z_sv_split_iter(Z_String_View s, Z_String_View delimeter)
@@ -232,7 +232,7 @@ void z_str_split(Z_String_View s, Z_String_View delimiter, Z_String_Array *out)
     Z_String_View curr;
 
     while (z_sv_split_iter_next(&iter, &curr)) {
-        z_array_push(out, z_str_new_from_sv(out->pool, curr));
+        z_array_push_back(out, z_str_new_from_sv(out->pool, curr));
     }
 }
 
@@ -531,5 +531,5 @@ void z_str_override(Z_String *s, const char *format, ...)
 void z_str_override_va(Z_String *s, const char *format, va_list args)
 {
     z_str_clear(s);
-    z_str_append_va(s, format, args);
+    z_str_push_back_va(s, format, args);
 }

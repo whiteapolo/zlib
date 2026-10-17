@@ -29,7 +29,7 @@ void z_perror_va(const char *format, va_list args)
 {
     Z_Pool_Auto pool = {0};
     Z_String s = z_str_new(&pool, "");
-    z_str_append_va(&s, format, args);
+    z_str_push_back_va(&s, format, args);
     perror(s.ptr);
 }
 

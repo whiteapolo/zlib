@@ -225,7 +225,7 @@ Z_Pair_Array z_hash_table_to_array(Z_Pool *pool, const Z_Hash_Table *ht)
 
     for (size_t i = 0; i < ht->capacity; i++) {
         if (ht->hashes[i] >= 2) {
-            z_array_push(&array, z_make_pair(ht->keys[i], ht->values[i]));
+            z_array_push_back(&array, z_make_pair(ht->keys[i], ht->values[i]));
         }
     }
 
