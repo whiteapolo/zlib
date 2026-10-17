@@ -11,3 +11,4 @@
 #include "error.c"
 #include "avl.c"
 #include "types.c"
+#include "term.c"
