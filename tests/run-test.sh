@@ -5,7 +5,6 @@ then
     echo "need test name"
 fi
 
-make -C .. debug
 cc "$1" -o tmp ../build/libzatar.a
 result="$(./tmp)"
 rm tmp

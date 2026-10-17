@@ -7,7 +7,7 @@
 #include "scanner.c"
 #include "string.c"
 #include "time.c"
-#include "hash_table.c"
+#include "hash-table.c"
 #include "error.c"
 #include "avl.c"
 #include "types.c"
