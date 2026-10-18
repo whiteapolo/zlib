@@ -206,22 +206,22 @@ Z_Sv_Split_Iter z_sv_split_iter(Z_String_View s, Z_String_View delimeter)
     return iter;
 }
 
-bool z_sv_split_iter_next(Z_Sv_Split_Iter *iterator, Z_String_View *slice)
+bool z_sv_split_iter_next(Z_Sv_Split_Iter *iter, Z_String_View *slice)
 {
-    if (iterator->current > iterator->s.length) {
+    if (iter->current > iter->s.length) {
         return false;
     }
 
-    Z_String_View small_world = z_sv_advance(iterator->s, iterator->current);
-    ssize_t next = z_sv_find_index(small_world, iterator->delimeter);
+    Z_String_View small_world = z_sv_advance(iter->s, iter->current);
+    ssize_t next = z_sv_find_index(small_world, iter->delimeter);
 
     if (next < 0) {
-        iterator->current += small_world.length + 1;
+        iter->current += small_world.length + 1;
         *slice = small_world;
         return true;
     }
 
-    iterator->current += (size_t)next + iterator->delimeter.length;
+    iter->current += (size_t)next + iter->delimeter.length;
     *slice = z_sv_substring(small_world, 0, (size_t)next);
     return true;
 }
