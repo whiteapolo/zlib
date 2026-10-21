@@ -25,24 +25,6 @@ typedef struct {
     Z_Compare_Fn compare_keys;
 } Z_Avl_Tree;
 
-typedef struct {
-    const Z_Avl_Tree *tree;
-    Z_Avl_Id_Array stack;
-    bool did_visit_left;
-    bool did_visit_curr;
-    bool did_visit_right;
-} Z_Avl_tree_Iter;
-
-typedef struct {
-    char operator;
-    void *value;
-} Z_Avl_Where_Condition;
-
-typedef enum {
-    Z_Avl_Tree_Order_By_ASC,
-    Z_Avl_Tree_Order_By_DESC,
-} Z_Avl_Tree_Order_By;
-
 Z_Avl_Tree z_avl_tree_new(Z_Pool *pool, Z_Compare_Fn compare_keys);
 const void *z_avl_tree_try_get(const Z_Avl_Tree *tree, const void *key, const void *fallback);
 const void *z_avl_tree_get(const Z_Avl_Tree *tree, const void *key);
@@ -56,10 +38,8 @@ Z_Maybe_Pair z_avl_tree_get_min(const Z_Avl_Tree *tree);
 
 bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree);
 
-Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree, Z_Avl_Tree_Order_By order_by);
-bool z_avl_tree_iter_next(Z_Avl_tree_Iter *iter, Z_Pair *pair);
-
-// Z_Avl_tree_Iter z_avl_tree_iter_where(Z_Pool *pool, const Z_Avl_Tree *tree, );
-
+void z_avl_tree_foreach(const Z_Avl_Tree *tree,
+                        void callback(void *key, void *value, void *arg),
+                        void *arg);
 
 #endif

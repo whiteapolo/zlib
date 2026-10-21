@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include "../include/min_max.h"
+#include "../include/min-max.h"
 
 size_t z__circular_buffer_next_index(size_t size, size_t i);
 size_t z__circular_buffer_previous_index(size_t size, size_t i);

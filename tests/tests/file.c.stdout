@@ -1,0 +1,7 @@
+scanf=1 17 hello
+line-bytes=9 17 hello
+write=1 append=1
+pipe-ok
+stdin-ok
+err-ok
+

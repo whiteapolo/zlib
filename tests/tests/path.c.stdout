@@ -1,0 +1,4 @@
+expand=1 suffix=/docs compress=1 result=~/docs
+directory=1 file=1 missing=0
+non-tilde=0 relative
+outside-home=0 /other/place

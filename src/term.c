@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "../include/term.h"
 
 void z_term_disable_line_wrap(void)
 {
