@@ -3,6 +3,7 @@
 
 #define Z_AVL_TREE_NULL_ID 0
 
+static inline Z_Avl_Node *z_avl_tree_node_by_id(const Z_Avl_Tree *tree, size_t node_id);
 char z_avl_tree_get_height(const Z_Avl_Tree *tree, size_t node_id);
 void z_avl_tree_update_node_height(const Z_Avl_Tree *tree, size_t node_id);
 int z_avl_tree_get_node_balance_factor(const Z_Avl_Tree *tree, size_t node_id);
@@ -19,8 +20,11 @@ size_t z_avl_tree_get_node(const Z_Avl_Tree *tree, const void *key);
 size_t z_avl_tree_put_impl(Z_Avl_Tree *tree, size_t node_id, void *key, void *value, Z_Maybe_Pair *pair);
 size_t z_avl_tree_delete_impl(Z_Avl_Tree *tree, size_t node_id, void *key, Z_Maybe_Pair *pair);
 bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree);
-static inline Z_Avl_Node *z_avl_tree_node_by_id(const Z_Avl_Tree *tree, size_t node_id);
 bool z_avl_tree_is_healthy_impl(const Z_Avl_Tree *tree, size_t node_id);
+void z_avl_tree_foreach_impl(const Z_Avl_Tree *tree,
+                             size_t node_id,
+                             void callback(void *key, void *value, void *arg),
+                             void *arg);
 
 size_t z_avl_tree_size(const Z_Avl_Tree *tree)
 {
@@ -344,59 +348,27 @@ Z_Maybe_Pair z_avl_tree_delete(Z_Avl_Tree *tree, void *key)
     return pair;
 }
 
-// Z_Avl_tree_Iter z_avl_tree_iter(Z_Pool *pool, const Z_Avl_Tree *tree, Z_Avl_Tree_Order_By order_by)
-// {
-//     Z_Avl_tree_Iter iter = {
-//         .tree = tree,
-//         .did_visit_left = true,
-//         .did_visit_curr = false,
-//         .did_visit_right = false,
-//         .stack = z_array_new(pool, Z_Avl_Id_Array),
-//     };
+void z_avl_tree_foreach_impl(const Z_Avl_Tree *tree,
+                             size_t node_id,
+                             void callback(void *key, void *value, void *arg),
+                             void *arg)
+{
+    if (node_id == Z_AVL_TREE_NULL_ID) {
+        return;
+    }
 
-//     size_t curr = tree->root;
+    Z_Avl_Node *node = z_avl_tree_node_by_id(tree, node_id);
+    z_avl_tree_foreach_impl(tree, node->left, callback, arg);
+    callback(node->key, node->value, arg);
+    z_avl_tree_foreach_impl(tree, node->right, callback, arg);
+}
 
-//     while (curr != Z_AVL_TREE_NULL_ID) {
-//         z_array_push_back(&iter.stack, curr);
-//         curr = z_avl_tree_node_by_id(tree, curr)->left;
-//     }
-
-//     return iter;
-// }
-
-// bool z_avl_tree_iter_next(Z_Avl_tree_Iter *iter, Z_Pair *pair)
-// {
-//     if (iter->stack.length == 0) {
-//         return false;
-//     }
-
-//     size_t node_id = z_array_peek(&iter->stack);
-//     Z_Avl_Node *node = z_avl_tree_node_by_id(iter->tree, node_id);
-
-//     pair->key = node->key;
-//     pair->value = node->value;
-
-//     if (node->left != Z_AVL_TREE_NULL_ID && ) {
-
-//     }
-
-
-//     if (!iter->did_visit_left && node->left != Z_AVL_TREE_NULL_ID) {
-//         z_array_push_back(&iter->stack, node->left);
-//         return z_avl_tree_iter_next(iter, pair);
-//     }
-
-//     if (!iter->did_visit_curr) {
-//         pair->key = node->key;
-//         pair->value = node->value;
-//         iter->did_visit_curr = true;
-//     }
-
-//     if (!iter->did_visit_right && node->right != Z_AVL_TREE_NULL_ID) {
-//         z_array_push_back(&iter->stack, node->right);
-//         return z_avl_tree_iter_next(iter, pair);
-//     }
-// }
+void z_avl_tree_foreach(const Z_Avl_Tree *tree,
+                        void callback(void *key, void *value, void *arg),
+                        void *arg)
+{
+    return z_avl_tree_foreach_impl(tree, tree->root, callback, arg);
+}
 
 Z_Pair_Array z_avl_tree_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)
 {
