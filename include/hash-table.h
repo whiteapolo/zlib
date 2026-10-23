@@ -36,6 +36,12 @@ bool z_hash_table_contains(const Z_Hash_Table *ht, void *key);
 size_t z_hash_table_size(const Z_Hash_Table *ht);
 Z_Pair_Array z_hash_table_to_array(Z_Pool *pool, const Z_Hash_Table *ht);
 
+// Z_Pair pair;
+// Z_Hash_Table_Iter iter = z_hash_table_iter(ht);
+//
+// while (z_hash_table_iter_next(&iter, &pair) {
+//     printf("key: %p, value: %p, pair.key, pair.value);
+// }
 Z_Hash_Table_Iter z_hash_table_iter(const Z_Hash_Table *ht);
 bool z_hash_table_iter_next(Z_Hash_Table_Iter *iter, Z_Pair *pair);
 
