@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 #include "../include/min-max.h"
 
 #define Z__PTR_TABLE_MIN_CAPACITY 16u
@@ -164,4 +165,11 @@ void z_pool_free_all(Z_Pool *pool)
 void z_pool_reset(Z_Pool *pool)
 {
     z_ptr_table_reset(pool);
+}
+
+void *z_pool_memory_duplicate(Z_Pool *pool, void *ptr, size_t size)
+{
+    void *mem = z_pool_malloc(pool, size);
+    memcpy(mem, ptr, size);
+    return mem;
 }
