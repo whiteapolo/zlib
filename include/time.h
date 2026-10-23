@@ -3,7 +3,6 @@
 
 #include <time.h>
 
-typedef clock_t Z_Clock;
 typedef clock_t Z_Time;
 
 Z_Time z_time(void);

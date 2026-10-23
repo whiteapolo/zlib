@@ -99,6 +99,9 @@ bool z_sv_contains(Z_String_View haystack, Z_String_View needle);
 bool z_sv_contains_char(Z_String_View s, char c);
 ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle);
 
+size_t z_sv_get_edit_distance(Z_String_View a, Z_String_View b);
+unsigned int z_sv_get_edit_distance_case_insensitive(Z_String_View a, Z_String_View b);
+
 void z_sv_print(Z_String_View s);
 void z_sv_println(Z_String_View s);
 

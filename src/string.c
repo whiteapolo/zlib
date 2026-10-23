@@ -533,3 +533,64 @@ void z_str_override_va(Z_String *s, const char *format, va_list args)
     z_str_clear(s);
     z_str_push_back_va(s, format, args);
 }
+
+
+size_t z_sv_get_edit_distance(Z_String_View a, Z_String_View b)
+{
+	size_t row[a.length + 1];
+
+	for (size_t j = 0; j <= a.length; j++) {
+		row[j] = j;
+    }
+
+	for (size_t i = 1; i <= b.length; i++) {
+        size_t topleft = i - 1;
+		row[0] = i;
+
+		for (size_t j = 1; j <= a.length; j++) {
+			size_t curr;
+
+			if (a.ptr[j-1] == b.ptr[i-1]) {
+				curr = topleft;
+            } else {
+				curr = 1 + Z_MIN3(topleft, row[j], row[j-1]);
+            }
+
+			topleft = row[j];
+			row[j] = curr;
+		}
+	}
+
+	return row[a.length];
+}
+
+// int z_sv_get_edit_distance_f(Z_String_View a, Z_String_View b, int compare_char(char a, char b))
+// {
+// 	int row[a.length + 1];
+
+// 	for (int j = 0; j <= a.length; j++) {
+// 		row[j] = j;
+//     }
+
+// 	for (int i = 1; i <= b.length; i++) {
+//         int topleft = i - 1;
+// 		row[0] = i;
+
+// 		for (int j = 1; j <= a.length; j++) {
+// 			int curr;
+
+// 			if (compare_char(a.ptr[j-1], b.ptr[i-1]) == 0) {
+// 				curr = topleft;
+//             } else {
+// 				curr = 1 + Z_MIN3(topleft, row[j], row[j-1]);
+//             }
+
+// 			topleft = row[j];
+// 			row[j] = curr;
+// 		}
+// 	}
+
+// 	return row[a.length];
+// }
+
+unsigned int z_sv_get_edit_distance_case_insensitive(Z_String_View a, Z_String_View b);
