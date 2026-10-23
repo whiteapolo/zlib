@@ -13,19 +13,27 @@ BASE_CFLAGS :=            \
     -Wswitch-enum         \
     -Wmissing-prototypes
 
+DEP := $(wildcard src/*.c include/*.h include/internal*.h)
+
 all: release
 
 release:
 	@make build CFLAGS=-O3
 
-debug:
+dev:
 	@make build 'CFLAGS=-g -O0'
 
-build:
+build: build/libzatar.a build/libzatar.so
+
+build/libzatar.a: build/libzatar.o
+	@ar rcs build/libzatar.a build/libzatar.o
+
+build/libzatar.so: build/libzatar.o
+	@$(CC) build/libzatar.o -shared -o build/libzatar.so
+
+build/libzatar.o: $(DEP)
 	@mkdir -p build
 	@$(CC) $(BASE_CFLAGS) $(CFLAGS) -c src/all.c -o build/libzatar.o
-	@ar rcs build/libzatar.a build/libzatar.o
-	@$(CC) build/libzatar.o -shared -o build/libzatar.so
 
 install:
 	@mkdir -p /usr/local/include/libzatar
@@ -42,4 +50,4 @@ uninstall:
 clean:
 	@rm -rf build
 
-.PHONY: all build install uninstall clean
+.PHONY: all build install uninstall clean release dev
