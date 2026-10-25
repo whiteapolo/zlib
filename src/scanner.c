@@ -18,15 +18,23 @@ bool z_scanner_is_at_end(const Z_Scanner *scanner)
     return scanner->current >= scanner->source.length;
 }
 
-void z_scanner_advance(Z_Scanner *scanner, size_t n)
+char z_scanner_advance(Z_Scanner *scanner)
+{
+    char current = scanner->source.ptr[scanner->current++];
+    scanner->column++;
+
+    if (current == '\n') {
+        scanner->line++;
+        scanner->column = 1;
+    }
+
+    return current;
+}
+
+void z_scanner_advance_n(Z_Scanner *scanner, size_t n)
 {
     for (size_t i = 0; i < n; i++) {
-        char current = scanner->source.ptr[scanner->current++];
-
-        if (current == '\n') {
-            scanner->line++;
-            scanner->column = 1;
-        }
+        z_scanner_advance(scanner);
     }
 }
 
@@ -48,7 +56,7 @@ bool z_scanner_check(const Z_Scanner *scanner, char expected)
 bool z_scanner_match(Z_Scanner *scanner, char expected)
 {
     if (z_scanner_check(scanner, expected)) {
-        z_scanner_advance(scanner, 1);
+        z_scanner_advance(scanner);
         return true;
     }
 
@@ -68,7 +76,7 @@ bool z_scanner_check_string(const Z_Scanner *scanner, Z_String_View expected)
 bool z_scanner_match_string(Z_Scanner *scanner, Z_String_View expected)
 {
     if (z_scanner_check_string(scanner, expected)) {
-        scanner->current += expected.length;
+        z_scanner_advance_n(scanner, expected.length);
         return true;
     }
 
@@ -78,14 +86,14 @@ bool z_scanner_match_string(Z_Scanner *scanner, Z_String_View expected)
 void z_scanner_advance_until(Z_Scanner *scanner, char expected)
 {
     while (!z_scanner_is_at_end(scanner) && !z_scanner_check(scanner, expected)) {
-        z_scanner_advance(scanner, 1);
+        z_scanner_advance(scanner);
     }
 }
 
 void z_scanner_advance_until_string(Z_Scanner *scanner, Z_String_View expected)
 {
     while (!z_scanner_is_at_end(scanner) && !z_scanner_check_string(scanner, expected)) {
-        z_scanner_advance(scanner, expected.length);
+        z_scanner_advance_n(scanner, expected.length);
     }
 }
 
@@ -102,7 +110,7 @@ void z_scanner_reset_mark(Z_Scanner *scanner)
 void z_scanner_skip_cset(Z_Scanner *scanner, Z_String_View cset)
 {
     while (!z_scanner_is_at_end(scanner) && z_sv_contains_char(cset, z_scanner_peek(scanner))) {
-        z_scanner_advance(scanner, 1);
+        z_scanner_advance(scanner);
     }
 }
 
