@@ -67,6 +67,20 @@ char *z_cstr_dup(Z_Pool *pool, const char *s)
     return z_sv_to_cstr(pool, z_sv(s));
 }
 
+Z_String z_str_take_ownership(Z_Pool *pool, char *s)
+{
+    size_t length = strlen(s);
+
+    Z_String str = {
+        .pool = pool,
+        .ptr = s,
+        .length = length,
+        .capacity = length + 1,
+    };
+
+    return str;
+}
+
 void z_str_push_back(Z_String *s, const char *format, ...)
 {
     va_list args;

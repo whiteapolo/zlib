@@ -23,6 +23,7 @@ Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s);
 Z_String z_str_new_from_cstr(Z_Pool *pool, const char *cstr);
 char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s);
 char *z_cstr_dup(Z_Pool *pool, const char *s);
+Z_String z_str_take_ownership(Z_Pool *pool, char *s);
 
 void z_str_push_back(Z_String *s, const char *format, ...);
 void z_str_push_back_va(Z_String *s, const char *format, va_list args);

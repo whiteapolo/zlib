@@ -10,7 +10,7 @@ Z_Scanner z_scanner_new(Z_String_View source)
         .column = 1,
     };
 
-  return scanner;
+    return scanner;
 }
 
 bool z_scanner_is_at_end(const Z_Scanner *scanner)
