@@ -12,3 +12,4 @@
 #include "avl.c"
 #include "types.c"
 #include "term.c"
+#include "flat-pool.c"
