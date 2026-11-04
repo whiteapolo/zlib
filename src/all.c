@@ -13,3 +13,5 @@
 #include "types.c"
 #include "term.c"
 #include "flat-pool.c"
+#include "json.c"
+#include "json-stringify.c"
