@@ -36,6 +36,7 @@ bool z_file_write(const char *pathname, const char *format, ...)
     va_start(args, format);
     vfprintf(fp, format, args);
     va_end(args);
+    fclose(fp);
 
     return true;
 }
@@ -52,6 +53,7 @@ bool z_file_append(const char *pathname, const char *format, ...)
     va_start(args, format);
     vfprintf(fp, format, args);
     va_end(args);
+    fclose(fp);
 
     return true;
 }
