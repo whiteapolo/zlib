@@ -10,15 +10,15 @@
 #include "types.h"
 
 typedef struct {
+    Z_Pool *pool;
+    Z_Equal_Fn equal;
+    Z_Hash_Fn hash;
     void **keys;
     void **values;
     size_t *hashes;
     size_t occupied;
     size_t size;
     size_t capacity;
-    Z_Equal_Fn equal;
-    Z_Hash_Fn hash;
-    Z_Pool *pool;
 } Z_Hash_Table;
 
 typedef struct {
