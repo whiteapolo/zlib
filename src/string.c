@@ -38,14 +38,14 @@ Z_String z_str_new(Z_Pool *pool, const char *format, ...)
 Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args)
 {
     Z_String s = z_array_new(pool, Z_String);
-    z_str_push_back_va(&s, format, args);
+    z_str_push_va(&s, format, args);
     return s;
 }
 
 Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s)
 {
     Z_String str = z_array_new(pool, Z_String);
-    z_str_push_back_sv(&str, s);
+    z_str_push_sv(&str, s);
     return str;
 }
 
@@ -81,15 +81,15 @@ Z_String z_str_take_ownership(Z_Pool *pool, char *s)
     return str;
 }
 
-void z_str_push_back(Z_String *s, const char *format, ...)
+void z_str_push(Z_String *s, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
-    z_str_push_back_va(s, format, args);
+    z_str_push_va(s, format, args);
     va_end(args);
 }
 
-void z_str_push_back_va(Z_String *s, const char *format, va_list args)
+void z_str_push_va(Z_String *s, const char *format, va_list args)
 {
     size_t format_length = z__get_format_length(format, args);
     z_array_reserve(s, s->length + format_length + 1);
@@ -102,88 +102,27 @@ void z_str_push_back_va(Z_String *s, const char *format, va_list args)
     s->length += format_length;
 }
 
-void z_str_push_back_sv(Z_String *target, Z_String_View source)
+void z_str_push_sv(Z_String *target, Z_String_View source)
 {
-    z_array_push_back_array(target, source);
+    z_array_push_array(target, source);
     z_array_zero_terminate(target);
 }
 
-void z_str_push_back_char(Z_String *s, char c)
+void z_str_push_char(Z_String *s, char c)
 {
-    z_array_push_back(s, c);
+    z_array_push(s, c);
     z_array_zero_terminate(s);
 }
 
-void z_str_push_back_cstr(Z_String *s, const char *cstr)
+void z_str_push_cstr(Z_String *s, const char *cstr)
 {
-    z_str_push_back_sv(s, z_sv(cstr));
-}
-
-bool z_str_push_back_file(Z_String *s, const char *pathname)
-{
-    FILE *fp = fopen(pathname, "r");
-
-    if (fp == NULL) {
-        return false;
-    }
-
-    size_t file_size = z__get_file_size(fp);
-
-    z_array_reserve(s, s->length + file_size);
-    s->length += fread(s->ptr + s->length, 1, file_size, fp);
-    z_array_zero_terminate(s);
-    fclose(fp);
-
-    return true;
-}
-
-void z_str_insert(Z_String *s, size_t index, const char *format, ...);
-void z_str_insert_va(Z_String *s, size_t index, const char *format, ...);
-void z_str_insert_cstr(Z_String *s, const char *cstr, size_t index);
-
-// void z_str_insert_sv(Z_String *target, Z_String_View source, size_t index)
-// {
-
-// }
-
-void z_str_insert_char(Z_String *s, char c, size_t index)
-{
-    z_array_insert(s, c, index);
-    z_array_zero_terminate(s);
-}
-
-void z_str_push_front(Z_String *s, const char *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    z_str_push_front_va(s, format, args);
-    va_end(args);
-}
-
-void z_str_push_front_va(Z_String *s, const char *format, va_list args)
-{
-    size_t format_length = z__get_format_length(format, args);
-    z_array_reserve_space_at(s, 0, format_length);
-    char save_char_since_printf_override_with_null = s->ptr[format_length];
-    vsnprintf(s->ptr, format_length + 1, format, args);
-    s->ptr[format_length] = save_char_since_printf_override_with_null;
-}
-
-void z_str_push_front_sv(Z_String *target, Z_String_View source)
-{
-    z_str_push_front(target, "%.*s", z__size_t_to_int(source.length), source.ptr);
-}
-
-void z_str_push_front_char(Z_String *s, char c)
-{
-    z_array_insert(s, c, 0);
-    z_array_zero_terminate(s);
+    z_str_push_sv(s, z_sv(cstr));
 }
 
 char z_str_pop_char(Z_String *s)
 {
     assert(s->length > 0);
-    char c = z_array_pop_back(s);
+    char c = z_array_pop(s);
     z_array_zero_terminate(s);
     return c;
 }
@@ -197,16 +136,16 @@ void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement)
 
     while (i < s->length) {
         if (z_sv_equal_n(z_sv_advance(z_sv(s), i), target, target.length)) {
-            z_str_push_back_sv(&tmp, replacement);
+            z_str_push_sv(&tmp, replacement);
             i += target.length;
         } else {
-            z_str_push_back_char(&tmp, s->ptr[i]);
+            z_str_push_char(&tmp, s->ptr[i]);
             i++;
         }
     }
 
     z_str_clear(s);
-    z_str_push_back(s, "%s", tmp.ptr);
+    z_str_push(s, "%s", tmp.ptr);
 }
 
 Z_Sv_Split_Iter z_sv_split_iter(Z_String_View s, Z_String_View delimeter)
@@ -246,7 +185,7 @@ void z_str_split(Z_String_View s, Z_String_View delimiter, Z_String_Array *out)
     Z_String_View curr;
 
     while (z_sv_split_iter_next(&iter, &curr)) {
-        z_array_push_back(out, z_str_new_from_sv(out->pool, curr));
+        z_array_push(out, z_str_new_from_sv(out->pool, curr));
     }
 }
 
@@ -545,7 +484,7 @@ void z_str_override(Z_String *s, const char *format, ...)
 void z_str_override_va(Z_String *s, const char *format, va_list args)
 {
     z_str_clear(s);
-    z_str_push_back_va(s, format, args);
+    z_str_push_va(s, format, args);
 }
 
 
@@ -577,34 +516,3 @@ size_t z_sv_get_edit_distance(Z_String_View a, Z_String_View b)
 
 	return row[a.length];
 }
-
-// int z_sv_get_edit_distance_f(Z_String_View a, Z_String_View b, int compare_char(char a, char b))
-// {
-// 	int row[a.length + 1];
-
-// 	for (int j = 0; j <= a.length; j++) {
-// 		row[j] = j;
-//     }
-
-// 	for (int i = 1; i <= b.length; i++) {
-//         int topleft = i - 1;
-// 		row[0] = i;
-
-// 		for (int j = 1; j <= a.length; j++) {
-// 			int curr;
-
-// 			if (compare_char(a.ptr[j-1], b.ptr[i-1]) == 0) {
-// 				curr = topleft;
-//             } else {
-// 				curr = 1 + Z_MIN3(topleft, row[j], row[j-1]);
-//             }
-
-// 			topleft = row[j];
-// 			row[j] = curr;
-// 		}
-// 	}
-
-// 	return row[a.length];
-// }
-
-unsigned int z_sv_get_edit_distance_case_insensitive(Z_String_View a, Z_String_View b);

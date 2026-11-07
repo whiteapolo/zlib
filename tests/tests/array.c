@@ -10,7 +10,7 @@ void main() {
     z_array_insert(&a, 20, 1);
     int more[] = {40, 50};
     Z_Int_Array_View view = { .ptr = more, .length = 2 };
-    z_array_push_back_array(&a, view);
+    z_array_push_array(&a, view);
     printf("len=%zu first=%d last=%d peek=%d\n", a.length, a.ptr[0], a.ptr[4], z_array_peek(&a));
     int inserted[] = {15, 16}; Z_Int_Array_View insert_view = { .ptr = inserted, .length = 2 };
     z_array_insert_array(&a, insert_view, 1);

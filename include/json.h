@@ -36,6 +36,6 @@ typedef struct {
 } Z_Json_Parse_Result;
 
 Z_Json_Parse_Result z_json_parse(Z_Pool *pool, Z_String_View document);
-Z_Json_Parse_Result z_json_parse_file(Z_Pool *pool, const char *pathname);
+Z_Json_Parse_Result z_json_parse_file(Z_Pool *pool, const char *path);
 
 #endif

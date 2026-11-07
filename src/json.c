@@ -158,10 +158,10 @@ Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser)
             if (z_scanner_is_at_end(&parser->scanner)) {
                 return z_json_error(parser, "Expected end of string, got end of file");
             } else {
-                z_str_push_back_char(&string, z_scanner_advance(&parser->scanner));
+                z_str_push_char(&string, z_scanner_advance(&parser->scanner));
             }
         } else {
-            z_str_push_back_char(&string, z_scanner_advance(&parser->scanner));
+            z_str_push_char(&string, z_scanner_advance(&parser->scanner));
         }
     }
 
@@ -261,7 +261,7 @@ Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser)
             return Z_JSON_DUMMY;
         }
 
-        z_array_push_back(&array, value);
+        z_array_push(&array, value);
         z_scanner_skip_spaces(&parser->scanner);
     } while (z_scanner_match(&parser->scanner, ','));
 
@@ -383,16 +383,16 @@ Z_Json_Parse_Result z_json_parse(Z_Pool *pool, Z_String_View document)
     return result;
 }
 
-Z_Json_Parse_Result z_json_parse_file(Z_Pool *pool, const char *pathname)
+Z_Json_Parse_Result z_json_parse_file(Z_Pool *pool, const char *path)
 {
     Z_Pool_Auto scratch = {0};
     Z_String document = z_str_new(&scratch, "");
 
-    if (!z_str_push_back_file(&document, pathname)) {
+    if (!z_file_read(path, &document)) {
 
         Z_Json_Parse_Result result = {
             .had_error = true,
-            .error = z_str_new(pool, "Cannot read file: '%s': %s", pathname, strerror(errno)).ptr,
+            .error = z_str_new(pool, "Cannot read file: '%s': %s", path, strerror(errno)).ptr,
         };
 
         return result;

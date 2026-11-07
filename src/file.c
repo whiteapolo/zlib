@@ -24,9 +24,9 @@ size_t z__get_file_size(FILE *fp)
     return (size_t)size;
 }
 
-bool z_file_write(const char *pathname, const char *format, ...)
+bool z_file_write(const char *path, const char *format, ...)
 {
-    FILE *fp = fopen(pathname, "w");
+    FILE *fp = fopen(path, "w");
 
     if (fp == NULL) {
         return false;
@@ -41,9 +41,9 @@ bool z_file_write(const char *pathname, const char *format, ...)
     return true;
 }
 
-bool z_file_append(const char *pathname, const char *format, ...)
+bool z_file_append(const char *path, const char *format, ...)
 {
-    FILE *fp = fopen(pathname, "a");
+    FILE *fp = fopen(path, "a");
 
     if (fp == NULL) {
         return false;
@@ -58,9 +58,9 @@ bool z_file_append(const char *pathname, const char *format, ...)
     return true;
 }
 
-bool z_file_scanf(const char *pathname, const char *format, ...)
+bool z_file_scanf(const char *path, const char *format, ...)
 {
-    FILE *fp = fopen(pathname, "r");
+    FILE *fp = fopen(path, "r");
 
     if (fp == NULL) {
         return false;
@@ -87,7 +87,7 @@ size_t z_file_read_line(FILE *fp, Z_String *out)
     z_str_clear(out);
 
     while (fgets(buffer, READ_BUFFER_SIZE, fp)) {
-        z_str_push_back_cstr(out, buffer);
+        z_str_push_cstr(out, buffer);
 
         if (strchr(buffer, '\n')) {
             break;
@@ -182,4 +182,22 @@ void z__dir_auto_cleanup(DIR **dir)
     if (dir && *dir) {
         closedir(*dir);
     }
+}
+
+bool z_file_read(const char *path, Z_String *s)
+{
+    FILE *fp = fopen(path, "r");
+
+    if (fp == NULL) {
+        return false;
+    }
+
+    size_t file_size = z__get_file_size(fp);
+
+    z_array_reserve(s, s->length + file_size);
+    s->length += fread(s->ptr + s->length, 1, file_size, fp);
+    z_array_zero_terminate(s);
+    fclose(fp);
+
+    return true;
 }

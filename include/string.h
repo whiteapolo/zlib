@@ -25,23 +25,11 @@ char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s);
 char *z_cstr_dup(Z_Pool *pool, const char *s);
 Z_String z_str_take_ownership(Z_Pool *pool, char *s);
 
-void z_str_push_back(Z_String *s, const char *format, ...);
-void z_str_push_back_va(Z_String *s, const char *format, va_list args);
-void z_str_push_back_cstr(Z_String *s, const char *cstr);
-void z_str_push_back_sv(Z_String *target, Z_String_View source);
-void z_str_push_back_char(Z_String *s, char c);
-bool z_str_push_back_file(Z_String *s, const char *pathname);
-
-void z_str_insert(Z_String *s, size_t index, const char *format, ...);
-void z_str_insert_va(Z_String *s, size_t index, const char *format, ...);
-void z_str_insert_cstr(Z_String *s, const char *cstr, size_t index);
-void z_str_insert_sv(Z_String *target, Z_String_View source, size_t index);
-void z_str_insert_char(Z_String *s, char c, size_t index);
-
-void z_str_push_front(Z_String *s, const char *format, ...);
-void z_str_push_front_va(Z_String *s, const char *format, va_list args);
-void z_str_push_front_sv(Z_String *target, Z_String_View source);
-void z_str_push_front_char(Z_String *s, char c);
+void z_str_push(Z_String *s, const char *format, ...);
+void z_str_push_va(Z_String *s, const char *format, va_list args);
+void z_str_push_cstr(Z_String *s, const char *cstr);
+void z_str_push_sv(Z_String *target, Z_String_View source);
+void z_str_push_char(Z_String *s, char c);
 
 char z_str_pop_char(Z_String *s);
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement);
@@ -58,7 +46,7 @@ void z_str_override_va(Z_String *s, const char *format, va_list args);
 Z_Sv_Split_Iter z_sv_split_iter(Z_String_View s, Z_String_View delimeter);
 bool z_sv_split_iter_next(Z_Sv_Split_Iter *iter, Z_String_View *next);
 Z_String_View z_sv_split_part(Z_String_View s, Z_String_View delimiter, size_t index);
-void z_str_split(Z_String_View s, Z_String_View delimiter, Z_String_Array *out); // look
+void z_str_split(Z_String_View s, Z_String_View delimiter, Z_String_Array *out);
 
 void z_str_trim(Z_String *s);
 void z_str_trim_cset(Z_String *s, Z_String_View cset);
@@ -101,7 +89,6 @@ bool z_sv_contains_char(Z_String_View s, char c);
 ssize_t z_sv_find_index(Z_String_View haystack, Z_String_View needle);
 
 size_t z_sv_get_edit_distance(Z_String_View a, Z_String_View b);
-unsigned int z_sv_get_edit_distance_case_insensitive(Z_String_View a, Z_String_View b);
 
 void z_sv_print(Z_String_View s);
 void z_sv_println(Z_String_View s);
