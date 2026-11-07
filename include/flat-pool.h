@@ -9,6 +9,7 @@ typedef struct {
 
 Z_Flat_Pool z_flat_pool_new(size_t capacity);
 void *z_flat_pool_allocate(Z_Flat_Pool *pool, size_t size);
+void z_flat_pool_clear(Z_Flat_Pool *pool);
 void z_flat_pool_free(Z_Flat_Pool *pool);
 
 #endif

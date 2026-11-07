@@ -92,7 +92,7 @@ void z_str_push_back(Z_String *s, const char *format, ...)
 void z_str_push_back_va(Z_String *s, const char *format, va_list args)
 {
     size_t format_length = z__get_format_length(format, args);
-    z_array_ensure_capacity(s, s->length + format_length + 1);
+    z_array_reserve(s, s->length + format_length + 1);
 
     va_list args_copy;
     va_copy(args_copy, args);
@@ -129,7 +129,7 @@ bool z_str_push_back_file(Z_String *s, const char *pathname)
 
     size_t file_size = z__get_file_size(fp);
 
-    z_array_ensure_capacity(s, s->length + file_size);
+    z_array_reserve(s, s->length + file_size);
     s->length += fread(s->ptr + s->length, 1, file_size, fp);
     z_array_zero_terminate(s);
     fclose(fp);

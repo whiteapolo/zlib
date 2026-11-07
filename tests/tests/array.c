@@ -15,7 +15,7 @@ void main() {
     int inserted[] = {15, 16}; Z_Int_Array_View insert_view = { .ptr = inserted, .length = 2 };
     z_array_insert_array(&a, insert_view, 1);
     z_array_reserve_space_at(&a, 0, 1); a.ptr[0] = 5;
-    z_array_ensure_capacity(&a, a.length + 4);
+    z_array_reserve(&a, a.length + 4);
     printf("inserted=%d,%d first=%d capacity=%d\n", a.ptr[1], a.ptr[2], a.ptr[0], a.capacity >= a.length + 4);
     printf("pop=%d\n", z_array_pop_back(&a));
     z_array_zero_terminate(&a);

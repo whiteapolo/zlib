@@ -25,7 +25,7 @@ typedef struct {                                      \
 
 #define z_array_push_back(array_ptr, element)                        \
     do {                                                             \
-        z_array_ensure_capacity(array_ptr, (array_ptr)->length + 1); \
+        z_array_reserve(array_ptr, (array_ptr)->length + 1);         \
         (array_ptr)->ptr[(array_ptr)->length++] = element;           \
     } while (0)
 
@@ -41,7 +41,7 @@ typedef struct {                                      \
     (array_ptr)->ptr[(array_ptr)->length - 1] \
 )
 
-#define z_array_insert(array_ptr, element, index)     \
+#define z_array_insert(array_ptr, element, index)      \
     do {                                               \
         z_array_reserve_space_at(array_ptr, index, 1); \
         (array_ptr)->ptr[index] = element;             \
@@ -49,7 +49,7 @@ typedef struct {                                      \
 
 #define z_array_push_back_array(array_ptr, array_view)                                                                     \
     do {                                                                                                                   \
-        z_array_ensure_capacity((array_ptr), (array_ptr)->length + (array_view).length);                                   \
+        z_array_reserve((array_ptr), (array_ptr)->length + (array_view).length);                                   \
         memcpy((array_ptr)->ptr + (array_ptr)->length, (array_view).ptr, sizeof(*(array_ptr)->ptr) * (array_view).length); \
         (array_ptr)->length += (array_view).length;                                                                        \
     } while (0)
@@ -62,11 +62,11 @@ typedef struct {                                      \
 
 #define z_array_zero_terminate(array_ptr)                                             \
     do {                                                                              \
-        z_array_ensure_capacity(array_ptr, (array_ptr)->length + 1);                  \
+        z_array_reserve(array_ptr, (array_ptr)->length + 1);                  \
         memset(&(array_ptr)->ptr[(array_ptr)->length], 0, sizeof(*(array_ptr)->ptr)); \
     } while (0)
 
-#define z_array_ensure_capacity(array_ptr, needed)                                                                            \
+#define z_array_reserve(array_ptr, needed)                                                                            \
     do {                                                                                                                      \
         size_t _needed = needed;                                                                                              \
         if ((array_ptr)->capacity < (_needed)) {                                                                              \
@@ -82,7 +82,7 @@ typedef struct {                                      \
         size_t _space = space;                                                                                       \
         assert(_space <= (array_ptr)->length);                                                                       \
         size_t _length = (array_ptr)->length - _index;                                                               \
-        z_array_ensure_capacity(array_ptr, (array_ptr)->length + _space);                                            \
+        z_array_reserve(array_ptr, (array_ptr)->length + _space);                                            \
         memmove((array_ptr)->ptr + _index + _space, (array_ptr)->ptr + _index, sizeof(*(array_ptr)->ptr) * _length); \
         (array_ptr)->length += _space;                                                                               \
     } while (0)

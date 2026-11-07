@@ -131,7 +131,7 @@ size_t z_avl_tree_generate_next_id(Z_Avl_Tree *tree)
     }
 
     tree->nodes.length++;
-    z_array_ensure_capacity(&tree->nodes, tree->nodes.length);
+    z_array_reserve(&tree->nodes, tree->nodes.length);
     return tree->nodes.length;
 }
 
