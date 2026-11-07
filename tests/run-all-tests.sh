@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-make -C .. debug
+make -C .. dev
 
 for f in tests/*.c
 do
