@@ -2,10 +2,10 @@
 #include <string.h>
 #include "../include/min-max.h"
 
-#define Z__PTR_TABLE_MIN_CAPACITY 16u
-#define Z__PTR_TABLE_MAX_LOAD_FACTOR 0.7
-#define Z__PTR_TABLE_TOMBSTONE ((uintptr_t)1)
-#define Z__PTR_TABLE_EMPTY ((uintptr_t)0)
+#define Z__PTR_TABLE_MIN_CAPACITY       16u
+#define Z__PTR_TABLE_MAX_LOAD_FACTOR    0.7
+#define Z__PTR_TABLE_TOMBSTONE          ((uintptr_t)1)
+#define Z__PTR_TABLE_EMPTY              ((uintptr_t)0)
 
 void z__ptr_table_insert_no_check(Z_Ptr_Table *table, uintptr_t ptr);
 static inline size_t z__ptr_table_fast_mod(size_t value, size_t mod);
@@ -162,7 +162,7 @@ void z_pool_free_all(Z_Pool *pool)
     z_ptr_table_free(pool);
 }
 
-void z_pool_reset(Z_Pool *pool)
+void z_pool_clear(Z_Pool *pool)
 {
     z_ptr_table_reset(pool);
 }

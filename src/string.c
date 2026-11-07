@@ -7,10 +7,10 @@
 
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 
-int z__size_t_to_int(size_t a);
+static inline int z__size_t_to_int(size_t a);
 size_t z__get_format_length(const char *format, va_list args);
 
-int z__size_t_to_int(size_t a)
+static inline int z__size_t_to_int(size_t a)
 {
     return a > INT_MAX ? INT_MAX : (int)a;
 }

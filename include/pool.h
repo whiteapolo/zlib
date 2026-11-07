@@ -45,6 +45,6 @@ void *z_pool_realloc(Z_Pool *pool, void *ptr, size_t new_size);
 void *z_pool_memory_duplicate(Z_Pool *pool, void *ptr, size_t size);
 void z_pool_free(Z_Pool *pool, void *ptr);
 void z_pool_free_all(Z_Pool *pool);
-void z_pool_reset(Z_Pool *pool);
+void z_pool_clear(Z_Pool *pool);
 
 #endif
