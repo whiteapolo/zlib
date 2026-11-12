@@ -1,6 +1,8 @@
 #ifndef FLAT_POOL_H
 #define FLAT_POOL_H
 
+#define Z_FLAT_POOL_DEFAULT_VIRTUAL_SIZE (256*1024*1024)
+
 typedef struct {
     char *buffer;
     size_t offset;

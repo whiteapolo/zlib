@@ -18,28 +18,28 @@ typedef struct {
     char *error;
 } Z_Json_Parser_State;
 
-Z_Json_Value z_json_parse_value(Z_Json_Parser_State *parser);
-Z_Json_Value z_json_create_boolean(bool boolean);
-Z_Json_Value z_json_create_null();
-Z_Json_Value z_json_create_string(Z_String string);
-Z_Json_Value z_json_create_number(double number);
-Z_Json_Value z_json_create_array(Z_Json_Value_Array array);
-Z_Json_Value z_json_create_object(Z_Hash_Table object);
-Z_Json_Value z_json_error(Z_Json_Parser_State *parser, const char *message);
-Z_Json_Value z_json_parse_true(Z_Json_Parser_State *parser);
-Z_Json_Value z_json_parse_false(Z_Json_Parser_State *parser);
-Z_Json_Value z_json_parse_null(Z_Json_Parser_State *parser);
-Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser);
-bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number);
-double build_number_from_parts(int sign, int number, int fraction,
+static inline Z_Json_Value z_json_parse_value(Z_Json_Parser_State *parser);
+static inline Z_Json_Value z_json_create_boolean(bool boolean);
+static inline Z_Json_Value z_json_create_null();
+static inline Z_Json_Value z_json_create_string(Z_String string);
+static inline Z_Json_Value z_json_create_number(double number);
+static inline Z_Json_Value z_json_create_array(Z_Json_Value_Array array);
+static inline Z_Json_Value z_json_create_object(Z_Hash_Table object);
+static inline Z_Json_Value z_json_error(Z_Json_Parser_State *parser, const char *message);
+static inline Z_Json_Value z_json_parse_true(Z_Json_Parser_State *parser);
+static inline Z_Json_Value z_json_parse_false(Z_Json_Parser_State *parser);
+static inline Z_Json_Value z_json_parse_null(Z_Json_Parser_State *parser);
+static inline Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser);
+static inline bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number);
+static inline double build_number_from_parts(int sign, int number, int fraction,
                                int exponent_sign, int exponent);
-Z_Json_Value z_json_parse_number(Z_Json_Parser_State *parser);
-Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser);
-void z_json_parse_object_entry(Z_Json_Parser_State *parser, Z_Hash_Table *object);
-Z_Json_Value z_json_parse_object(Z_Json_Parser_State *parser);
+static inline Z_Json_Value z_json_parse_number(Z_Json_Parser_State *parser);
+static inline Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser);
+static inline void z_json_parse_object_entry(Z_Json_Parser_State *parser, Z_Hash_Table *object);
+static inline Z_Json_Value z_json_parse_object(Z_Json_Parser_State *parser);
 Z_Json_Value z_json_parse_value(Z_Json_Parser_State *parser);
 
-Z_Json_Value z_json_create_boolean(bool boolean)
+static inline Z_Json_Value z_json_create_boolean(bool boolean)
 {
     Z_Json_Value value = {
         .type = Z_JSON_BOOLEAN,
@@ -49,7 +49,7 @@ Z_Json_Value z_json_create_boolean(bool boolean)
     return value;
 }
 
-Z_Json_Value z_json_create_null()
+static inline Z_Json_Value z_json_create_null()
 {
     Z_Json_Value value = {
         .type = Z_JSON_NULL,
@@ -58,7 +58,7 @@ Z_Json_Value z_json_create_null()
     return value;
 }
 
-Z_Json_Value z_json_create_string(Z_String string)
+static inline Z_Json_Value z_json_create_string(Z_String string)
 {
     Z_Json_Value value = {
         .type = Z_JSON_STRING,
@@ -68,7 +68,7 @@ Z_Json_Value z_json_create_string(Z_String string)
     return value;
 }
 
-Z_Json_Value z_json_create_number(double number)
+static inline Z_Json_Value z_json_create_number(double number)
 {
     Z_Json_Value value = {
         .type = Z_JSON_NUMBER,
@@ -78,7 +78,7 @@ Z_Json_Value z_json_create_number(double number)
     return value;
 }
 
-Z_Json_Value z_json_create_array(Z_Json_Value_Array array)
+static inline Z_Json_Value z_json_create_array(Z_Json_Value_Array array)
 {
     Z_Json_Value value = {
         .type = Z_JSON_ARRAY,
@@ -88,7 +88,7 @@ Z_Json_Value z_json_create_array(Z_Json_Value_Array array)
     return value;
 }
 
-Z_Json_Value z_json_create_object(Z_Hash_Table object)
+static inline Z_Json_Value z_json_create_object(Z_Hash_Table object)
 {
     Z_Json_Value value = {
         .type = Z_JSON_OBJECT,
@@ -98,7 +98,7 @@ Z_Json_Value z_json_create_object(Z_Hash_Table object)
     return value;
 }
 
-Z_Json_Value z_json_error(Z_Json_Parser_State *parser, const char *message)
+static inline Z_Json_Value z_json_error(Z_Json_Parser_State *parser, const char *message)
 {
     parser->had_error = true;
 
@@ -114,7 +114,7 @@ Z_Json_Value z_json_error(Z_Json_Parser_State *parser, const char *message)
     return Z_JSON_DUMMY;
 }
 
-Z_Json_Value z_json_parse_true(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_true(Z_Json_Parser_State *parser)
 {
     if (z_scanner_match_string(&parser->scanner, z_sv("true"))) {
         return z_json_create_boolean(true);
@@ -123,7 +123,7 @@ Z_Json_Value z_json_parse_true(Z_Json_Parser_State *parser)
     return z_json_error(parser, "Expected true");
 }
 
-Z_Json_Value z_json_parse_false(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_false(Z_Json_Parser_State *parser)
 {
     if (z_scanner_match_string(&parser->scanner, z_sv("false"))) {
         return z_json_create_boolean(false);
@@ -132,7 +132,7 @@ Z_Json_Value z_json_parse_false(Z_Json_Parser_State *parser)
     return z_json_error(parser, "Expected false");
 }
 
-Z_Json_Value z_json_parse_null(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_null(Z_Json_Parser_State *parser)
 {
     if (z_scanner_match_string(&parser->scanner, z_sv("null"))) {
         return z_json_create_null();
@@ -141,7 +141,7 @@ Z_Json_Value z_json_parse_null(Z_Json_Parser_State *parser)
     return z_json_error(parser, "Expected null");
 }
 
-Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser)
 {
     if (!z_scanner_match(&parser->scanner, '"')) {
         return z_json_error(parser, "Expected string");
@@ -176,7 +176,7 @@ Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser)
     return z_json_create_string(string);
 }
 
-bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number)
+static inline bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number)
 {
     if (!isdigit(z_scanner_peek(&parser->scanner))) {
         return false;
@@ -192,13 +192,13 @@ bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number)
     return true;
 }
 
-double build_number_from_parts(int sign, int number, int fraction,
+static inline double build_number_from_parts(int sign, int number, int fraction,
                                int exponent_sign, int exponent)
 {
     return ((sign * (double)number) + (fraction / pow(10, log10(fraction) + 1))) * pow(10, exponent_sign * exponent);
 }
 
-Z_Json_Value z_json_parse_number(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_number(Z_Json_Parser_State *parser)
 {
     int sign = 1;
     int number = 0;
@@ -235,7 +235,7 @@ Z_Json_Value z_json_parse_number(Z_Json_Parser_State *parser)
     return z_json_create_number(build_number_from_parts(sign, number, fraction, exponent_sign, exponent));
 }
 
-Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser)
 {
     if (parser->had_error) {
         return Z_JSON_DUMMY;
@@ -272,7 +272,7 @@ Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser)
     return z_json_create_array(array);
 }
 
-void z_json_parse_object_entry(Z_Json_Parser_State *parser, Z_Hash_Table *object)
+static inline void z_json_parse_object_entry(Z_Json_Parser_State *parser, Z_Hash_Table *object)
 {
     z_scanner_skip_spaces(&parser->scanner);
     Z_Json_Value key = z_json_parse_string(parser);
@@ -299,7 +299,7 @@ void z_json_parse_object_entry(Z_Json_Parser_State *parser, Z_Hash_Table *object
     z_hash_table_put(object, key.string.ptr, z_pool_memory_duplicate(parser->pool, &value, sizeof(Z_Json_Value)));
 }
 
-Z_Json_Value z_json_parse_object(Z_Json_Parser_State *parser)
+static inline Z_Json_Value z_json_parse_object(Z_Json_Parser_State *parser)
 {
     if (parser->had_error) {
         return Z_JSON_DUMMY;
@@ -399,4 +399,31 @@ Z_Json_Parse_Result z_json_parse_file(Z_Pool *pool, const char *path)
     }
 
     return z_json_parse(pool, z_sv(document));
+}
+
+Z_Json_Value z_json_get(const Z_Json_Value *json, const char *path)
+{
+    const Z_Json_Value *curr = json;
+
+    Z_Sv_Split_Iter iter = z_sv_split_iter(z_sv(path), z_sv("."));
+    Z_String_View p;
+
+    while (z_sv_split_iter_next(&iter, &p)) {
+        Z_Pool_Auto pool = {0};
+
+        if (curr->type != Z_JSON_OBJECT) {
+            return z_json_create_null();
+        }
+
+
+        Z_Json_Value *child = z_hash_table_get(&curr->object, z_sv_to_cstr(&pool, p));
+
+        if (child == NULL) {
+            return z_json_create_null();
+        }
+
+        curr = child;
+    }
+
+    return *curr;
 }
