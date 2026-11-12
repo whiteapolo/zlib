@@ -17,6 +17,8 @@ typedef struct {
     size_t current;
 } Z_Sv_Split_Iter;
 
+int z_get_format_length(const char *format, va_list args);
+
 Z_String z_str_new(Z_Pool *pool, const char *format, ...);
 Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args);
 Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s);

@@ -1,6 +1,7 @@
 #include "../include/string.h"
 #include "../include/array.h"
 #include "../include/min-max.h"
+#include <assert.h>
 #include <limits.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,22 +9,33 @@
 #define Z__WHITE_SPACE " \f\n\r\t\v"
 
 static inline int z__size_t_to_int(size_t a);
-size_t z__get_format_length(const char *format, va_list args);
 
 static inline int z__size_t_to_int(size_t a)
 {
-    return a > INT_MAX ? INT_MAX : (int)a;
+    if (a > INT_MAX) {
+        return INT_MAX;
+    }
+
+    return (int)a;
 }
 
-size_t z__get_format_length(const char *format, va_list args)
+static inline int z__vsnprintf(size_t size; char str[restrict size], size_t size, const char *restrict format, va_list ap)
 {
-    va_list args_copy;
-    va_copy(args_copy, args);
-    int size = vsnprintf(NULL, 0, format, args_copy);
-    va_end(args_copy);
+    // exists since vsnprintf override the va_list.
+    va_list ap_tmp;
+    va_copy(ap_tmp, ap);
+    int ret = vsnprintf(str, size, format, ap_tmp);
+    va_end(ap_tmp);
+
+    return ret;
+}
+
+int z_get_format_length(const char *format, va_list args)
+{
+    int size = z__vsnprintf(NULL, 0, format, args);
     assert(size >= 0);
 
-    return (size_t)size;
+    return size;
 }
 
 Z_String z_str_new(Z_Pool *pool, const char *format, ...)
@@ -91,14 +103,9 @@ void z_str_push(Z_String *s, const char *format, ...)
 
 void z_str_push_va(Z_String *s, const char *format, va_list args)
 {
-    size_t format_length = z__get_format_length(format, args);
+    size_t format_length = (size_t)z__vsnprintf(NULL, 0, format, args);
     z_array_reserve(s, s->length + format_length + 1);
-
-    va_list args_copy;
-    va_copy(args_copy, args);
-    vsnprintf(s->ptr + s->length, format_length + 1, format, args_copy);
-    va_end(args_copy);
-
+    z__vsnprintf(s->ptr + s->length, format_length + 1, format, args);
     s->length += format_length;
 }
 
