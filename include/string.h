@@ -17,10 +17,10 @@ typedef struct {
     size_t current;
 } Z_Sv_Split_Iter;
 
-int z_get_format_length(const char *format, va_list args);
+int z_get_format_length(const char *format, va_list ap);
 
 Z_String z_str_new(Z_Pool *pool, const char *format, ...);
-Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args);
+Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list ap);
 Z_String z_str_new_from_sv(Z_Pool *pool, Z_String_View s);
 Z_String z_str_new_from_cstr(Z_Pool *pool, const char *cstr);
 char *z_sv_to_cstr(Z_Pool *pool, Z_String_View s);
@@ -28,7 +28,7 @@ char *z_cstr_dup(Z_Pool *pool, const char *s);
 Z_String z_str_take_ownership(Z_Pool *pool, char *s);
 
 void z_str_push(Z_String *s, const char *format, ...);
-void z_str_push_va(Z_String *s, const char *format, va_list args);
+void z_str_push_va(Z_String *s, const char *format, va_list ap);
 void z_str_push_cstr(Z_String *s, const char *cstr);
 void z_str_push_sv(Z_String *target, Z_String_View source);
 void z_str_push_char(Z_String *s, char c);
@@ -37,7 +37,7 @@ char z_str_pop_char(Z_String *s);
 void z_str_replace(Z_String *s, Z_String_View target, Z_String_View replacement);
 void z_str_clear(Z_String *s);
 void z_str_override(Z_String *s, const char *format, ...);
-void z_str_override_va(Z_String *s, const char *format, va_list args);
+void z_str_override_va(Z_String *s, const char *format, va_list ap);
 
 // Z_Sv_Split_Iter iter = z_sv_split_iter(s, z_sv("\n"));
 // Z_String_View line;

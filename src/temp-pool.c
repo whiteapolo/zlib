@@ -22,20 +22,20 @@ void z_temp_pool_clear()
 
 char *z_format(const char *format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    char *s = z_format_va(format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    char *s = z_format_va(format, ap);
+    va_end(ap);
 
     return s;
 }
 
-char *z_format_va(const char *format, va_list args)
+char *z_format_va(const char *format, va_list ap)
 {
-    int size = z_get_format_length(format, args);
+    int size = z_get_format_length(format, ap);
     assert(size >= 0);
     char *s = z_temp_pool_allocate((size_t)size + 1);
-    vsnprintf(s, (size_t)size + 1, format, args);
+    vsnprintf(s, (size_t)size + 1, format, ap);
 
     return s;
 }

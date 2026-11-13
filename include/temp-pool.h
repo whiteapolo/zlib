@@ -7,6 +7,6 @@
 void *z_temp_pool_allocate(size_t size);
 void z_temp_pool_clear();
 char *z_format(const char *format, ...);
-char *z_format_va(const char *format, va_list args);
+char *z_format_va(const char *format, va_list ap);
 
 #endif

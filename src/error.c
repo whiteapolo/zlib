@@ -5,31 +5,31 @@
 
 void z_die(const char *format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    z_die_va(format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    z_die_va(format, ap);
+    va_end(ap);
 }
 
-void z_die_va(const char *format, va_list args)
+void z_die_va(const char *format, va_list ap)
 {
-    vfprintf(stderr, format, args);
+    vfprintf(stderr, format, ap);
     exit(EXIT_FAILURE);
 }
 
 void z_perror(const char *format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    z_perror_va(format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    z_perror_va(format, ap);
+    va_end(ap);
 }
 
-void z_perror_va(const char *format, va_list args)
+void z_perror_va(const char *format, va_list ap)
 {
     Z_Pool_Auto pool = {0};
     Z_String s = z_str_new(&pool, "");
-    z_str_push_va(&s, format, args);
+    z_str_push_va(&s, format, ap);
     perror(s.ptr);
 }
 
@@ -39,8 +39,22 @@ void z_enforce(bool predicate, const char *format, ...)
         return;
     }
 
-    va_list args;
-    va_start(args, format);
-    z_die_va(format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    z_die_va(format, ap);
+    va_end(ap);
+}
+
+void z_perror_die(const char *format, ...)
+{
+    va_list ap;
+    va_start(ap, format);
+    z_perror_die_va(format, ap);
+    va_end(ap);
+}
+
+void z_perror_die_va(const char *format, va_list ap)
+{
+    z_perror_va(format, ap);
+    exit(EXIT_FAILURE);
 }

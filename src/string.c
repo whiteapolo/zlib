@@ -30,9 +30,9 @@ static inline int z__vsnprintf(size_t size; char str[restrict size], size_t size
     return ret;
 }
 
-int z_get_format_length(const char *format, va_list args)
+int z_get_format_length(const char *format, va_list ap)
 {
-    int size = z__vsnprintf(NULL, 0, format, args);
+    int size = z__vsnprintf(NULL, 0, format, ap);
     assert(size >= 0);
 
     return size;
@@ -40,17 +40,18 @@ int z_get_format_length(const char *format, va_list args)
 
 Z_String z_str_new(Z_Pool *pool, const char *format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    Z_String s = z_str_new_va(pool, format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    Z_String s = z_str_new_va(pool, format, ap);
+    va_end(ap);
+
     return s;
 }
 
-Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list args)
+Z_String z_str_new_va(Z_Pool *pool, const char *format, va_list ap)
 {
     Z_String s = z_array_new(pool, Z_String);
-    z_str_push_va(&s, format, args);
+    z_str_push_va(&s, format, ap);
     return s;
 }
 
@@ -95,17 +96,17 @@ Z_String z_str_take_ownership(Z_Pool *pool, char *s)
 
 void z_str_push(Z_String *s, const char *format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    z_str_push_va(s, format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    z_str_push_va(s, format, ap);
+    va_end(ap);
 }
 
-void z_str_push_va(Z_String *s, const char *format, va_list args)
+void z_str_push_va(Z_String *s, const char *format, va_list ap)
 {
-    size_t format_length = (size_t)z__vsnprintf(NULL, 0, format, args);
+    size_t format_length = (size_t)z__vsnprintf(NULL, 0, format, ap);
     z_array_reserve(s, s->length + format_length + 1);
-    z__vsnprintf(s->ptr + s->length, format_length + 1, format, args);
+    z__vsnprintf(s->ptr + s->length, format_length + 1, format, ap);
     s->length += format_length;
 }
 
@@ -482,18 +483,17 @@ void z_str_clear(Z_String *s)
 
 void z_str_override(Z_String *s, const char *format, ...)
 {
-    va_list args;
-    va_start(args, format);
-    z_str_override_va(s, format, args);
-    va_end(args);
+    va_list ap;
+    va_start(ap, format);
+    z_str_override_va(s, format, ap);
+    va_end(ap);
 }
 
-void z_str_override_va(Z_String *s, const char *format, va_list args)
+void z_str_override_va(Z_String *s, const char *format, va_list ap)
 {
     z_str_clear(s);
-    z_str_push_va(s, format, args);
+    z_str_push_va(s, format, ap);
 }
-
 
 size_t z_sv_get_edit_distance(Z_String_View a, Z_String_View b)
 {

@@ -3,7 +3,6 @@
 
 #include <stdbool.h>
 #include <stdlib.h>
-#include "compare.h"
 #include "array.h"
 #include "pool.h"
 #include "internal/config.h"
