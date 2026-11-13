@@ -10,5 +10,4 @@
 #include "types.c"
 #include "flat-pool.c"
 #include "json.c"
-#include "json-stringify.c"
 #include "temp-pool.c"

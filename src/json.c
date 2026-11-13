@@ -18,6 +18,18 @@ typedef struct {
     char *error;
 } Z_Json_Parser_State;
 
+typedef struct {
+    int level;
+    int spaces_each_level;
+} Z_Json_Indentation;
+
+Z_Json_Indentation z_json_level_up(Z_Json_Indentation indentation);
+void z_json_indentation_stringify(Z_Json_Indentation indentation, Z_String *out);
+void z_json_array_stringify(const Z_Json_Value *value, Z_Json_Indentation indentation, Z_String *out);
+void z_json_value_stringify(const Z_Json_Value *value, Z_Json_Indentation indentation, Z_String *out);
+void z_json_object_stringify(const Z_Json_Value *json, Z_Json_Indentation indentation, Z_String *out);
+void z_json_stringify(const Z_Json_Value *json, Z_String *out);
+
 static inline Z_Json_Value z_json_parse_value(Z_Json_Parser_State *parser);
 static inline Z_Json_Value z_json_create_boolean(bool boolean);
 static inline Z_Json_Value z_json_create_null();
@@ -31,13 +43,14 @@ static inline Z_Json_Value z_json_parse_false(Z_Json_Parser_State *parser);
 static inline Z_Json_Value z_json_parse_null(Z_Json_Parser_State *parser);
 static inline Z_Json_Value z_json_parse_string(Z_Json_Parser_State *parser);
 static inline bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number);
-static inline double build_number_from_parts(int sign, int number, int fraction,
-                               int exponent_sign, int exponent);
+static inline double build_number_from_parts(int sign,int number, int fraction,
+                                             int exponent_sign, int exponent);
 static inline Z_Json_Value z_json_parse_number(Z_Json_Parser_State *parser);
 static inline Z_Json_Value z_json_parse_array(Z_Json_Parser_State *parser);
 static inline void z_json_parse_object_entry(Z_Json_Parser_State *parser, Z_Hash_Table *object);
 static inline Z_Json_Value z_json_parse_object(Z_Json_Parser_State *parser);
 Z_Json_Value z_json_parse_value(Z_Json_Parser_State *parser);
+Z_Json_Value z_json_get_field(const Z_Json_Value *json, const char *field);
 
 static inline Z_Json_Value z_json_create_boolean(bool boolean)
 {
@@ -193,7 +206,7 @@ static inline bool z_json_parse_integer(Z_Json_Parser_State *parser, int *number
 }
 
 static inline double build_number_from_parts(int sign, int number, int fraction,
-                               int exponent_sign, int exponent)
+                                             int exponent_sign, int exponent)
 {
     return ((sign * (double)number) + (fraction / pow(10, log10(fraction) + 1))) * pow(10, exponent_sign * exponent);
 }
@@ -401,29 +414,139 @@ Z_Json_Parse_Result z_json_parse_file(Z_Pool *pool, const char *path)
     return z_json_parse(pool, z_sv(document));
 }
 
-Z_Json_Value z_json_get(const Z_Json_Value *json, const char *path)
+Z_Json_Value z_json_get_field(const Z_Json_Value *json, const char *field)
 {
-    const Z_Json_Value *curr = json;
-
-    Z_Sv_Split_Iter iter = z_sv_split_iter(z_sv(path), z_sv("."));
-    Z_String_View p;
-
-    while (z_sv_split_iter_next(&iter, &p)) {
-        Z_Pool_Auto pool = {0};
-
-        if (curr->type != Z_JSON_OBJECT) {
-            return z_json_create_null();
-        }
-
-
-        Z_Json_Value *child = z_hash_table_get(&curr->object, z_sv_to_cstr(&pool, p));
-
-        if (child == NULL) {
-            return z_json_create_null();
-        }
-
-        curr = child;
+    if (json->type != Z_JSON_OBJECT) {
+        return z_json_create_null();
     }
 
-    return *curr;
+    Z_Json_Value *value = z_hash_table_get(&json->object, field);
+
+    if (value == NULL) {
+        return z_json_create_null();
+    }
+
+    return *value;
+}
+
+Z_Json_Value z_json_get(const Z_Json_Value *json, const char *path)
+{
+    Z_Json_Value curr = *json;
+
+    Z_Sv_Split_Iter iter = z_sv_split_iter(z_sv(path), z_sv("."));
+    Z_String_View field;
+
+    while (z_sv_split_iter_next(&iter, &field)) {
+        Z_Pool_Auto pool = {0};
+        curr = z_json_get_field(&curr, z_sv_to_cstr(&pool, field));
+    }
+
+    return curr;
+}
+
+Z_Json_Indentation z_json_level_up(Z_Json_Indentation indentation)
+{
+    Z_Json_Indentation new = {
+        .level = indentation.level + 1,
+        .spaces_each_level = indentation.spaces_each_level,
+    };
+
+    return new;
+}
+
+void z_json_indentation_stringify(Z_Json_Indentation indentation, Z_String *out)
+{
+    int spaces = indentation.level * indentation.spaces_each_level;
+
+    for (int i = 0; i < spaces; i++) {
+        z_str_push_char(out, ' ');
+    }
+}
+
+void z_json_array_stringify(const Z_Json_Value *value, Z_Json_Indentation indentation, Z_String *out)
+{
+    z_str_push_cstr(out, "[\n");
+    Z_Json_Value_Array array = value->array;
+
+    for (size_t i = 0; i < array.length; i++) {
+        z_json_indentation_stringify(z_json_level_up(indentation), out);
+        z_json_value_stringify(&array.ptr[i], z_json_level_up(indentation), out);
+
+        if (i != array.length - 1) {
+            z_str_push_char(out, ',');
+        }
+
+        z_str_push_char(out, '\n');
+    }
+
+    z_json_indentation_stringify(indentation, out);
+    z_str_push_char(out, ']');
+}
+
+void z_json_value_stringify(const Z_Json_Value *value, Z_Json_Indentation indentation, Z_String *out)
+{
+    switch (value->type) {
+        case Z_JSON_NUMBER:
+            z_str_push(out, "%g", value->number);
+            break;
+        case Z_JSON_BOOLEAN:
+            z_str_push(out, value->boolean ? "true" : "false");
+            break;
+        case Z_JSON_NULL:
+            z_str_push(out, "null");
+            break;
+        case Z_JSON_STRING:
+            z_str_push(out, "\"%s\"", value->string.ptr);
+            break;
+        case Z_JSON_ARRAY:
+            z_json_array_stringify(value, indentation, out);
+            break;
+        case Z_JSON_OBJECT:
+            z_json_object_stringify(value, indentation, out);
+            break;
+    }
+}
+
+void z_json_object_stringify(const Z_Json_Value *json, Z_Json_Indentation indentation, Z_String *out)
+{
+    Z_Pool_Auto pool = {0};
+
+    if (z_hash_table_size(&json->object) == 0) {
+        z_str_push_cstr(out, "{}");
+        return;
+    }
+
+    Z_Pair pair;
+    Z_Hash_Table_Iter iter = z_hash_table_iter(&json->object);
+
+    size_t i = 1;
+
+    z_str_push_cstr(out, "{\n");
+
+    while (z_hash_table_iter_next(&iter, &pair)) {
+        z_json_indentation_stringify(z_json_level_up(indentation), out);
+        z_str_push(out, "\"%s\": ", (char *)pair.key);
+        z_json_value_stringify(pair.value, z_json_level_up(indentation), out);
+
+        if (i != z_hash_table_size(&json->object)) {
+            z_str_push_char(out, ',');
+        }
+
+        z_str_push_char(out, '\n');
+        i++;
+    }
+
+    z_json_indentation_stringify(indentation, out);
+    z_str_push_char(out, '}');
+}
+
+void z_json_stringify(const Z_Json_Value *json, Z_String *out)
+{
+    Z_Json_Indentation indentation = {
+        .level = 0,
+        .spaces_each_level = 4,
+    };
+
+    z_json_value_stringify(json, indentation, out);
+    z_str_push_char(out, '\n');
 }
