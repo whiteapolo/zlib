@@ -1,5 +1,6 @@
 #include "../include/internal/avl.h"
 #include <math.h>
+#include <stdbool.h>
 
 #define Z_AVL_TREE_NULL_ID 0
 
@@ -400,4 +401,130 @@ bool z_avl_tree_is_healthy_impl(const Z_Avl_Tree *tree, size_t node_id)
 bool z_avl_tree_is_healthy(const Z_Avl_Tree *tree)
 {
     return z_avl_tree_is_healthy_impl(tree, tree->root);
+}
+
+
+
+// ----------------------------
+
+
+
+Z_Avl_Tree z_avl_new(Z_Pool *pool, Z_Compare_Fn compare_keys)
+{
+    Z_Avl_Tree tree = {
+        .pool = pool,
+        .compare_keys = compare_keys,
+        .root = NULL,
+    };
+
+    return tree;
+}
+
+Z_Avl_Node *z__avl_get_node(const Z_Avl_Tree *tree, const void *key)
+{
+    Z_Avl_Node *curr = tree->root;
+
+    while (curr) {
+        int cmp = tree->compare_keys(curr->key, key);
+
+        if (cmp > 0) {
+            curr = curr->left;
+        } else if (cmp < 0) {
+            curr = curr->right;
+        } else {
+            return curr;
+        }
+    }
+
+    return NULL;
+}
+
+void *z_avl_get(const Z_Avl_Tree *tree, const void *key)
+{
+    Z_Avl_Node *node = z__avl_get_node(tree, key);
+
+    if (!node) {
+        return NULL;
+    }
+
+    return node->value;
+}
+
+bool z_avl_contains(const Z_Avl_Tree *tree, const void *key)
+{
+    Z_Avl_Node *node = z__avl_get_node(tree, key);
+    return node != NULL;
+}
+
+Z_Maybe_Pair z_avl_put(Z_Avl_Node *root, void *key, void *value);
+Z_Maybe_Pair z_avl_delete(Z_Avl_Node *root, void *key);
+
+size_t z_avl_size(const Z_Avl_Tree *tree)
+{
+    return tree->size;
+}
+
+void z__avl_tree_push_to_array(void *key, void *value, void *arg)
+{
+    Z_Pair_Array *array = arg;
+    Z_Pair pair = z_make_pair(key, value);
+    z_array_push(array, pair);
+}
+
+Z_Pair_Array z_avl_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)
+{
+    Z_Pair_Array array = z_array_new(pool, Z_Pair_Array);
+    z_avl_foreach(tree, z__avl_tree_push_to_array, &array);
+
+    return array;
+}
+
+void *z_avl_get_min(const Z_Avl_Tree *tree)
+{
+    if (tree->root == NULL) {
+        return NULL;
+    }
+
+    Z_Avl_Node *curr = tree->root;
+
+    while (curr->left) {
+        curr = curr->left;
+    }
+
+    return curr;
+}
+
+void *z_avl_get_max(const Z_Avl_Tree *tree)
+{
+    if (tree->root == NULL) {
+        return NULL;
+    }
+
+    Z_Avl_Node *curr = tree->root;
+
+    while (curr->right) {
+        curr = curr->right;
+    }
+
+    return curr;
+}
+
+void z__avl_tree_foreach_impl(const Z_Avl_Node *root,
+                             void callback(void *key, void *value, void *arg),
+                             void *arg)
+{
+    if (root == NULL) {
+        return;
+    }
+
+    z_avl_foreach_impl(root->left, callback, arg);
+    callback(root->key, root->value, arg);
+    z_avl_foreach_impl(root->right, callback, arg);
+}
+
+void z_avl_foreach(const Z_Avl_Tree *tree,
+                        void callback(void *key, void *value, void *arg),
+                        void *arg)
+{
+    z_avl_foreach_impl(tree->root, callback, arg);
 }
