@@ -199,7 +199,7 @@ Z_Maybe_Pair z_avl_tree_get_max(const Z_Avl_Tree *tree)
 
     Z_Maybe_Pair result = {
         .ok = true,
-        .pair = z_make_pair(node->key, node->value),
+        .pair = z_pair_make(node->key, node->value),
     };
 
     return result;
@@ -224,7 +224,7 @@ Z_Maybe_Pair z_avl_tree_get_min(const Z_Avl_Tree *tree)
 
     Z_Maybe_Pair result = {
         .ok = true,
-        .pair = z_make_pair(node->key, node->value),
+        .pair = z_pair_make(node->key, node->value),
     };
 
     return result;
@@ -322,12 +322,12 @@ size_t z_avl_tree_delete_impl(Z_Avl_Tree *tree, size_t node_id, void *key, Z_May
     } else {
         if (node->left == Z_AVL_TREE_NULL_ID) {
             pair->ok = true;
-            pair->pair = z_make_pair(node->key, node->value);
+            pair->pair = z_pair_make(node->key, node->value);
             z_avl_tree_free_node(tree, node_id);
             return node->right;
         } else if (node->right == Z_AVL_TREE_NULL_ID) {
             pair->ok = true;
-            pair->pair = z_make_pair(node->key, node->value);
+            pair->pair = z_pair_make(node->key, node->value);
             z_avl_tree_free_node(tree, node_id);
             return node->left;
         }
@@ -376,7 +376,7 @@ Z_Pair_Array z_avl_tree_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)
     Z_Pair_Array array = z_array_new(pool, Z_Pair_Array);
 
     for (size_t i = 0; i < tree->nodes.length; i++) {
-        z_array_push(&array, z_make_pair(tree->nodes.ptr[i].key, tree->nodes.ptr[i].value));
+        z_array_push(&array, z_pair_make(tree->nodes.ptr[i].key, tree->nodes.ptr[i].value));
     }
 
     return array;
@@ -456,7 +456,45 @@ bool z_avl_contains(const Z_Avl_Tree *tree, const void *key)
     return node != NULL;
 }
 
-Z_Maybe_Pair z_avl_put(Z_Avl_Node *root, void *key, void *value);
+void z__avl_rebalance_node(Z_Avl_Node **root, Z_Compare_Fn compare_keys)
+{
+
+}
+
+Z_Maybe_Pair z__avl_put_impl(Z_Avl_Node **root, void *key, void *value, Z_Compare_Fn compare_keys, Z_Pool *pool)
+{
+    if (*root == NULL) {
+        *root = z_avl_new_node(pool, key, value);
+        return z_make_empty_pair();
+    }
+
+    int compare_result = compare_keys(key, (*root)->key);
+
+    if (compare_result == 0) {
+        Z_Maybe_Pair old_pair = z_make_ok_pair((*root)->key, (*root)->value);
+        (*root)->key = key;
+        (*root)->value = value;
+        return old_pair;
+    }
+
+    Z_Maybe_Pair ret;
+
+    if (compare_result > 0) {
+        ret = z__avl_put_impl((*root)->right, key, value, compare_keys, pool);
+    } else
+        ret = z__avl_put_impl((*root)->left, key, value, compare_keys, pool);
+    }
+
+    z__avl_rebalance_node(root, compare_keys);
+
+    return ret;
+}
+
+Z_Maybe_Pair z_avl_put(Z_Avl_Tree *tree, void *key, void *value)
+{
+    return z__avl_put_impl(&tree->root, key, value, tree->compare_keys)
+}
+
 Z_Maybe_Pair z_avl_delete(Z_Avl_Node *root, void *key);
 
 size_t z_avl_size(const Z_Avl_Tree *tree)
@@ -467,7 +505,7 @@ size_t z_avl_size(const Z_Avl_Tree *tree)
 void z__avl_tree_push_to_array(void *key, void *value, void *arg)
 {
     Z_Pair_Array *array = arg;
-    Z_Pair pair = z_make_pair(key, value);
+    Z_Pair pair = z_pair_make(key, value);
     z_array_push(array, pair);
 }
 
@@ -528,3 +566,4 @@ void z_avl_foreach(const Z_Avl_Tree *tree,
 {
     z_avl_foreach_impl(tree->root, callback, arg);
 }
+

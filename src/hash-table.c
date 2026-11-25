@@ -61,10 +61,10 @@ static inline float z__hash_table_get_load_factor(const Z_Hash_Table *ht)
     return (float)ht->occupied / (float)ht->capacity;
 }
 
-void *z_hash_table_try_get(const Z_Hash_Table *ht, const void *key, void *fallback)
+void *z_hash_table_get(const Z_Hash_Table *ht, const void *key)
 {
     if (ht->capacity == 0) {
-        return fallback;
+        return NULL;
     }
 
     size_t hash = z__hash_table_hash(ht, key);
@@ -79,12 +79,7 @@ void *z_hash_table_try_get(const Z_Hash_Table *ht, const void *key, void *fallba
         i = (i + 1) % ht->capacity;
     }
 
-    return fallback;
-}
-
-void *z_hash_table_get(const Z_Hash_Table *ht, const void *key)
-{
-    return z_hash_table_try_get(ht, key, NULL);
+    return NULL;
 }
 
 Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash)
@@ -99,11 +94,7 @@ Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *valu
         }
 
         if (ht->hashes[i] == hash && ht->equal(ht->keys[i], key)) {
-            Z_Maybe_Pair old_pair = {
-                .ok = true,
-                .pair = z_make_pair(ht->keys[i], ht->values[i]),
-            };
-
+            Z_Maybe_Pair old_pair = z_pair_make_ok(ht->keys[i], ht->values[i]);
             ht->keys[i] = key;
             ht->values[i] = value;
 
@@ -126,11 +117,7 @@ Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *valu
 
     ht->size++;
 
-    Z_Maybe_Pair pair = {
-        .ok = true,
-    };
-
-    return pair;
+    return z_pair_make_empty();
 }
 
 void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
@@ -161,11 +148,7 @@ Z_Maybe_Pair z_hash_table_put(Z_Hash_Table *ht, void *key, void *value)
 Z_Maybe_Pair z_hash_table_delete(Z_Hash_Table *ht, void *key)
 {
     if (ht->size == 0) {
-        Z_Maybe_Pair result = {
-            .ok = false,
-        };
-
-        return result;
+        return z_pair_make_empty();
     }
 
     size_t hash = z__hash_table_hash(ht, key);
@@ -176,22 +159,13 @@ Z_Maybe_Pair z_hash_table_delete(Z_Hash_Table *ht, void *key)
     }
 
     if (ht->hashes[i] == Z__HASH_TABLE_EMPTY) {
-        Z_Maybe_Pair result = {
-            .ok = false,
-        };
-
-        return result;
+        return z_pair_make_empty();
     }
 
     ht->hashes[i] = Z__HASH_TABLE_TOMBSTONE;
     ht->size--;
 
-    Z_Maybe_Pair old_pair = {
-        .ok = true,
-        .pair = z_make_pair(ht->keys[i], ht->values[i]),
-    };
-
-    return old_pair;
+    return z_pair_make_ok(ht->keys[i], ht->values[i]);
 }
 
 bool z_hash_table_contains(const Z_Hash_Table *ht, void *key)
@@ -225,7 +199,7 @@ Z_Pair_Array z_hash_table_to_array(Z_Pool *pool, const Z_Hash_Table *ht)
 
     for (size_t i = 0; i < ht->capacity; i++) {
         if (ht->hashes[i] >= 2) {
-            z_array_push(&array, z_make_pair(ht->keys[i], ht->values[i]));
+            z_array_push(&array, z_pair_make(ht->keys[i], ht->values[i]));
         }
     }
 

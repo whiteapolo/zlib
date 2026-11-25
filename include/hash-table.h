@@ -7,6 +7,7 @@
 #include "pool.h"
 #include "internal/config.h"
 #include "types.h"
+#include "pair.h"
 
 typedef struct {
     Z_Pool *pool;
@@ -27,11 +28,13 @@ typedef struct {
 
 Z_Hash_Table z_hash_table_new(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash);
 Z_Hash_Table z_hash_table_new_with_capacity(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash, size_t capacity);
+
 void *z_hash_table_get(const Z_Hash_Table *ht, const void *key);
-void *z_hash_table_try_get(const Z_Hash_Table *ht, const void *key, void *fallback);
+bool z_hash_table_contains(const Z_Hash_Table *ht, void *key);
+
 Z_Maybe_Pair z_hash_table_put(Z_Hash_Table *ht, void *key, void *value);
 Z_Maybe_Pair z_hash_table_delete(Z_Hash_Table *ht, void *key);
-bool z_hash_table_contains(const Z_Hash_Table *ht, void *key);
+
 size_t z_hash_table_size(const Z_Hash_Table *ht);
 Z_Pair_Array z_hash_table_to_array(Z_Pool *pool, const Z_Hash_Table *ht);
 
