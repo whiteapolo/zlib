@@ -6,7 +6,7 @@
 #include "time.c"
 #include "hash-table.c"
 #include "error.c"
-// #include "avl.c"
+#include "avl.c"
 #include "pair.c"
 #include "flat-pool.c"
 #include "json.c"
