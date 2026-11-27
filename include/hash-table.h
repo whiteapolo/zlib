@@ -6,7 +6,7 @@
 #include "array.h"
 #include "pool.h"
 #include "internal/config.h"
-#include "types.h"
+#include "internal/types.h"
 #include "pair.h"
 
 typedef struct {

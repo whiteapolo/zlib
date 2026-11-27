@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include "pool.h"
-#include "types.h"
+#include "internal/types.h"
 
 typedef struct {
     Z_Pool *pool;
