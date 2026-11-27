@@ -12,3 +12,4 @@
 #include "flat-pool.c"
 #include "json.c"
 #include "temp-pool.c"
+#include "log.c"
