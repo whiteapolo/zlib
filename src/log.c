@@ -30,6 +30,7 @@ static bool z__does_support_color()
 
     if (first) {
         cache = isatty(STDERR_FILENO);
+        first = false;
     }
 
     return cache;
