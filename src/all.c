@@ -7,6 +7,7 @@
 #include "hash-table.c"
 #include "error.c"
 #include "avl.c"
+#include "map.c"
 #include "pair.c"
 #include "flat-pool.c"
 #include "json.c"
