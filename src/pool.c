@@ -7,10 +7,10 @@
 #define Z__PTR_TABLE_TOMBSTONE          ((uintptr_t)1)
 #define Z__PTR_TABLE_EMPTY              ((uintptr_t)0)
 
-void z__ptr_table_insert_no_check(Z_Ptr_Table *table, uintptr_t ptr);
+static void z__ptr_table_insert_no_check(Z_Ptr_Table *table, uintptr_t ptr);
 static inline size_t z__ptr_table_fast_mod(size_t value, size_t mod);
 static inline uintptr_t z__ptr_table_hash(uintptr_t ptr);
-void z__ptr_table_resize(Z_Ptr_Table *table, size_t new_capacity);
+static void z__ptr_table_resize(Z_Ptr_Table *table, size_t new_capacity);
 void z_ptr_table_insert(Z_Ptr_Table *table, uintptr_t ptr);
 bool z_ptr_table_delete(Z_Ptr_Table *table, uintptr_t ptr);
 void z_ptr_table_free(Z_Ptr_Table *table);
@@ -35,7 +35,7 @@ static inline float z__ptr_table_load_factor(const Z_Ptr_Table *table)
     return (float)table->occupied / (float)table->capacity;
 }
 
-void z__ptr_table_insert_no_check(Z_Ptr_Table *table, uintptr_t ptr)
+static void z__ptr_table_insert_no_check(Z_Ptr_Table *table, uintptr_t ptr)
 {
     size_t i = z__ptr_table_fast_mod(z__ptr_table_hash(ptr), table->capacity);
 
@@ -50,7 +50,7 @@ void z__ptr_table_insert_no_check(Z_Ptr_Table *table, uintptr_t ptr)
     table->ptr[i] = ptr;
 }
 
-void z__ptr_table_resize(Z_Ptr_Table *table, size_t new_capacity)
+static void z__ptr_table_resize(Z_Ptr_Table *table, size_t new_capacity)
 {
     Z_Ptr_Table new = {
         .ptr = calloc(new_capacity, sizeof(uintptr_t)),

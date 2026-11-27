@@ -4,9 +4,9 @@
 #define Z__HASH_TABLE_EMPTY 0
 #define Z__HASH_TABLE_TOMBSTONE 1
 
-void z__hash_table_free(Z_Hash_Table *ht);
-Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash);
-void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity);
+static void z__hash_table_free(Z_Hash_Table *ht);
+static Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash);
+static void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity);
 
 Z_Hash_Table z_hash_table_new(Z_Pool *pool, Z_Equal_Fn equal, Z_Hash_Fn hash)
 {
@@ -30,7 +30,7 @@ Z_Hash_Table z_hash_table_new_with_capacity(Z_Pool *pool, Z_Equal_Fn equal, Z_Ha
     return table;
 }
 
-void z__hash_table_free(Z_Hash_Table *ht)
+static void z__hash_table_free(Z_Hash_Table *ht)
 {
     if (ht->capacity == 0) {
         return;
@@ -82,7 +82,7 @@ void *z_hash_table_get(const Z_Hash_Table *ht, const void *key)
     return NULL;
 }
 
-Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash)
+static Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *value, size_t hash)
 {
     size_t i = hash % ht->capacity;
     ssize_t first_tompstone = -1;
@@ -120,7 +120,7 @@ Z_Maybe_Pair z__hash_table_put_no_resize(Z_Hash_Table *ht, void *key, void *valu
     return z_pair_make_empty();
 }
 
-void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
+static void z__hash_table_resize(Z_Hash_Table *ht, size_t new_capacity)
 {
     Z_Hash_Table new_ht = z_hash_table_new_with_capacity(ht->pool, ht->equal, ht->hash, new_capacity);
 

@@ -6,11 +6,9 @@
 #include <stdio.h>
 #include "../include/min-max.h"
 
-size_t z__circular_buffer_next_index(size_t size, size_t i);
-size_t z__circular_buffer_previous_index(size_t size, size_t i);
-bool z__deque_is_index_inside(const Z_Deque *deque, size_t i);
-void z__deque_ensure_capacity(Z_Deque *deque, size_t needed);
-void z__deque_debug_print(const Z_Deque *deque, Z_Print_Fn print_element);
+static size_t z__circular_buffer_next_index(size_t size, size_t i);
+static size_t z__circular_buffer_previous_index(size_t size, size_t i);
+static void z__deque_ensure_capacity(Z_Deque *deque, size_t needed);
 
 Z_Deque z_deque_new(Z_Pool *pool)
 {
@@ -31,44 +29,17 @@ size_t z_deque_size(const Z_Deque *deque)
     return deque->size;
 }
 
-size_t z__circular_buffer_next_index(size_t size, size_t i)
+static size_t z__circular_buffer_next_index(size_t size, size_t i)
 {
     return (i + 1) % size;
 }
 
-size_t z__circular_buffer_previous_index(size_t size, size_t i)
+static size_t z__circular_buffer_previous_index(size_t size, size_t i)
 {
     return i == 0 ? size - 1 : i - 1;
 }
 
-bool z__deque_is_index_inside(const Z_Deque *deque, size_t i)
-{
-    if (deque->front < deque->rear) {
-        return deque->front <= i && deque->rear <= i;
-    }
-
-    return deque->front <= i || i <= deque->rear;
-}
-
-void z__deque_debug_print(const Z_Deque *deque, Z_Print_Fn print_element)
-{
-    if (deque->capacity == 0) {
-        printf("[]\n");
-        return;
-    }
-
-    printf("[ ");
-    for (size_t i = 0; i < deque->capacity; i++) {
-        if (z__deque_is_index_inside(deque, i)) {
-            print_element(deque->ptr[i]);
-        } else {
-            printf("- ");
-        }
-    }
-    printf("]\n");
-}
-
-void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
+static void z__deque_ensure_capacity(Z_Deque *deque, size_t needed)
 {
     if (deque->capacity >= needed) {
         return;

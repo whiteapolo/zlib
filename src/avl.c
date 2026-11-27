@@ -2,26 +2,26 @@
 #include <math.h>
 #include <stdbool.h>
 
-Z_Avl_Node *z__avl_new_node(Z_Pool *pool, void *key, void *value);
-Z_Avl_Node *z__avl_get_node(const Z_Avl_Tree *tree, const void *key);
+static Z_Avl_Node *z__avl_new_node(Z_Pool *pool, void *key, void *value);
+static Z_Avl_Node *z__avl_get_node(const Z_Avl_Tree *tree, const void *key);
 void *z_avl_get(const Z_Avl_Tree *tree, const void *key);
-Z_Avl_Node *z__avl_get_min_node(Z_Avl_Node *root);
-Z_Avl_Node *z__avl_get_max_node(Z_Avl_Node *root);
+static Z_Avl_Node *z__avl_get_min_node(Z_Avl_Node *root);
+static Z_Avl_Node *z__avl_get_max_node(Z_Avl_Node *root);
 
-char z__avl_get_node_height(const Z_Avl_Node *node);
-void z__avl_update_node_height(Z_Avl_Node *node);
-int z__avl_get_node_balance_factor(const Z_Avl_Node *node);
-void z__avl_left_rotate(Z_Avl_Node **root);
-void z__avl_right_rotate(Z_Avl_Node **root);
-void z__avl_right_left_rotate(Z_Avl_Node **root);
-void z__avl_left_right_rotate(Z_Avl_Node **root);
-void z__avl_rebalance_node(Z_Avl_Node **root);
+static char z__avl_get_node_height(const Z_Avl_Node *node);
+static void z__avl_update_node_height(Z_Avl_Node *node);
+static int z__avl_get_node_balance_factor(const Z_Avl_Node *node);
+static void z__avl_left_rotate(Z_Avl_Node **root);
+static void z__avl_right_rotate(Z_Avl_Node **root);
+static void z__avl_right_left_rotate(Z_Avl_Node **root);
+static void z__avl_left_right_rotate(Z_Avl_Node **root);
+static void z__avl_rebalance_node(Z_Avl_Node **root);
 
-Z_Maybe_Pair z__avl_put(Z_Avl_Node **root, void *key, void *value, Z_Compare_Fn compare_keys, Z_Pool *pool);
-Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys, Z_Pool *pool);
+static Z_Maybe_Pair z__avl_put(Z_Avl_Node **root, void *key, void *value, Z_Compare_Fn compare_keys, Z_Pool *pool);
+static Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys, Z_Pool *pool);
 
-void z__avl_tree_push_to_array(void *key, void *value, void *arg);
-void z__avl_foreach(const Z_Avl_Node *root, void callback(void *key, void *value, void *arg), void *arg);
+static void z__avl_tree_push_to_array(void *key, void *value, void *arg);
+static void z__avl_foreach(const Z_Avl_Node *root, void callback(void *key, void *value, void *arg), void *arg);
 
 Z_Avl_Tree z_avl_new(Z_Pool *pool, Z_Compare_Fn compare_keys)
 {
@@ -34,7 +34,7 @@ Z_Avl_Tree z_avl_new(Z_Pool *pool, Z_Compare_Fn compare_keys)
     return tree;
 }
 
-Z_Avl_Node *z__avl_new_node(Z_Pool *pool, void *key, void *value)
+static Z_Avl_Node *z__avl_new_node(Z_Pool *pool, void *key, void *value)
 {
     Z_Avl_Node *node = z_pool_malloc(pool, sizeof(Z_Avl_Node));
 
@@ -47,7 +47,7 @@ Z_Avl_Node *z__avl_new_node(Z_Pool *pool, void *key, void *value)
     return node;
 }
 
-Z_Avl_Node *z__avl_get_node(const Z_Avl_Tree *tree, const void *key)
+static Z_Avl_Node *z__avl_get_node(const Z_Avl_Tree *tree, const void *key)
 {
     Z_Avl_Node *curr = tree->root;
 
@@ -83,7 +83,7 @@ bool z_avl_contains(const Z_Avl_Tree *tree, const void *key)
     return node != NULL;
 }
 
-char z__avl_get_node_height(const Z_Avl_Node *node)
+static char z__avl_get_node_height(const Z_Avl_Node *node)
 {
     if (node == NULL) {
         return 0;
@@ -92,12 +92,12 @@ char z__avl_get_node_height(const Z_Avl_Node *node)
     return node->height;
 }
 
-void z__avl_update_node_height(Z_Avl_Node *node)
+static void z__avl_update_node_height(Z_Avl_Node *node)
 {
     node->height = 1 + (char)Z_MAX(z__avl_get_node_height(node->right), z__avl_get_node_height(node->left));
 }
 
-int z__avl_get_node_balance_factor(const Z_Avl_Node *node)
+static int z__avl_get_node_balance_factor(const Z_Avl_Node *node)
 {
     if (node == NULL) {
         return 0;
@@ -106,7 +106,7 @@ int z__avl_get_node_balance_factor(const Z_Avl_Node *node)
     return z__avl_get_node_height(node->left) - z__avl_get_node_height(node->right);
 }
 
-void z__avl_left_rotate(Z_Avl_Node **root)
+static void z__avl_left_rotate(Z_Avl_Node **root)
 {
     Z_Avl_Node *new_root = (*root)->right;
     Z_Avl_Node *tmp = new_root->left;
@@ -120,7 +120,7 @@ void z__avl_left_rotate(Z_Avl_Node **root)
 	*root = new_root;
 }
 
-void z__avl_right_rotate(Z_Avl_Node **root)
+static void z__avl_right_rotate(Z_Avl_Node **root)
 {
     Z_Avl_Node *new_root = (*root)->left;
     Z_Avl_Node *tmp = new_root->right;
@@ -134,19 +134,19 @@ void z__avl_right_rotate(Z_Avl_Node **root)
 	*root = new_root;
 }
 
-void z__avl_right_left_rotate(Z_Avl_Node **root)
+static void z__avl_right_left_rotate(Z_Avl_Node **root)
 {
     z__avl_right_rotate(&(*root)->right);
     z__avl_left_rotate(root);
 }
 
-void z__avl_left_right_rotate(Z_Avl_Node **root)
+static void z__avl_left_right_rotate(Z_Avl_Node **root)
 {
     z__avl_left_rotate(&(*root)->left);
     z__avl_right_rotate(root);
 }
 
-void z__avl_rebalance_node(Z_Avl_Node **root)
+static void z__avl_rebalance_node(Z_Avl_Node **root)
 {
     z__avl_update_node_height(*root);
     int balance_factor = z__avl_get_node_balance_factor(*root);
@@ -162,7 +162,7 @@ void z__avl_rebalance_node(Z_Avl_Node **root)
     }
 }
 
-Z_Maybe_Pair z__avl_put(Z_Avl_Node **root, void *key, void *value, Z_Compare_Fn compare_keys, Z_Pool *pool)
+static Z_Maybe_Pair z__avl_put(Z_Avl_Node **root, void *key, void *value, Z_Compare_Fn compare_keys, Z_Pool *pool)
 {
     if (*root == NULL) {
         *root = z__avl_new_node(pool, key, value);
@@ -198,7 +198,7 @@ Z_Maybe_Pair z_avl_put(Z_Avl_Tree *tree, void *key, void *value)
     return ret;
 }
 
-Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys, Z_Pool *pool)
+static Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys, Z_Pool *pool)
 {
     if (*root == NULL) {
         return z_pair_make_empty();
@@ -258,7 +258,7 @@ size_t z_avl_size(const Z_Avl_Tree *tree)
     return tree->size;
 }
 
-void z__avl_tree_push_to_array(void *key, void *value, void *arg)
+static void z__avl_tree_push_to_array(void *key, void *value, void *arg)
 {
     Z_Pair_Array *array = arg;
     Z_Pair pair = z_pair_make(key, value);
@@ -273,7 +273,7 @@ Z_Pair_Array z_avl_to_array(Z_Pool *pool, const Z_Avl_Tree *tree)
     return array;
 }
 
-Z_Avl_Node *z__avl_get_min_node(Z_Avl_Node *root)
+static Z_Avl_Node *z__avl_get_min_node(Z_Avl_Node *root)
 {
     if (root == NULL) {
         return NULL;
@@ -299,7 +299,7 @@ void *z_avl_get_min(const Z_Avl_Tree *tree)
     return min->value;
 }
 
-Z_Avl_Node *z__avl_get_max_node(Z_Avl_Node *root)
+static Z_Avl_Node *z__avl_get_max_node(Z_Avl_Node *root)
 {
     if (root == NULL) {
         return NULL;
@@ -325,7 +325,7 @@ void *z_avl_get_max(const Z_Avl_Tree *tree)
     return max->value;
 }
 
-void z__avl_foreach(const Z_Avl_Node *root,
+static void z__avl_foreach(const Z_Avl_Node *root,
                          void callback(void *key, void *value, void *arg),
                          void *arg)
 {
