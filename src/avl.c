@@ -136,13 +136,13 @@ void z__avl_right_rotate(Z_Avl_Node **root)
 
 void z__avl_right_left_rotate(Z_Avl_Node **root)
 {
-    z__avl_right_rotate(root);
+    z__avl_right_rotate(&(*root)->right);
     z__avl_left_rotate(root);
 }
 
 void z__avl_left_right_rotate(Z_Avl_Node **root)
 {
-    z__avl_left_rotate(root);
+    z__avl_left_rotate(&(*root)->left);
     z__avl_right_rotate(root);
 }
 
@@ -169,31 +169,33 @@ Z_Maybe_Pair z__avl_put(Z_Avl_Node **root, void *key, void *value, Z_Compare_Fn 
         return z_pair_make_empty();
     }
 
+    Z_Maybe_Pair old_pair;
     int compare_result = compare_keys(key, (*root)->key);
 
-    if (compare_result == 0) {
-        Z_Maybe_Pair old_pair = z_pair_make_ok((*root)->key, (*root)->value);
+    if (compare_result > 0) {
+        old_pair = z__avl_put(&(*root)->right, key, value, compare_keys, pool);
+    } else if (compare_result < 0) {
+        old_pair = z__avl_put(&(*root)->left, key, value, compare_keys, pool);
+    } else {
+        old_pair = z_pair_make_ok((*root)->key, (*root)->value);
         (*root)->key = key;
         (*root)->value = value;
-        return old_pair;
-    }
-
-    Z_Maybe_Pair ret;
-
-    if (compare_result > 0) {
-        ret = z__avl_put(&(*root)->right, key, value, compare_keys, pool);
-    } else {
-        ret = z__avl_put(&(*root)->left, key, value, compare_keys, pool);
     }
 
     z__avl_rebalance_node(root);
 
-    return ret;
+    return old_pair;
 }
 
 Z_Maybe_Pair z_avl_put(Z_Avl_Tree *tree, void *key, void *value)
 {
-    return z__avl_put(&tree->root, key, value, tree->compare_keys, tree->pool);
+    Z_Maybe_Pair ret = z__avl_put(&tree->root, key, value, tree->compare_keys, tree->pool);
+
+    if (!ret.ok) {
+        tree->size++;
+    }
+
+    return ret;
 }
 
 Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_keys, Z_Pool *pool)
@@ -203,29 +205,31 @@ Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_ke
     }
 
     int compare_result = compare_keys(key, (*root)->key);
+    Z_Maybe_Pair pair;
 
     if (compare_result > 0) {
-        return z__avl_delete(&((*root)->right), key, compare_keys, pool);
+        pair = z__avl_delete(&((*root)->right), key, compare_keys, pool);
     } else if (compare_result < 0) {
-        return z__avl_delete(&((*root)->left), key, compare_keys, pool);
+        pair = z__avl_delete(&((*root)->left), key, compare_keys, pool);
     } else {
         if ((*root)->left == NULL) {
-            Z_Maybe_Pair old_pair = z_pair_make_ok((*root)->key, (*root)->value);
+            Z_Maybe_Pair pair = z_pair_make_ok((*root)->key, (*root)->value);
             Z_Avl_Node *tmp = (*root)->right;
             z_pool_free(pool, *root);
             *root = tmp;
-            return old_pair;
+            return pair;
         }
 
         if ((*root)->right == NULL) {
-            Z_Maybe_Pair old_pair = z_pair_make_ok((*root)->key, (*root)->value);
+            Z_Maybe_Pair pair = z_pair_make_ok((*root)->key, (*root)->value);
             Z_Avl_Node *tmp = (*root)->left;
             z_pool_free(pool, *root);
             *root = tmp;
-            return old_pair;
+            return pair;
         }
 
-        Z_Avl_Node *successor = z__avl_get_min_node(*root);
+        pair = z_pair_make_ok((*root)->key, (*root)->value);
+        Z_Avl_Node *successor = z__avl_get_min_node((*root)->right);
 
         (*root)->key = successor->key;
         (*root)->value = successor->value;
@@ -235,7 +239,7 @@ Z_Maybe_Pair z__avl_delete(Z_Avl_Node **root, void *key, Z_Compare_Fn compare_ke
 
     z__avl_rebalance_node(root);
 
-    return z_pair_make_empty();
+    return pair;
 }
 
 Z_Maybe_Pair z_avl_delete(Z_Avl_Tree *tree, void *key)
