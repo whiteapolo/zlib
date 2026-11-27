@@ -1,4 +1,5 @@
 #include "../include/log.h"
+#include "../include/io.h"
 #include <stdio.h>
 #include <unistd.h>
 
@@ -36,13 +37,23 @@ static bool z__does_support_color()
 
 static const char *z__get_log_level_label_color(Z_Log_Level level)
 {
-
+    switch (level) {
+        case Z_LOG_DEBUG: return Z_TERM_MAGENTA;
+        case Z_LOG_INFO:  return Z_TERM_GREEN;
+        case Z_LOG_WARN:  return Z_TERM_YELLOW;
+        case Z_LOG_ERROR: return Z_TERM_RED;
+        case Z_LOG_FATAL: return Z_TERM_RED;
+        case Z_LOG_NONE:  return "";
+        default:          return "";
+    }
 }
 
 static void z__print_log_label(Z_Log_Level level)
 {
     if (z__does_support_color()) {
-        fprintf(stderr, "[%s] ", z__log_level_to_string(level));
+        const char *color = z__get_log_level_label_color(level);
+        const char *label = z__log_level_to_string(level);
+        fprintf(stderr, "[%s%s%s] ", color, label, Z_TERM_RESET);
     } else {
         fprintf(stderr, "[%s] ", z__log_level_to_string(level));
     }
@@ -54,6 +65,7 @@ static void z__log(Z_Log_Level level, const char *format, va_list ap)
         return;
     }
 
+    z__print_log_label(level);
     vfprintf(stderr, format, ap);
     fputc('\n', stderr);
 }

@@ -42,6 +42,43 @@ bool z_is_regular_file(const char *path);
 
 Z_Piped_Process z_pipe_process(char *args[], Z_File_Redirect redirect);
 
+#define Z_TERM_RESET             "\033[0m"
+#define Z_TERM_BLACK             "\033[30m"
+#define Z_TERM_RED               "\033[31m"
+#define Z_TERM_GREEN             "\033[32m"
+#define Z_TERM_YELLOW            "\033[33m"
+#define Z_TERM_BLUE              "\033[34m"
+#define Z_TERM_MAGENTA           "\033[35m"
+#define Z_TERM_CYAN              "\033[36m"
+#define Z_TERM_WHITE             "\033[37m"
+
+#define Z_TERM_BRIGHT_BLACK      "\033[90m"
+#define Z_TERM_BRIGHT_RED        "\033[91m"
+#define Z_TERM_BRIGHT_GREEN      "\033[92m"
+#define Z_TERM_BRIGHT_YELLOW     "\033[93m"
+#define Z_TERM_BRIGHT_BLUE       "\033[94m"
+#define Z_TERM_BRIGHT_MAGENTA    "\033[95m"
+#define Z_TERM_BRIGHT_CYAN       "\033[96m"
+#define Z_TERM_BRIGHT_WHITE      "\033[97m"
+
+#define Z_TERM_BG_BLACK          "\033[40m"
+#define Z_TERM_BG_RED            "\033[41m"
+#define Z_TERM_BG_GREEN          "\033[42m"
+#define Z_TERM_BG_YELLOW         "\033[43m"
+#define Z_TERM_BG_BLUE           "\033[44m"
+#define Z_TERM_BG_MAGENTA        "\033[45m"
+#define Z_TERM_BG_CYAN           "\033[46m"
+#define Z_TERM_BG_WHITE          "\033[47m"
+
+#define Z_TERM_BG_BRIGHT_BLACK   "\033[100m"
+#define Z_TERM_BG_BRIGHT_RED     "\033[101m"
+#define Z_TERM_BG_BRIGHT_GREEN   "\033[102m"
+#define Z_TERM_BG_BRIGHT_YELLOW  "\033[103m"
+#define Z_TERM_BG_BRIGHT_BLUE    "\033[104m"
+#define Z_TERM_BG_BRIGHT_MAGENTA "\033[105m"
+#define Z_TERM_BG_BRIGHT_CYAN    "\033[106m"
+#define Z_TERM_BG_BRIGHT_WHITE   "\033[107m"
+
 #define z_term_disable_line_wrap()               printf("\033[?7l")
 #define z_term_enable_line_wrap()                printf("\033[?7h")
 #define z_term_hide_cursor()                     printf("\033[?25l")
