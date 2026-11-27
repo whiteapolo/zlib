@@ -25,7 +25,7 @@ static size_t z__min_max_heap_has_grandparent(size_t i)
 
 static size_t z__min_max_heap_has_children(const Z_Min_Max_Heap *heap, size_t i)
 {
-    return heap->elements
+    return heap->elements.length > z__min_max_heap_left(i);
 }
 
 static size_t z__min_max_heap_left(size_t i)
@@ -41,6 +41,17 @@ static size_t z__min_max_heap_right(size_t i)
 static bool z__min_max_heap_is_min_level(size_t i)
 {
     return i % 2 == 0;
+}
+
+static bool z__min_max_heap_compare(const Z_Min_Max_Heap *heap, size_t a, size_t b)
+{
+    return heap->compare(heap->elements.ptr[a], heap->elements.ptr[b]);
+}
+
+static bool z__min_max_heap_is_grandchild(size_t possible_grandchild, size_t i)
+{
+    return z__min_max_heap_has_grandparent(possible_grandchild)
+        && z__min_max_heap_grandparent(possible_grandchild) == i;
 }
 
 static bool z__min_max_heap_swap(Z_Min_Max_Heap *heap, size_t a, size_t b)
@@ -67,7 +78,7 @@ void z__min_max_heap_heapify_up_min(Z_Min_Max_Heap *heap, size_t i)
     }
 
     size_t grandparent = z__min_max_heap_grandparent(i);
-    int compare_result = heap->compare(heap->elements.ptr[i], heap->elements.ptr[grandparent]);
+    int compare_result = z__min_max_heap_compare(heap, i, grandparent);
 
     if (compare_result < 0) {
         z__min_max_heap_swap(heap, i, grandparent);
@@ -82,7 +93,7 @@ void z__min_max_heap_heapify_up_max(Z_Min_Max_Heap *heap, size_t i)
     }
 
     size_t grandparent = z__min_max_heap_grandparent(i);
-    int compare_result = heap->compare(heap->elements.ptr[i], heap->elements.ptr[grandparent]);
+    int compare_result = z__min_max_heap_compare(heap, i, grandparent);
 
     if (compare_result > 0) {
         z__min_max_heap_swap(heap, i, grandparent);
@@ -97,7 +108,7 @@ void z_min_max_heap_push(Z_Min_Max_Heap *heap, void *element)
 
     size_t i = heap->elements.length - 1;
     size_t parent = z__min_max_heap_parent(i);
-    int compare_result = heap->compare(element, heap->elements.ptr[parent]);
+    int compare_result = z__min_max_heap_compare(heap, i, parent);
 
     if (z__min_max_heap_is_min_level(i)) {
         if (compare_result > 0) {
@@ -116,9 +127,27 @@ void z_min_max_heap_push(Z_Min_Max_Heap *heap, void *element)
     }
 }
 
+void z__min_max_heap_get_smallest_child_or_grandchild_index(const Z_Min_Max_Heap *heap, size_t i);
+
 void z__min_max_heap_heapify_down_min(Z_Min_Max_Heap *heap, size_t i)
 {
+    if (!z__min_max_heap_has_children(heap, i)) {
+        return;
+    }
 
+    size_t m = z__min_max_heap_get_smallest_child_or_grandchild_index(heap, i);
+
+    if (z__min_max_heap_compare(heap, m, i) < 0) {
+        z__min_max_heap_swap(heap, m, i);
+
+        if (z__min_max_heap_is_grandchild(m, i)) {
+            if (z__min_max_heap_compare(heap, m, z__min_max_heap_parent(m)) < 0) {
+                z__min_max_heap_swap(heap, m, z__min_max_heap_parent(m));
+            }
+
+            z__min_max_heap_heapify_down_min(heap, m);
+        }
+    }
 }
 
 void z__min_max_heap_heapify_down(Z_Min_Max_Heap *heap, size_t i)
@@ -163,7 +192,7 @@ size_t z__min_max_heap_get_max_index(const Z_Min_Max_Heap *heap)
     size_t left = z__min_max_heap_left(0);
     size_t right = z__min_max_heap_right(0);
 
-    int compare_result = heap->compare(heap->elements.ptr[left], heap->elements.ptr[right]);
+    int compare_result = z__min_max_heap_compare(heap, left, right);
     return compare_result > 0 ? left : right;
 }
 
