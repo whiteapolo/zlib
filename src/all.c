@@ -12,3 +12,5 @@
 #include "pair.c"
 #include "json.c"
 #include "log.c"
+#include "min-max-heap.c"
+#include "priority-queue.c"

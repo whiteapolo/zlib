@@ -8,10 +8,10 @@ Z_DEFINE_ARRAY(Z_Min_Max_Heap_Elements, void *);
 
 typedef struct {
     Z_Min_Max_Heap_Elements elements;
-    z_compare_fn compare;
+    Z_Compare_Fn compare;
 } Z_Min_Max_Heap;
 
-Z_Min_Max_Heap z_min_max_heap_new(Z_Pool *pool, z_compare_fn compare);
+Z_Min_Max_Heap z_min_max_heap_new(Z_Pool *pool, Z_Compare_Fn compare);
 
 void z_min_max_heap_push(Z_Min_Max_Heap *heap, void *element);
 void *z_min_max_heap_pop_min(Z_Min_Max_Heap *heap);

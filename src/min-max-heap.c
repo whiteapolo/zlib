@@ -8,6 +8,15 @@ static size_t z__min_max_heap_left(size_t i);
 static size_t z__min_max_heap_right(size_t i);
 static bool z__min_max_heap_is_min_level(size_t i);
 
+void z__min_max_heap_heapify_up_min(Z_Min_Max_Heap *heap, size_t i);
+void z__min_max_heap_heapify_up_max(Z_Min_Max_Heap *heap, size_t i);
+size_t z__min_max_heap_get_smallest_child_or_grandchild_index(const Z_Min_Max_Heap *heap, size_t i);
+size_t z__min_max_heap_get_largest_child_or_grandchild_index(const Z_Min_Max_Heap *heap, size_t i);
+void z__min_max_heap_heapify_down_min(Z_Min_Max_Heap *heap, size_t i);
+void z__min_max_heap_heapify_down_max(Z_Min_Max_Heap *heap, size_t i);
+void z__min_max_heap_heapify_down(Z_Min_Max_Heap *heap, size_t i);
+size_t z__min_max_heap_get_max_index(const Z_Min_Max_Heap *heap);
+
 static size_t z__min_max_heap_parent(size_t i)
 {
 	return (i - 1) / 2;
@@ -43,7 +52,7 @@ static bool z__min_max_heap_is_min_level(size_t i)
     return i % 2 == 0;
 }
 
-static bool z__min_max_heap_compare(const Z_Min_Max_Heap *heap, size_t a, size_t b)
+static int z__min_max_heap_compare(const Z_Min_Max_Heap *heap, size_t a, size_t b)
 {
     return heap->compare(heap->elements.ptr[a], heap->elements.ptr[b]);
 }
@@ -54,14 +63,14 @@ static bool z__min_max_heap_is_grandchild(size_t possible_grandchild, size_t i)
         && z__min_max_heap_grandparent(possible_grandchild) == i;
 }
 
-static bool z__min_max_heap_swap(Z_Min_Max_Heap *heap, size_t a, size_t b)
+static void z__min_max_heap_swap(Z_Min_Max_Heap *heap, size_t a, size_t b)
 {
     void *tmp = heap->elements.ptr[a];
     heap->elements.ptr[a] = heap->elements.ptr[b];
     heap->elements.ptr[b] = tmp;
 }
 
-Z_Min_Max_Heap z_min_max_heap_new(Z_Pool *pool, z_compare_fn compare)
+Z_Min_Max_Heap z_min_max_heap_new(Z_Pool *pool, Z_Compare_Fn compare)
 {
     Z_Min_Max_Heap heap = {
         .compare = compare,
@@ -127,7 +136,62 @@ void z_min_max_heap_push(Z_Min_Max_Heap *heap, void *element)
     }
 }
 
-void z__min_max_heap_get_smallest_child_or_grandchild_index(const Z_Min_Max_Heap *heap, size_t i);
+size_t z__min_max_heap_get_smallest_child_or_grandchild_index(const Z_Min_Max_Heap *heap, size_t i)
+{
+    size_t possible_children[] = {
+        z__min_max_heap_left(i),
+        z__min_max_heap_right(i),
+        z__min_max_heap_left(z__min_max_heap_left(i)),
+        z__min_max_heap_right(z__min_max_heap_left(i)),
+        z__min_max_heap_left(z__min_max_heap_right(i)),
+        z__min_max_heap_right(z__min_max_heap_right(i)),
+    };
+
+    size_t min_index;
+
+    for (size_t j = 0; j < 6; j++) {
+
+        size_t possible_min_child = possible_children[j];
+
+        if (possible_min_child >= heap->elements.length) {
+            continue;
+        }
+
+        if (z__min_max_heap_compare(heap, possible_min_child, min_index) < 0) {
+            min_index = possible_min_child;
+        }
+    }
+
+    return min_index;
+}
+size_t z__min_max_heap_get_largest_child_or_grandchild_index(const Z_Min_Max_Heap *heap, size_t i)
+{
+    size_t possible_children[] = {
+        z__min_max_heap_left(i),
+        z__min_max_heap_right(i),
+        z__min_max_heap_left(z__min_max_heap_left(i)),
+        z__min_max_heap_right(z__min_max_heap_left(i)),
+        z__min_max_heap_left(z__min_max_heap_right(i)),
+        z__min_max_heap_right(z__min_max_heap_right(i)),
+    };
+
+    size_t max_index;
+
+    for (size_t j = 0; j < 6; j++) {
+
+        size_t possible_max_child = possible_children[j];
+
+        if (possible_max_child >= heap->elements.length) {
+            continue;
+        }
+
+        if (z__min_max_heap_compare(heap, possible_max_child, max_index) > 0) {
+            max_index = possible_max_child;
+        }
+    }
+
+    return max_index;
+}
 
 void z__min_max_heap_heapify_down_min(Z_Min_Max_Heap *heap, size_t i)
 {
@@ -146,6 +210,27 @@ void z__min_max_heap_heapify_down_min(Z_Min_Max_Heap *heap, size_t i)
             }
 
             z__min_max_heap_heapify_down_min(heap, m);
+        }
+    }
+}
+
+void z__min_max_heap_heapify_down_max(Z_Min_Max_Heap *heap, size_t i)
+{
+    if (!z__min_max_heap_has_children(heap, i)) {
+        return;
+    }
+
+    size_t m = z__min_max_heap_get_largest_child_or_grandchild_index(heap, i);
+
+    if (z__min_max_heap_compare(heap, m, i) > 0) {
+        z__min_max_heap_swap(heap, m, i);
+
+        if (z__min_max_heap_is_grandchild(m, i)) {
+            if (z__min_max_heap_compare(heap, m, z__min_max_heap_parent(m)) > 0) {
+                z__min_max_heap_swap(heap, m, z__min_max_heap_parent(m));
+            }
+
+            z__min_max_heap_heapify_down_max(heap, m);
         }
     }
 }
@@ -174,7 +259,7 @@ void *z_min_max_heap_pop_max(Z_Min_Max_Heap *heap)
 {
     assert(heap->elements.length > 0);
 
-    int max_index = z__min_max_heap_get_max_index(heap);
+    size_t max_index = z__min_max_heap_get_max_index(heap);
     void *max = heap->elements.ptr[max_index];
     heap->elements.ptr[max_index] = z_array_pop(&heap->elements);
     z__min_max_heap_heapify_down(heap, max_index);
@@ -198,7 +283,7 @@ size_t z__min_max_heap_get_max_index(const Z_Min_Max_Heap *heap)
 
 void *z_min_max_heap_peek_max(const Z_Min_Max_Heap *heap)
 {
-    int max_index = z__min_max_heap_get_max_index(heap);
+    size_t max_index = z__min_max_heap_get_max_index(heap);
     return heap->elements.ptr[max_index];
 }
 
