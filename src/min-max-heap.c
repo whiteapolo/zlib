@@ -29,9 +29,9 @@ static size_t z__min_max_heap_grandparent(size_t i)
     return z__min_max_heap_parent(z__min_max_heap_parent(i));
 }
 
-static size_t z__min_max_heap_has_grandparent(size_t i)
+static bool z__min_max_heap_has_grandparent(size_t i)
 {
-    return z__min_max_heap_parent(i) != 0;
+    return i != 0 && z__min_max_heap_parent(i) != 0;
 }
 
 static size_t z__min_max_heap_has_children(const Z_Min_Max_Heap *heap, size_t i)
