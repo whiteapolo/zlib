@@ -1,5 +1,6 @@
 #include "../include/internal/min-max-heap.h"
 #include <assert.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -50,13 +51,7 @@ static size_t z__min_max_heap_right(size_t i)
 
 static bool z__min_max_heap_is_min_level(size_t i)
 {
-    size_t depth = 0;
-
-    while (i > 0) {
-        i = z__min_max_heap_parent(i);
-        depth++;
-    }
-
+    size_t depth = (size_t)log2((double)i + 1.0);
     return depth % 2 == 0;
 }
 
@@ -155,7 +150,6 @@ size_t z__min_max_heap_get_smallest_child_or_grandchild_index(const Z_Min_Max_He
         z__min_max_heap_right(z__min_max_heap_right(i)),
     };
 
-    // TODO:
     size_t min_index = SIZE_MAX;
 
     for (size_t j = 0; j < 6; j++) {
@@ -183,7 +177,6 @@ size_t z__min_max_heap_get_largest_child_or_grandchild_index(const Z_Min_Max_Hea
         z__min_max_heap_left(z__min_max_heap_right(i)),
         z__min_max_heap_right(z__min_max_heap_right(i)),
     };
-    // TODO:
 
     size_t max_index = SIZE_MAX;
 

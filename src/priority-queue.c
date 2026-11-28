@@ -21,7 +21,7 @@ void *z_priority_queue_push(Z_Priority_Queue *queue, void *element)
 {
     z_min_max_heap_push(&queue->heap, element);
 
-    if (queue->max_size > z_min_max_heap_size(&queue->heap)) {
+    if (queue->max_size < z_min_max_heap_size(&queue->heap)) {
         return z_min_max_heap_pop_min(&queue->heap);
     }
 
